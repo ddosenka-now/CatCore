@@ -21,13 +21,12 @@
 
 namespace pocketmine\item;
 
-
-use pocketmine\Player;
 use pocketmine\entity\Effect;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Human;
 use pocketmine\event\entity\EntityDrinkPotionEvent;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
+use pocketmine\Player;
 
 class Potion extends Item {
 
@@ -70,7 +69,7 @@ class Potion extends Item {
 	const STRENGTH_TWO = 33;
 	const WEAKNESS = 34;
 	const WEAKNESS_T = 35;
-	const DECAY = 36;
+	const DECAY = 36; //TODO
 
 	//Structure: Potion ID => [matching effect, duration in ticks, amplifier]
 	//Use false if no effects.
@@ -123,9 +122,7 @@ class Potion extends Item {
 		self::STRENGTH_TWO => [Effect::STRENGTH, (90 * 20), 1],
 
 		self::WEAKNESS => [Effect::WEAKNESS, (90 * 20), 0],
-		self::WEAKNESS_T => [Effect::WEAKNESS, (240 * 20), 0],
-
-		self::DECAY => [Effect::WITHER, (40 * 20), 0]
+		self::WEAKNESS_T => [Effect::WEAKNESS, (240 * 20), 0]
 	];
 
 	/**
@@ -136,6 +133,142 @@ class Potion extends Item {
 	 */
 	public function __construct($meta = 0, $count = 1){
 		parent::__construct(self::POTION, $meta, $count, self::getNameByMeta($meta));
+	}
+
+	/**
+	 * @param int $meta
+	 *
+	 * @return array
+	 */
+	public static function getColor(int $meta){
+		$effect = Effect::getEffect(self::getEffectId($meta));
+		if($effect !== null){
+			return $effect->getColor();
+		}
+		return [0, 0, 0];
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getMaxStackSize() : int{
+		return 1;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function canBeConsumed() : bool{
+		return $this->meta > 0;
+	}
+
+	/**
+	 * @param Entity $entity
+	 *
+	 * @return bool
+	 */
+	public function canBeConsumedBy(Entity $entity) : bool{
+		return $entity instanceof Human;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getEffects() : array{
+		return self::getEffectsById($this->meta);
+	}
+
+	/**
+	 * @param int $id
+	 *
+	 * @return Effect[]
+	 */
+	public static function getEffectsById(int $id) : array{
+		if(count(self::POTIONS[$id] ?? []) === 3){
+			return [Effect::getEffect(self::POTIONS[$id][0])->setDuration(self::POTIONS[$id][1])->setAmplifier(self::POTIONS[$id][2])];
+		}
+		return [];
+	}
+
+
+	/**
+	 * @param Entity $human
+	 */
+	public function onConsume(Entity $human){
+		$pk = new EntityEventPacket();
+		$pk->eid = $human->getId();
+		$pk->event = EntityEventPacket::USE_ITEM;
+		if($human instanceof Player){
+			$human->dataPacket($pk);
+		}
+		$server = $human->getLevel()->getServer();
+		$server->broadcastPacket($human->getViewers(), $pk);
+
+		$server->getPluginManager()->callEvent($ev = new EntityDrinkPotionEvent($human, $this));
+
+		if(!$ev->isCancelled()){
+			foreach($ev->getEffects() as $effect){
+				$human->addEffect($effect);
+			}
+			//Don't set the held item to glass bottle if we're in creative
+			if($human instanceof Player){
+				if($human->getGamemode() === 1){
+					return;
+				}
+			}
+			$human->getInventory()->setItemInHand(Item::get(self::GLASS_BOTTLE));
+		}
+
+
+	}
+
+	/**
+	 * @param int $meta
+	 *
+	 * @return int
+	 */
+	public static function getEffectId(int $meta) : int{
+		switch($meta){
+			case self::INVISIBILITY:
+			case self::INVISIBILITY_T:
+				return Effect::INVISIBILITY;
+			case self::LEAPING:
+			case self::LEAPING_T:
+			case self::LEAPING_TWO:
+				return Effect::JUMP;
+			case self::FIRE_RESISTANCE:
+			case self::FIRE_RESISTANCE_T:
+				return Effect::FIRE_RESISTANCE;
+			case self::SWIFTNESS:
+			case self::SWIFTNESS_T:
+			case self::SWIFTNESS_TWO:
+				return Effect::SPEED;
+			case self::SLOWNESS:
+			case self::SLOWNESS_T:
+				return Effect::SLOWNESS;
+			case self::WATER_BREATHING:
+			case self::WATER_BREATHING_T:
+				return Effect::WATER_BREATHING;
+			case self::HARMING:
+			case self::HARMING_TWO:
+				return Effect::HARMING;
+			case self::POISON:
+			case self::POISON_T:
+			case self::POISON_TWO:
+				return Effect::POISON;
+			case self::HEALING:
+			case self::HEALING_TWO:
+				return Effect::HEALING;
+			case self::NIGHT_VISION:
+			case self::NIGHT_VISION_T:
+				return Effect::NIGHT_VISION;
+			case self::REGENERATION:
+			case self::REGENERATION_T:
+			case self::REGENERATION_TWO:
+				return Effect::REGENERATION;
+			default:
+				return 0;
+		}
 	}
 
 	/**
@@ -205,149 +338,9 @@ class Potion extends Item {
 			case self::WEAKNESS:
 			case self::WEAKNESS_T:
 				return "Potion of Weakness";
-			case self::DECAY:
-				return "Potion of WHTHER II";
 			default:
 				return "Potion";
 		}
-	}
-
-	/**
-	 * @param int $meta
-	 *
-	 * @return array
-	 */
-	public static function getColor(int $meta){
-		$effect = Effect::getEffect(self::getEffectId($meta));
-		if($effect !== null){
-			return $effect->getColor();
-		}
-
-		return [0, 0, 0];
-	}
-
-	/**
-	 * @param int $meta
-	 *
-	 * @return int
-	 */
-	public static function getEffectId(int $meta) : int{
-		switch($meta){
-			case self::INVISIBILITY:
-			case self::INVISIBILITY_T:
-				return Effect::INVISIBILITY;
-			case self::LEAPING:
-			case self::LEAPING_T:
-			case self::LEAPING_TWO:
-				return Effect::JUMP;
-			case self::FIRE_RESISTANCE:
-			case self::FIRE_RESISTANCE_T:
-				return Effect::FIRE_RESISTANCE;
-			case self::SWIFTNESS:
-			case self::SWIFTNESS_T:
-			case self::SWIFTNESS_TWO:
-				return Effect::SPEED;
-			case self::SLOWNESS:
-			case self::SLOWNESS_T:
-				return Effect::SLOWNESS;
-			case self::WATER_BREATHING:
-			case self::WATER_BREATHING_T:
-				return Effect::WATER_BREATHING;
-			case self::HARMING:
-			case self::HARMING_TWO:
-				return Effect::HARMING;
-			case self::POISON:
-			case self::POISON_T:
-			case self::POISON_TWO:
-				return Effect::POISON;
-			case self::HEALING:
-			case self::HEALING_TWO:
-				return Effect::HEALING;
-			case self::NIGHT_VISION:
-			case self::NIGHT_VISION_T:
-				return Effect::NIGHT_VISION;
-			case self::REGENERATION:
-			case self::REGENERATION_T:
-			case self::REGENERATION_TWO:
-				return Effect::REGENERATION;
-			default:
-				return 0;
-		}
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getMaxStackSize() : int{
-		return 1;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function canBeConsumed() : bool{
-		return $this->meta > 0;
-	}
-
-	/**
-	 * @param Entity $entity
-	 *
-	 * @return bool
-	 */
-	public function canBeConsumedBy(Entity $entity) : bool{
-		return $entity instanceof Human;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function getEffects() : array{
-		return self::getEffectsById($this->meta);
-	}
-
-	/**
-	 * @param int $id
-	 *
-	 * @return Effect[]
-	 */
-	public static function getEffectsById(int $id) : array{
-		if(count(self::POTIONS[$id] ?? []) === 3){
-			return [Effect::getEffect(self::POTIONS[$id][0])->setDuration(self::POTIONS[$id][1])->setAmplifier(self::POTIONS[$id][2])];
-		}
-
-		return [];
-	}
-
-	/**
-	 * @param Entity $human
-	 */
-	public function onConsume(Entity $human){
-		$pk = new EntityEventPacket();
-		$pk->eid = $human->getId();
-		$pk->event = EntityEventPacket::USE_ITEM;
-		if($human instanceof Player){
-			$human->dataPacket($pk);
-		}
-		$server = $human->getLevel()->getServer();
-
-		$server->broadcastPacket($human->getViewers(), $pk);
-
-		$server->getPluginManager()->callEvent($ev = new EntityDrinkPotionEvent($human, $this));
-
-		if(!$ev->isCancelled()){
-			foreach($ev->getEffects() as $effect){
-				$human->addEffect($effect);
-			}
-			//Don't set the held item to glass bottle if we're in creative
-			if($human instanceof Player){
-				if($human->getGamemode() === 1){
-					return;
-				}
-			}
-			$human->getInventory()->setItemInHand(Item::get(self::GLASS_BOTTLE));
-		}
-
-
 	}
 
 }

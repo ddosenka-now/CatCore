@@ -37,15 +37,28 @@ class InteractPacket extends DataPacket {
 	public $eid;
 	public $target;
 
+	/**
+	 *
+	 */
 	public function decode(){
 		$this->action = $this->getByte();
 		$this->target = $this->getEntityId();
 	}
 
+	/**
+	 *
+	 */
 	public function encode(){
 		$this->reset();
 		$this->putByte($this->action);
 		$this->putEntityId($this->target);
+	}
+
+	/**
+	 * @return string Current packet name
+	 */
+	public function getName(){
+		return "InteractPacket";
 	}
 
 }

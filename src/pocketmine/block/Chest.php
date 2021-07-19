@@ -24,10 +24,11 @@ namespace pocketmine\block;
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Vector3;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\IntTag;
+use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 use pocketmine\tile\Chest as TileChest;
@@ -72,6 +73,21 @@ class Chest extends Transparent {
 	 */
 	public function getToolType(){
 		return Tool::TYPE_AXE;
+	}
+
+	/**
+	 * @return AxisAlignedBB
+	 */
+	protected function recalculateBoundingBox(){
+		//these are slightly bigger than in PC
+		return new AxisAlignedBB(
+			$this->x + 0.025,
+			$this->y,
+			$this->z + 0.025,
+			$this->x + 0.975,
+			$this->y + 0.95,
+			$this->z + 0.975
+		);
 	}
 
 	/**
@@ -144,21 +160,6 @@ class Chest extends Transparent {
 	}
 
 	/**
-	 * @param Item $item
-	 *
-	 * @return bool
-	 */
-	public function onBreak(Item $item){
-		$t = $this->getLevel()->getTile($this);
-		if($t instanceof TileChest){
-			$t->unpair();
-		}
-		$this->getLevel()->setBlock($this, new Air(), true, true);
-
-		return true;
-	}
-
-	/**
 	 * @param Item        $item
 	 * @param Player|null $player
 	 *
@@ -166,10 +167,6 @@ class Chest extends Transparent {
 	 */
 	public function onActivate(Item $item, Player $player = null){
 		if($player instanceof Player){
-			$top = $this->getSide(1);
-			if($top->isTransparent() !== true){
-				return true;
-			}
 
 			$t = $this->getLevel()->getTile($this);
 			$chest = null;
@@ -187,15 +184,18 @@ class Chest extends Transparent {
 				$chest = Tile::createTile("Chest", $this->getLevel(), $nbt);
 			}
 
-			if(isset($chest->namedtag->Lock) and $chest->namedtag->Lock instanceof StringTag){
-				if($chest->namedtag->Lock->getValue() !== $item->getCustomName()){
-					return true;
-				}
+			if(
+				!$this->getSide(Vector3::SIDE_UP)->isTransparent() or
+				(($pair = $chest->getPair()) !== null and !$pair->getBlock()->getSide(Vector3::SIDE_UP)->isTransparent()) or
+				(isset($chest->namedtag->Lock) and $chest->namedtag->Lock instanceof StringTag and $chest->namedtag->Lock->getValue() !== $item->getCustomName())
+			){
+				return true;
 			}
 
 			if($player->isCreative() and $player->getServer()->limitedCreative){
 				return true;
 			}
+			
 			$player->addWindow($chest->getInventory());
 		}
 
@@ -211,19 +211,5 @@ class Chest extends Transparent {
 		return [
 			[$this->id, 0, 1],
 		];
-	}
-
-	/**
-	 * @return AxisAlignedBB
-	 */
-	protected function recalculateBoundingBox(){
-		return new AxisAlignedBB(
-			$this->x + 0.0625,
-			$this->y,
-			$this->z + 0.0625,
-			$this->x + 0.9375,
-			$this->y + 0.9475,
-			$this->z + 0.9375
-		);
 	}
 }

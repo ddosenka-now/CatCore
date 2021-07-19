@@ -22,8 +22,8 @@
 namespace pocketmine\block;
 
 
-use pocketmine\item\Item;
 use pocketmine\item\enchantment\Enchantment;
+use pocketmine\item\Item;
 
 class GlassPane extends Thin {
 
@@ -31,8 +31,6 @@ class GlassPane extends Thin {
 
 	/**
 	 * GlassPane constructor.
-	 *
-	 * @param int $meta
 	 */
 	public function __construct($meta = 0){
 		$this->meta = $meta;

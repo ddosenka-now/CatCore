@@ -2,11 +2,11 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
+ *  ____            _        _   __  __ _                  __  __ ____
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
  * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
+ * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -21,16 +21,26 @@
 
 namespace pocketmine\block;
 
-use pocketmine\event\TranslationContainer;
 use pocketmine\item\Item;
 use pocketmine\level\Explosion;
 use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\nbt\tag\ByteTag;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\IntTag;
+use pocketmine\nbt\tag\StringTag;
+use pocketmine\tile\Bed as TileBed;
+use pocketmine\tile\Tile;
 use pocketmine\Player;
+use pocketmine\math\Vector3;
 use pocketmine\utils\TextFormat;
+use pocketmine\event\TranslationContainer;
 
 class Bed extends Transparent {
 
+	/**
+	 * @var int
+	 */
 	protected $id = self::BED_BLOCK;
 
 	/**
@@ -64,16 +74,30 @@ class Bed extends Transparent {
 	}
 
 	/**
+	 * @return AxisAlignedBB
+	 */
+	protected function recalculateBoundingBox(){
+		return new AxisAlignedBB(
+			$this->x,
+			$this->y,
+			$this->z,
+			$this->x + 1,
+			$this->y + 0.5625,
+			$this->z + 1
+		);
+	}
+
+	/**
 	 * @param Item        $item
 	 * @param Player|null $player
 	 *
 	 * @return bool
 	 */
 	public function onActivate(Item $item, Player $player = null){
-		if($this->getLevel()->getDimension() == Level::DIMENSION_NETHER){
+		$dimension = $this->getLevel()->getDimension();
+		if($dimension == Level::DIMENSION_NETHER or $dimension == Level::DIMENSION_END){
 			$explosion = new Explosion($this, 6, $this);
 			$explosion->explodeA();
-
 			return true;
 		}
 
@@ -82,8 +106,7 @@ class Bed extends Transparent {
 		$isNight = ($time >= Level::TIME_NIGHT and $time < Level::TIME_SUNRISE);
 
 		if($player instanceof Player and !$isNight){
-			$player->sendMessage(new TranslationContainer(TextFormat::GRAY . "%message.bed.sleep.night"));
-
+			$player->sendMessage(new TranslationContainer(TextFormat::GRAY . "%tile.bed.noSleep"));
 			return true;
 		}
 
@@ -104,7 +127,7 @@ class Bed extends Transparent {
 				$b = $blockWest;
 			}else{
 				if($player instanceof Player){
-					$player->sendMessage(TextFormat::GRAY . "This bed is incomplete");
+					$player->sendMessage(new TranslationContainer(TextFormat::GRAY . "%tile.bed.incomplete"));
 				}
 
 				return true;
@@ -131,7 +154,7 @@ class Bed extends Transparent {
 	 * @return bool
 	 */
 	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		$down = $this->getSide(0);
+		$down = $this->getSide(Vector3::SIDE_DOWN);
 		if($down->isTransparent() === false){
 			$faces = [
 				0 => 3,
@@ -141,11 +164,24 @@ class Bed extends Transparent {
 			];
 			$d = $player instanceof Player ? $player->getDirection() : 0;
 			$next = $this->getSide($faces[(($d + 3) % 4)]);
-			$downNext = $this->getSide(0);
+			$downNext = $next->getSide(Vector3::SIDE_DOWN);
 			if($next->canBeReplaced() === true and $downNext->isTransparent() === false){
 				$meta = (($d + 3) % 4) & 0x03;
 				$this->getLevel()->setBlock($block, Block::get($this->id, $meta), true, true);
 				$this->getLevel()->setBlock($next, Block::get($this->id, $meta | 0x08), true, true);
+
+				$nbt = new CompoundTag("", [
+					new StringTag("id", Tile::BED),
+					new ByteTag("color", $item->getDamage() & 0x0f),
+					new IntTag("x", $block->x),
+					new IntTag("y", $block->y),
+					new IntTag("z", $block->z),
+				]);
+				$nbt2 = clone $nbt;
+				$nbt2["x"] = $next->x;
+				$nbt2["z"] = $next->z;
+				Tile::createTile(Tile::BED, $this->getLevel(), $nbt);
+				Tile::createTile(Tile::BED, $this->getLevel(), $nbt2);
 
 				return true;
 			}
@@ -193,23 +229,23 @@ class Bed extends Transparent {
 	 * @return array
 	 */
 	public function getDrops(Item $item) : array{
-		return [
-			[Item::BED, 0, 1],
-		];
+		$tile = $this->getLevel()->getTile($this);
+		if($tile instanceof TileBed){
+			return [
+				[Item::BED, $tile->getColor(), 1]
+			];
+		}else{
+			return [
+				[Item::BED, 14, 1] //Red
+			];
+		}
 	}
 
 	/**
-	 * @return AxisAlignedBB
+	 * @return int
 	 */
-	protected function recalculateBoundingBox(){
-		return new AxisAlignedBB(
-			$this->x,
-			$this->y,
-			$this->z,
-			$this->x + 1,
-			$this->y + 0.5625,
-			$this->z + 1
-		);
+	public function getVariantBitmask() : int{
+		return 0x08;
 	}
 
 }

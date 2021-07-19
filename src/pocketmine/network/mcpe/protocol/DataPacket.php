@@ -42,6 +42,13 @@ abstract class DataPacket extends BinaryStream {
 	}
 
 	/**
+	 * Returns whether the packet may legally have unread bytes left in the buffer.
+	 */
+	public function mayHaveUnreadBytes() : bool{
+		return false;
+	}
+
+	/**
 	 * @return mixed
 	 */
 	abstract public function encode();
@@ -72,8 +79,8 @@ abstract class DataPacket extends BinaryStream {
 	 */
 	public function __debugInfo(){
 		$data = [];
-		foreach($this as $k => $v){
-			if($k === "buffer"){
+		foreach((array) $this as $k => $v){
+			if($k === "buffer" and is_string($v)){
 				$data[$k] = bin2hex($v);
 			}elseif(is_string($v) or (is_object($v) and method_exists($v, "__toString"))){
 				$data[$k] = Utils::printable((string) $v);
@@ -138,7 +145,7 @@ abstract class DataPacket extends BinaryStream {
 					$value = [];
 			}
 			if($types === true){
-				$data[$key] = [$value, $type];
+				$data[$key] = [$type, $value];
 			}else{
 				$data[$key] = $value;
 			}
@@ -192,7 +199,7 @@ abstract class DataPacket extends BinaryStream {
 	}
 
 	/**
-	 * @return PacketName|string
+	 * @return string Current packet name
 	 */
 	public function getName(){
 		return "DataPacket";

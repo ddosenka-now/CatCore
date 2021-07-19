@@ -23,8 +23,8 @@ namespace pocketmine\entity;
 
 use pocketmine\level\Level;
 use pocketmine\nbt\tag\ByteTag;
-use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\Player;
 
 class Bat extends FlyingAnimal {
@@ -39,6 +39,18 @@ class Bat extends FlyingAnimal {
 
 	public $flySpeed = 0.8;
 	public $switchDirectionTicks = 100;
+
+	/**
+	 * @return string
+	 */
+	public function getName() : string{
+		return "Bat";
+	}
+
+	public function initEntity(){
+		$this->setMaxHealth(6);
+		parent::initEntity();
+	}
 
 	/**
 	 * Bat constructor.
@@ -63,18 +75,6 @@ class Bat extends FlyingAnimal {
 	}
 
 	/**
-	 * @return string
-	 */
-	public function getName() : string{
-		return "Bat";
-	}
-
-	public function initEntity(){
-		$this->setMaxHealth(6);
-		parent::initEntity();
-	}
-
-	/**
 	 * @param bool $resting
 	 */
 	public function setResting(bool $resting){
@@ -90,7 +90,6 @@ class Bat extends FlyingAnimal {
 		if($this->age > 20 * 60 * 10){
 			$this->kill();
 		}
-
 		return parent::onUpdate($currentTick);
 	}
 

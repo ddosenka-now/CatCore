@@ -37,11 +37,4 @@ class BlockFormEvent extends BlockGrowEvent implements Cancellable {
 		parent::__construct($block, $newState);
 	}
 
-	/**
-	 * @return EventName|string
-	 */
-	public function getName(){
-		return "BlockFormEvent";
-	}
-
 }

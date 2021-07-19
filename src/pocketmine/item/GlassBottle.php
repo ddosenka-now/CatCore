@@ -22,9 +22,9 @@
 namespace pocketmine\item;
 
 use pocketmine\block\Block;
+use pocketmine\event\player\PlayerGlassBottleEvent;
 use pocketmine\level\Level;
 use pocketmine\Player;
-use pocketmine\event\player\PlayerGlassBottleEvent;
 
 class GlassBottle extends Item {
 	/**
@@ -67,7 +67,6 @@ class GlassBottle extends Item {
 			}else{
 				if($this->count <= 1){
 					$player->getInventory()->setItemInHand(Item::get(Item::POTION, 0, 1));
-
 					return true;
 				}else{
 					$this->count--;
@@ -80,11 +79,9 @@ class GlassBottle extends Item {
 					$position = clone $player->getPosition();
 					$player->getLevel()->dropItem($position->add(0, 0.5, 0), Item::get(Item::POTION, 0, 1), $motion, 40);
 				}
-
 				return true;
 			}
 		}
-
 		return false;
 	}
 }

@@ -30,23 +30,28 @@ class Random {
 	const Y = 362436069;
 	const Z = 521288629;
 	const W = 88675123;
-	protected $seed;
+
 	/**
 	 * @var int
 	 */
 	private $x;
+
 	/**
 	 * @var int
 	 */
 	private $y;
+
 	/**
 	 * @var int
 	 */
 	private $z;
+
 	/**
 	 * @var int
 	 */
 	private $w;
+
+	protected $seed;
 
 	/**
 	 * @param int $seed Integer to be used as seed.
@@ -57,10 +62,6 @@ class Random {
 		}
 
 		$this->setSeed($seed);
-	}
-
-	public function getSeed(){
-		return $this->seed;
 	}
 
 	/**
@@ -74,13 +75,8 @@ class Random {
 		$this->w = self::W ^ ($seed << 18) | (($seed >> 14) & 0x7fffffff) & 0xffffffff;
 	}
 
-	/**
-	 * Returns a float between 0.0 and 1.0 (inclusive)
-	 *
-	 * @return float
-	 */
-	public function nextFloat(){
-		return $this->nextInt() / 0x7fffffff;
+	public function getSeed(){
+		return $this->seed;
 	}
 
 	/**
@@ -107,6 +103,15 @@ class Random {
 				^ ($t ^ (($t >> 8) & 0x7fffffff))) & 0xffffffff;
 
 		return $this->w;
+	}
+
+	/**
+	 * Returns a float between 0.0 and 1.0 (inclusive)
+	 *
+	 * @return float
+	 */
+	public function nextFloat(){
+		return $this->nextInt() / 0x7fffffff;
 	}
 
 	/**

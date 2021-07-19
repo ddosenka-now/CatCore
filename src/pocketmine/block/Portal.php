@@ -23,8 +23,8 @@ namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
-use pocketmine\Player;
 use pocketmine\math\Vector3;
+use pocketmine\Player;
 
 class Portal extends Transparent {
 
@@ -35,8 +35,6 @@ class Portal extends Transparent {
 
 	/**
 	 * Portal constructor.
-	 *
-	 * @param int $meta
 	 */
 	public function __construct($meta = 0){
 		$this->meta = $meta;
@@ -89,6 +87,8 @@ class Portal extends Transparent {
 
 	/**
 	 * @param Item $item
+	 *
+	 * @return mixed|void
 	 */
 	public function onBreak(Item $item){
 		$block = $this;

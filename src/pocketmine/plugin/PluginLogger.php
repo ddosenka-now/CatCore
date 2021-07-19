@@ -32,14 +32,6 @@ class PluginLogger implements \AttachableLogger {
 	private $attachments = [];
 
 	/**
-	 * @param Plugin $context
-	 */
-	public function __construct(Plugin $context){
-		$prefix = $context->getDescription()->getPrefix();
-		$this->pluginName = $prefix != null ? "[$prefix] " : "[" . $context->getDescription()->getName() . "] ";
-	}
-
-	/**
 	 * @param \LoggerAttachment $attachment
 	 */
 	public function addAttachment(\LoggerAttachment $attachment){
@@ -65,21 +57,18 @@ class PluginLogger implements \AttachableLogger {
 	}
 
 	/**
+	 * @param Plugin $context
+	 */
+	public function __construct(Plugin $context){
+		$prefix = $context->getDescription()->getPrefix();
+		$this->pluginName = $prefix != null ? "[$prefix] " : "[" . $context->getDescription()->getName() . "] ";
+	}
+
+	/**
 	 * @param string $message
 	 */
 	public function emergency($message){
 		$this->log(LogLevel::EMERGENCY, $message);
-	}
-
-	/**
-	 * @param mixed  $level
-	 * @param string $message
-	 */
-	public function log($level, $message){
-		Server::getInstance()->getLogger()->log($level, $this->pluginName . $message);
-		foreach($this->attachments as $attachment){
-			$attachment->log($level, $message);
-		}
 	}
 
 	/**
@@ -137,5 +126,16 @@ class PluginLogger implements \AttachableLogger {
 	 */
 	public function logException(\Throwable $e, $trace = null){
 		Server::getInstance()->getLogger()->logException($e, $trace);
+	}
+
+	/**
+	 * @param mixed  $level
+	 * @param string $message
+	 */
+	public function log($level, $message){
+		Server::getInstance()->getLogger()->log($level, $this->pluginName . $message);
+		foreach($this->attachments as $attachment){
+			$attachment->log($level, $message);
+		}
 	}
 }

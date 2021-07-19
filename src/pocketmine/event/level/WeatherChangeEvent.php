@@ -26,7 +26,6 @@ use pocketmine\level\Level;
 use pocketmine\level\weather\Weather;
 
 class WeatherChangeEvent extends LevelEvent implements Cancellable {
-
 	public static $handlerList = null;
 
 	private $weather;
@@ -71,13 +70,6 @@ class WeatherChangeEvent extends LevelEvent implements Cancellable {
 	 */
 	public function setDuration(int $duration){
 		$this->duration = $duration;
-	}
-
-	/**
-	 * @return EventName|string
-	 */
-	public function getName(){
-		return "WeatherChangeEvent";
 	}
 
 }

@@ -27,6 +27,9 @@ class ServerKiller extends Thread {
 
 	public $time;
 
+	/** @var bool */
+	private $stopped = false;
+
 	/**
 	 * ServerKiller constructor.
 	 *
@@ -37,14 +40,24 @@ class ServerKiller extends Thread {
 	}
 
 	public function run(){
-		$start = time();
+		$start = time() + 1;
 		$this->synchronized(function(){
-			$this->wait($this->time * 1000000);
+			if(!$this->stopped){
+			    $this->wait($this->time * 1000000);
+		    }
 		});
 		if(time() - $start >= $this->time){
 			echo "\nTook too long to stop, server was killed forcefully!\n";
-			@\pocketmine\kill(getmypid());
+			@Utils::kill(getmypid());
 		}
+	}
+
+	public function quit() : void{
+		$this->synchronized(function() : void{
+			$this->stopped = true;
+			$this->notify();
+		});
+		parent::quit();
 	}
 
 	/**

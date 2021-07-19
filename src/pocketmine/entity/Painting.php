@@ -7,12 +7,12 @@
 
 namespace pocketmine\entity;
 
-use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\network\mcpe\protocol\AddPaintingPacket;
-use pocketmine\item\Item as ItemItem;
-use pocketmine\Player;
-use pocketmine\level\particle\DestroyBlockParticle;
 use pocketmine\block\Block;
+use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\item\Item as ItemItem;
+use pocketmine\level\particle\DestroyBlockParticle;
+use pocketmine\network\mcpe\protocol\AddPaintingPacket;
+use pocketmine\Player;
 
 class Painting extends Hanging {
 	const NETWORK_ID = 83;
@@ -39,6 +39,7 @@ class Painting extends Hanging {
 		if($source->isCancelled()) return false;
 		$this->level->addParticle(new DestroyBlockParticle($this->add(0.5), Block::get(Block::LADDER)));
 		$this->kill();
+		return true;
 	}
 
 	/**
@@ -57,14 +58,14 @@ class Painting extends Hanging {
 		parent::spawnTo($player);
 	}
 
+	protected function updateMovement(bool $teleport = false){
+		//Nothing to update, paintings cannot move.
+	}
+
 	/**
 	 * @return array
 	 */
 	public function getDrops(){
 		return [ItemItem::get(ItemItem::PAINTING, 0, 1)];
-	}
-
-	protected function updateMovement(){
-		//Nothing to update, paintings cannot move.
 	}
 }

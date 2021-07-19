@@ -24,13 +24,11 @@ namespace pocketmine\block;
 use pocketmine\inventory\EnchantInventory;
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
-
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
-use pocketmine\tile\EnchantTable;
 use pocketmine\tile\Tile;
 
 class EnchantingTable extends Transparent {
@@ -39,8 +37,6 @@ class EnchantingTable extends Transparent {
 
 	/**
 	 * EnchantingTable constructor.
-	 *
-	 * @param int $meta
 	 */
 	public function __construct($meta = 0){
 		$this->meta = $meta;
@@ -145,15 +141,14 @@ class EnchantingTable extends Transparent {
 	 * @return bool
 	 */
 	public function onActivate(Item $item, Player $player = null){
+		if(!$this->getLevel()->getServer()->enchantingTableEnabled){
+			return true;
+		}
 		if($player instanceof Player){
 			if($player->isCreative() and $player->getServer()->limitedCreative){
 				return true;
 			}
-			$tile = $this->getLevel()->getTile($this);
 			$enchantTable = null;
-			if($tile instanceof EnchantTable){
-				$enchantTable = $tile;
-			}else{
 				$this->getLevel()->setBlock($this, $this, true, true);
 				$nbt = new CompoundTag("", [
 					new StringTag("id", Tile::ENCHANT_TABLE),
@@ -172,12 +167,10 @@ class EnchantingTable extends Transparent {
 					}
 				}
 
-				/** @var EnchantTable $enchantTable */
-				$enchantTable = Tile::createTile(Tile::ENCHANT_TABLE, $this->getLevel(), $nbt);
+				Tile::createTile(Tile::ENCHANT_TABLE, $this->getLevel(), $nbt);
 			}
 			$player->addWindow(new EnchantInventory($this));
 			$player->craftingType = Player::CRAFTING_ENCHANT;
-		}
 
 
 		return true;

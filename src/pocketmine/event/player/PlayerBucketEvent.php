@@ -90,12 +90,4 @@ abstract class PlayerBucketEvent extends PlayerEvent implements Cancellable {
 	public function getBlockFace(){
 		return $this->blockFace;
 	}
-
-	/**
-	 * @return EventName|string
-	 */
-	public function getName(){
-		return "PlayerBucketEvent";
-	}
-
 }

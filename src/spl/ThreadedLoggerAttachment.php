@@ -2,7 +2,7 @@
 
 /*
  * PocketMine Standard PHP Library
- * Copyright (C) 2014-2016 PocketMine Team <https://github.com/PocketMine/PocketMine-SPL>
+ * Copyright (C) 2014-2017 PocketMine Team <https://github.com/PocketMine/PocketMine-SPL>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
 */
 
-abstract class ThreadedLoggerAttachment extends \Threaded implements \LoggerAttachment{
+abstract class ThreadedLoggerAttachment extends \Volatile implements \LoggerAttachment{
 
 	/** @var \ThreadedLoggerAttachment */
 	protected $attachment = null;
@@ -32,6 +32,7 @@ abstract class ThreadedLoggerAttachment extends \Threaded implements \LoggerAtta
 	}
 
 	/**
+	 * @deprecated
 	 * @param ThreadedLoggerAttachment $attachment
 	 */
 	public function addAttachment(\ThreadedLoggerAttachment $attachment){
@@ -43,6 +44,7 @@ abstract class ThreadedLoggerAttachment extends \Threaded implements \LoggerAtta
 	}
 
 	/**
+	 * @deprecated
 	 * @param ThreadedLoggerAttachment $attachment
 	 */
 	public function removeAttachment(\ThreadedLoggerAttachment $attachment){
@@ -56,6 +58,9 @@ abstract class ThreadedLoggerAttachment extends \Threaded implements \LoggerAtta
 		}
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public function removeAttachments(){
 		if($this->attachment instanceof \ThreadedLoggerAttachment){
 			$this->attachment->removeAttachments();
@@ -64,6 +69,7 @@ abstract class ThreadedLoggerAttachment extends \Threaded implements \LoggerAtta
 	}
 
 	/**
+	 * @deprecated
 	 * @return \ThreadedLoggerAttachment[]
 	 */
 	public function getAttachments(){

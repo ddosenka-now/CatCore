@@ -2,29 +2,32 @@
 
 /*
  *
- *    _______                                _
- *   |__   __|                              | |
- *      | | ___  ___ ___  ___ _ __ __ _  ___| |_
- *      | |/ _ \/ __/ __|/ _ \  __/ _` |/ __| __|
- *      | |  __/\__ \__ \  __/ | | (_| | (__| |_
- *      |_|\___||___/___/\___|_|  \__,_|\___|\__|
- *
+ *  _____            _               _____           
+ * / ____|          (_)             |  __ \          
+ *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
+ *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
+ *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
+ *                         __/ |                    
+ *                        |___/                     
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author Tessetact Team
- * @link http://www.github.com/TesseractTeam/Tesseract
- * 
+ * @author GenisysPro
+ * @link https://github.com/GenisysPro/GenisysPro
  *
- */
+ *
+*/
 
 namespace pocketmine\block;
 
-use pocketmine\Player;
 use pocketmine\item\Item;
+use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Vector3;
+use pocketmine\Player;
 
 class EndRod extends Flowable {
 
@@ -46,10 +49,47 @@ class EndRod extends Flowable {
 		return 14;
 	}
 
+	protected function recalculateBoundingBox(){
+		$m = $this->meta & ~0x01;
+		$width = 0.375;
+
+		switch($m){
+			case 0x00: //up/down
+				return new AxisAlignedBB(
+					$this->x + $width,
+					$this->y,
+					$this->z + $width,
+					$this->x + 1 - $width,
+					$this->y + 1,
+					$this->z + 1 - $width
+				);
+			case 0x02: //north/south
+				return new AxisAlignedBB(
+					$this->x,
+					$this->y + $width,
+					$this->z + $width,
+					$this->x + 1,
+					$this->y + 1 - $width,
+					$this->z + 1 - $width
+				);
+			case 0x04: //east/west
+				return new AxisAlignedBB(
+					$this->x + $width,
+					$this->y + $width,
+					$this->z,
+					$this->x + 1 - $width,
+					$this->y + 1 - $width,
+					$this->z + 1
+				);
+		}
+
+		return null;
+	}
+
 	/**
 	 * @return string
 	 */
-	public function getName() : string{
+	public function getName(){
 		return "End Rod";
 	}
 
@@ -90,7 +130,6 @@ class EndRod extends Flowable {
 		];
 		$this->meta = ($target->getId() === self::END_ROD && $faces[$face] == $target->getDamage()) ? Vector3::getOppositeSide($faces[$face]) : $faces[$face];
 		$this->getLevel()->setBlock($block, $this, true, true);
-
 		return true;
 	}
 

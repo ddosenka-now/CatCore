@@ -60,8 +60,33 @@ class WoodSlab extends Transparent {
 			6 => "",
 			7 => ""
 		];
-
 		return (($this->meta & 0x08) === 0x08 ? "Upper " : "") . $names[$this->meta & 0x07] . " Wooden Slab";
+	}
+
+	/**
+	 * @return AxisAlignedBB
+	 */
+	protected function recalculateBoundingBox(){
+
+		if(($this->meta & 0x08) > 0){
+			return new AxisAlignedBB(
+				$this->x,
+				$this->y + 0.5,
+				$this->z,
+				$this->x + 1,
+				$this->y + 1,
+				$this->z + 1
+			);
+		}else{
+			return new AxisAlignedBB(
+				$this->x,
+				$this->y,
+				$this->z,
+				$this->x + 1,
+				$this->y + 0.5,
+				$this->z + 1
+			);
+		}
 	}
 
 	/**
@@ -140,31 +165,5 @@ class WoodSlab extends Transparent {
 		return [
 			[$this->id, $this->meta & 0x07, 1],
 		];
-	}
-
-	/**
-	 * @return AxisAlignedBB
-	 */
-	protected function recalculateBoundingBox(){
-
-		if(($this->meta & 0x08) > 0){
-			return new AxisAlignedBB(
-				$this->x,
-				$this->y + 0.5,
-				$this->z,
-				$this->x + 1,
-				$this->y + 1,
-				$this->z + 1
-			);
-		}else{
-			return new AxisAlignedBB(
-				$this->x,
-				$this->y,
-				$this->z,
-				$this->x + 1,
-				$this->y + 0.5,
-				$this->z + 1
-			);
-		}
 	}
 }

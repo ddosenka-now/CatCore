@@ -31,7 +31,7 @@ class SeedCommand extends VanillaCommand {
 	/**
 	 * SeedCommand constructor.
 	 *
-	 * @param $name
+	 * @param string $name
 	 */
 	public function __construct($name){
 		parent::__construct(

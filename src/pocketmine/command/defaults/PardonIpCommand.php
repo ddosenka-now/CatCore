@@ -31,13 +31,13 @@ class PardonIpCommand extends VanillaCommand {
 	/**
 	 * PardonIpCommand constructor.
 	 *
-	 * @param string $name
+	 * @param $name
 	 */
 	public function __construct($name){
 		parent::__construct(
 			$name,
 			"%pocketmine.command.unban.ip.description",
-			"%pocketmine.command.unban.ip.usage"
+			"%commands.unbanip.usage"
 		);
 		$this->setPermission("pocketmine.command.unban.ip");
 	}

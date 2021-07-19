@@ -85,14 +85,23 @@ class Hopper extends Transparent {
 			if($t instanceof TileHopper){
 				if($t->hasLock() and !$t->checkLock($item->getCustomName())){
 					$player->getServer()->getLogger()->debug($player->getName() . " attempted to open a locked hopper");
+					return true;
+				}
 
+				if($player->isCreative() and $player->getServer()->limitedCreative){
 					return true;
 				}
 				$player->addWindow($t->getInventory());
 			}
 		}
-
 		return true;
+	}
+
+	/**
+	 *
+	 */
+	public function activate(){
+		//TODO: Hopper content freezing (requires basic redstone system upgrade)
 	}
 
 	/**
@@ -138,7 +147,7 @@ class Hopper extends Transparent {
 			}
 		}
 
-		$t = Tile::createTile(Tile::HOPPER, $this->getLevel(), $nbt);
+		Tile::createTile(Tile::HOPPER, $this->getLevel(), $nbt);
 
 		return true;
 	}

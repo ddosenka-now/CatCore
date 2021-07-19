@@ -88,12 +88,4 @@ class BlockPlaceEvent extends BlockEvent implements Cancellable {
 	public function getBlockAgainst(){
 		return $this->blockAgainst;
 	}
-
-	/**
-	 * @return EventName|string
-	 */
-	public function getName(){
-		return "BlockPlaceEvent";
-	}
-
 }

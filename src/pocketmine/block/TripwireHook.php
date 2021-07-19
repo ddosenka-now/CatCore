@@ -21,7 +21,7 @@
 
 namespace pocketmine\block;
 
-class TripwireHook extends Flowable {
+class TripwireHook extends Solid {
 
 	protected $id = self::TRIPWIRE_HOOK;
 

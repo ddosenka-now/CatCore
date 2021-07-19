@@ -26,20 +26,20 @@ use pocketmine\event\player\PlayerBucketFillEvent;
 use pocketmine\event\player\PlayerGlassBottleEvent;
 use pocketmine\item\Armor;
 use pocketmine\item\Item;
-use pocketmine\item\Tool;
 use pocketmine\item\Potion;
+use pocketmine\item\Tool;
 use pocketmine\level\sound\ExplodeSound;
 use pocketmine\level\sound\GraySplashSound;
 use pocketmine\level\sound\SpellSound;
 use pocketmine\level\sound\SplashSound;
+use pocketmine\nbt\tag\ByteTag;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\IntTag;
+use pocketmine\nbt\tag\ListTag;
+use pocketmine\nbt\tag\ShortTag;
+use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 use pocketmine\Server;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\ByteTag;
-use pocketmine\nbt\tag\ListTag;
-use pocketmine\nbt\tag\StringTag;
-use pocketmine\nbt\tag\ShortTag;
-use pocketmine\nbt\tag\IntTag;
 use pocketmine\tile\Cauldron as TileCauldron;
 use pocketmine\tile\Tile;
 use pocketmine\utils\Color;
@@ -114,9 +114,9 @@ class Cauldron extends Solid {
 			}
 		}
 
-		$tile = Tile::createTile("Cauldron", $this->getLevel(), $nbt);//
-		$this->getLevel()->setBlock($block, $this, true, true);
+		Tile::createTile("Cauldron", $this->getLevel(), $nbt);
 
+		$this->getLevel()->setBlock($block, $this, true, true);
 		return true;
 	}
 
@@ -127,7 +127,6 @@ class Cauldron extends Solid {
 	 */
 	public function onBreak(Item $item){
 		$this->getLevel()->setBlock($this, new Air(), true);
-
 		return true;
 	}
 
@@ -142,8 +141,26 @@ class Cauldron extends Solid {
 				[Item::CAULDRON, 0, 1]
 			];
 		}
-
 		return [];
+	}
+
+	public function update(){//umm... right update method...?
+		$this->getLevel()->setBlock($this, Block::get($this->id, $this->meta + 1), true);
+		$this->getLevel()->setBlock($this, $this, true);//Undo the damage value
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isEmpty(){
+		return $this->meta === 0x00;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isFull(){
+		return $this->meta === 0x06;
 	}
 
 	/**
@@ -321,27 +338,7 @@ class Cauldron extends Solid {
 				}
 				break;
 		}
-
 		return true;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isFull(){
-		return $this->meta === 0x06;
-	}
-
-	public function update(){//umm... right update method...?
-		$this->getLevel()->setBlock($this, Block::get($this->id, $this->meta + 1), true);
-		$this->getLevel()->setBlock($this, $this, true);//Undo the damage value
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isEmpty(){
-		return $this->meta === 0x00;
 	}
 
 	/**

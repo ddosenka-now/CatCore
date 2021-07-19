@@ -8,13 +8,22 @@
  * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
  * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
+ *  _____            _               _____           
+ * / ____|          (_)             |  __ \          
+ *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
+ *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
+ *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
+ *                         __/ |                    
+ *                        |___/                     
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author GenisysPro
+ * @link https://github.com/GenisysPro/GenisysPro
  *
  *
 */
@@ -34,15 +43,17 @@ use pocketmine\permission\Permissible;
 use pocketmine\permission\Permission;
 use pocketmine\Server;
 
-
 /**
  * Manages all the plugins, Permissions and Permissibles
  */
 class PluginManager {
 
-	/** @var TimingsHandler */
-	public static $pluginParentTimer;
-	public static $useTimings = false;
+	/** @var Server */
+	private $server;
+
+	/** @var SimpleCommandMap */
+	private $commandMap;
+
 	/**
 	 * @var Plugin[]
 	 */
@@ -82,10 +93,11 @@ class PluginManager {
 	 * @var PluginLoader[]
 	 */
 	protected $fileAssociations = [];
-	/** @var Server */
-	private $server;
-	/** @var SimpleCommandMap */
-	private $commandMap;
+
+	/** @var TimingsHandler */
+	public static $pluginParentTimer;
+
+	public static $useTimings = false;
 
 	/**
 	 * @param Server           $server
@@ -97,9 +109,22 @@ class PluginManager {
 	}
 
 	/**
+	 * @param string $name
+	 *
+	 * @return null|Plugin
+	 */
+	public function getPlugin($name){
+		if(isset($this->plugins[$name])){
+			return $this->plugins[$name];
+		}
+
+		return null;
+	}
+
+	/**
 	 * @param string $loaderName A PluginLoader class name
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	public function registerInterface($loaderName){
 		if(is_subclass_of($loaderName, PluginLoader::class)){
@@ -111,6 +136,42 @@ class PluginManager {
 		$this->fileAssociations[$loaderName] = $loader;
 
 		return true;
+	}
+
+	/**
+	 * @return Plugin[]
+	 */
+	public function getPlugins(){
+		return $this->plugins;
+	}
+
+	/**
+	 * @param string         $path
+	 * @param PluginLoader[] $loaders
+	 *
+	 * @return Plugin
+	 */
+	public function loadPlugin($path, $loaders = null){
+		foreach(($loaders === null ? $this->fileAssociations : $loaders) as $loader){
+			if(preg_match($loader->getPluginFilters(), basename($path)) > 0){
+				$description = $loader->getPluginDescription($path);
+				if($description instanceof PluginDescription){
+					if(($plugin = $loader->loadPlugin($path)) instanceof Plugin){
+						$this->plugins[$plugin->getDescription()->getName()] = $plugin;
+
+						$pluginCommands = $this->parseYamlCommands($plugin);
+
+						if(count($pluginCommands) > 0){
+							$this->commandMap->registerAll($plugin->getDescription()->getName(), $pluginCommands);
+						}
+
+						return $plugin;
+					}
+				}
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -161,16 +222,44 @@ class PluginManager {
 							$compatible = false;
 							//Check multiple dependencies
 							foreach($description->getCompatibleApis() as $version){
+								//Format: majorVersion.minorVersion.patch (3.0.0)
+								//    or: majorVersion.minorVersion.patch-devBuild (3.0.0-alpha1)
+								if($version !== $this->server->getApiVersion()){
+									$pluginApi = array_pad(explode("-", $version), 2, ""); //0 = version, 1 = suffix (optional)
+									$serverApi = array_pad(explode("-", $this->server->getApiVersion()), 2, "");
+
+									if(strtoupper($pluginApi[1]) !== strtoupper($serverApi[1])){ //Different release phase (alpha vs. beta) or phase build (alpha.1 vs alpha.2)
+										continue;
+									}
+
+									$pluginNumbers = array_map("intval", explode(".", $pluginApi[0]));
+									$serverNumbers = array_map("intval", explode(".", $serverApi[0]));
+
+									if($pluginNumbers[0] !== $serverNumbers[0]){ //Completely different API version
+										continue;
+									}
+
+									if($pluginNumbers[1] > $serverNumbers[1]){ //If the plugin requires new API features, being backwards compatible
+										continue;
+									}
+								}
+
+								$compatible = true;
+								break;
+							}
+
+							$compatiblegeniapi = false;
+							foreach($description->getCompatibleGeniApis() as $version){
 								//Format: majorVersion.minorVersion.patch
 								$version = array_map("intval", explode(".", $version));
-								$apiVersion = array_map("intval", explode(".", $this->server->getApiVersion()));
+								$apiVersion = array_map("intval", explode(".", $this->server->getGeniApiVersion()));
 								//Completely different API version
 								if($version[0] > $apiVersion[0]){
 									continue;
 								}
 								//If the plugin uses new API
 								if($version[0] < $apiVersion[0]){
-									$compatible = true;
+									$compatiblegeniapi = true;
 									break;
 								}
 								//If the plugin requires new API features, being backwards compatible
@@ -178,13 +267,25 @@ class PluginManager {
 									continue;
 								}
 
-								$compatible = true;
+								if($version[1] == $apiVersion[1] and $version[2] > $apiVersion[2]){
+									continue;
+								}
+
+								$compatiblegeniapi = true;
 								break;
 							}
 
-
 							if($compatible === false){
-								$this->server->getLogger()->error($this->server->getLanguage()->translateString("pocketmine.plugin.loadError", [$name, "%pocketmine.plugin.incompatibleAPI"]));
+								if($this->server->loadIncompatibleAPI === true){
+									$this->server->getLogger()->debug("插件{$name}的API与服务器不符,但GenisysPro仍然加载了它");
+								}else{
+									$this->server->getLogger()->error($this->server->getLanguage()->translateString("pocketmine.plugin.loadError", [$name, "%pocketmine.plugin.incompatibleAPI"]));
+									continue;
+								}
+							}
+
+							if($compatiblegeniapi === false){
+								$this->server->getLogger()->error("Could not load plugin '{$description->getName()}': Incompatible GeniAPI version");
 								continue;
 							}
 
@@ -287,43 +388,246 @@ class PluginManager {
 	/**
 	 * @param string $name
 	 *
-	 * @return null|Plugin
+	 * @return null|Permission
 	 */
-	public function getPlugin($name){
-		if(isset($this->plugins[$name])){
-			return $this->plugins[$name];
+	public function getPermission($name){
+		if(isset($this->permissions[$name])){
+			return $this->permissions[$name];
 		}
 
 		return null;
 	}
 
 	/**
-	 * @param string         $path
-	 * @param PluginLoader[] $loaders
+	 * @param Permission $permission
 	 *
-	 * @return Plugin
+	 * @return bool
 	 */
-	public function loadPlugin($path, $loaders = null){
-		foreach(($loaders === null ? $this->fileAssociations : $loaders) as $loader){
-			if(preg_match($loader->getPluginFilters(), basename($path)) > 0){
-				$description = $loader->getPluginDescription($path);
-				if($description instanceof PluginDescription){
-					if(($plugin = $loader->loadPlugin($path)) instanceof Plugin){
-						$this->plugins[$plugin->getDescription()->getName()] = $plugin;
+	public function addPermission(Permission $permission){
+		if(!isset($this->permissions[$permission->getName()])){
+			$this->permissions[$permission->getName()] = $permission;
+			$this->calculatePermissionDefault($permission);
 
-						$pluginCommands = $this->parseYamlCommands($plugin);
+			return true;
+		}
 
-						if(count($pluginCommands) > 0){
-							$this->commandMap->registerAll($plugin->getDescription()->getName(), $pluginCommands);
-						}
+		return false;
+	}
 
-						return $plugin;
-					}
+	/**
+	 * @param string|Permission $permission
+	 */
+	public function removePermission($permission){
+		if($permission instanceof Permission){
+			unset($this->permissions[$permission->getName()]);
+		}else{
+			unset($this->permissions[$permission]);
+		}
+	}
+
+	/**
+	 * @param bool $op
+	 *
+	 * @return Permission[]
+	 */
+	public function getDefaultPermissions($op){
+		if($op === true){
+			return $this->defaultPermsOp;
+		}else{
+			return $this->defaultPerms;
+		}
+	}
+
+	/**
+	 * @param Permission $permission
+	 */
+	public function recalculatePermissionDefaults(Permission $permission){
+		if(isset($this->permissions[$permission->getName()])){
+			unset($this->defaultPermsOp[$permission->getName()]);
+			unset($this->defaultPerms[$permission->getName()]);
+			$this->calculatePermissionDefault($permission);
+		}
+	}
+
+	/**
+	 * @param Permission $permission
+	 */
+	private function calculatePermissionDefault(Permission $permission){
+		Timings::$permissionDefaultTimer->startTiming();
+		if($permission->getDefault() === Permission::DEFAULT_OP or $permission->getDefault() === Permission::DEFAULT_TRUE){
+			$this->defaultPermsOp[$permission->getName()] = $permission;
+			$this->dirtyPermissibles(true);
+		}
+
+		if($permission->getDefault() === Permission::DEFAULT_NOT_OP or $permission->getDefault() === Permission::DEFAULT_TRUE){
+			$this->defaultPerms[$permission->getName()] = $permission;
+			$this->dirtyPermissibles(false);
+		}
+		Timings::$permissionDefaultTimer->stopTiming();
+	}
+
+	/**
+	 * @param bool $op
+	 */
+	private function dirtyPermissibles($op){
+		foreach($this->getDefaultPermSubscriptions($op) as $p){
+			$p->recalculatePermissions();
+		}
+	}
+
+	/**
+	 * @param string      $permission
+	 * @param Permissible $permissible
+	 */
+	public function subscribeToPermission($permission, Permissible $permissible){
+		if(!isset($this->permSubs[$permission])){
+			$this->permSubs[$permission] = [];
+		}
+		$this->permSubs[$permission][spl_object_hash($permissible)] = $permissible;
+	}
+
+	/**
+	 * @param string      $permission
+	 * @param Permissible $permissible
+	 */
+	public function unsubscribeFromPermission($permission, Permissible $permissible){
+		if(isset($this->permSubs[$permission])){
+			unset($this->permSubs[$permission][spl_object_hash($permissible)]);
+			if(count($this->permSubs[$permission]) === 0){
+				unset($this->permSubs[$permission]);
+			}
+		}
+	}
+
+	/**
+	 * @param Permissible $permissible
+	 */
+	public function unsubscribeFromAllPermissions(Permissible $permissible) : void{
+		foreach($this->permSubs as $permission => &$subs){
+			unset($subs[spl_object_hash($permissible)]);
+			if(empty($subs)){
+				unset($this->permSubs[$permission]);
+			}
+		}
+	}
+
+	/**
+	 * @param string $permission
+	 *
+	 * @return Permissible[]
+	 */
+	public function getPermissionSubscriptions($permission){
+		if(isset($this->permSubs[$permission])){
+			return $this->permSubs[$permission];
+			$subs = [];
+			foreach($this->permSubs[$permission] as $k => $perm){
+				/** @var \WeakRef $perm */
+				if($perm->acquire()){
+					$subs[] = $perm->get();
+					$perm->release();
+				}else{
+					unset($this->permSubs[$permission][$k]);
+				}
+			}
+
+			return $subs;
+		}
+
+		return [];
+	}
+
+	/**
+	 * @param bool        $op
+	 * @param Permissible $permissible
+	 */
+	public function subscribeToDefaultPerms($op, Permissible $permissible){
+		if($op === true){
+			$this->defSubsOp[spl_object_hash($permissible)] = $permissible;
+		}else{
+			$this->defSubs[spl_object_hash($permissible)] = $permissible;
+		}
+	}
+
+	/**
+	 * @param bool        $op
+	 * @param Permissible $permissible
+	 */
+	public function unsubscribeFromDefaultPerms($op, Permissible $permissible){
+		if($op === true){
+			unset($this->defSubsOp[spl_object_hash($permissible)]);
+		}else{
+			unset($this->defSubs[spl_object_hash($permissible)]);
+		}
+	}
+
+	/**
+	 * @param bool $op
+	 *
+	 * @return Permissible[]
+	 */
+	public function getDefaultPermSubscriptions($op){
+		if($op === true){
+			return $this->defSubsOp;
+			foreach($this->defSubsOp as $k => $perm){
+				/** @var \WeakRef $perm */
+				if($perm->acquire()){
+					$subs[] = $perm->get();
+					$perm->release();
+				}else{
+					unset($this->defSubsOp[$k]);
+				}
+			}
+		}else{
+			return $this->defSubs;
+			foreach($this->defSubs as $k => $perm){
+				/** @var \WeakRef $perm */
+				if($perm->acquire()){
+					$subs[] = $perm->get();
+					$perm->release();
+				}else{
+					unset($this->defSubs[$k]);
 				}
 			}
 		}
 
-		return null;
+		return $subs;
+	}
+
+	/**
+	 * @return Permission[]
+	 */
+	public function getPermissions(){
+		return $this->permissions;
+	}
+
+	/**
+	 * @param Plugin $plugin
+	 *
+	 * @return bool
+	 */
+	public function isPluginEnabled(Plugin $plugin){
+		if($plugin instanceof Plugin and isset($this->plugins[$plugin->getDescription()->getName()])){
+			return $plugin->isEnabled();
+		}else{
+			return false;
+		}
+	}
+
+	/**
+	 * @param Plugin $plugin
+	 */
+	public function enablePlugin(Plugin $plugin){
+		if(!$plugin->isEnabled()){
+			try{
+				foreach($plugin->getDescription()->getPermissions() as $perm){
+					$this->addPermission($perm);
+				}
+				$plugin->getPluginLoader()->enablePlugin($plugin);
+			}catch(\Throwable $e){
+				$this->server->getLogger()->logException($e);
+				$this->disablePlugin($plugin);
+			}
+		}
 	}
 
 	/**
@@ -377,228 +681,10 @@ class PluginManager {
 		return $pluginCmds;
 	}
 
-	/**
-	 * @param string $name
-	 *
-	 * @return null|Permission
-	 */
-	public function getPermission($name){
-		if(isset($this->permissions[$name])){
-			return $this->permissions[$name];
+	public function disablePlugins(){
+		foreach($this->getPlugins() as $plugin){
+			$this->disablePlugin($plugin);
 		}
-
-		return null;
-	}
-
-	/**
-	 * @param boolean $op
-	 *
-	 * @return Permission[]
-	 */
-	public function getDefaultPermissions($op){
-		if($op === true){
-			return $this->defaultPermsOp;
-		}else{
-			return $this->defaultPerms;
-		}
-	}
-
-	/**
-	 * @param Permission $permission
-	 */
-	public function recalculatePermissionDefaults(Permission $permission){
-		if(isset($this->permissions[$permission->getName()])){
-			unset($this->defaultPermsOp[$permission->getName()]);
-			unset($this->defaultPerms[$permission->getName()]);
-			$this->calculatePermissionDefault($permission);
-		}
-	}
-
-	/**
-	 * @param Permission $permission
-	 */
-	private function calculatePermissionDefault(Permission $permission){
-		Timings::$permissionDefaultTimer->startTiming();
-		if($permission->getDefault() === Permission::DEFAULT_OP or $permission->getDefault() === Permission::DEFAULT_TRUE){
-			$this->defaultPermsOp[$permission->getName()] = $permission;
-			$this->dirtyPermissibles(true);
-		}
-
-		if($permission->getDefault() === Permission::DEFAULT_NOT_OP or $permission->getDefault() === Permission::DEFAULT_TRUE){
-			$this->defaultPerms[$permission->getName()] = $permission;
-			$this->dirtyPermissibles(false);
-		}
-		Timings::$permissionDefaultTimer->stopTiming();
-	}
-
-	/**
-	 * @param boolean $op
-	 */
-	private function dirtyPermissibles($op){
-		foreach($this->getDefaultPermSubscriptions($op) as $p){
-			$p->recalculatePermissions();
-		}
-	}
-
-	/**
-	 * @param boolean $op
-	 *
-	 * @return Permissible[]
-	 */
-	public function getDefaultPermSubscriptions($op){
-		$subs = [];
-
-		if($op === true){
-			return $this->defSubsOp;
-			foreach($this->defSubsOp as $k => $perm){
-				/** @var \WeakRef $perm */
-				if($perm->acquire()){
-					$subs[] = $perm->get();
-					$perm->release();
-				}else{
-					unset($this->defSubsOp[$k]);
-				}
-			}
-		}else{
-			return $this->defSubs;
-			foreach($this->defSubs as $k => $perm){
-				/** @var \WeakRef $perm */
-				if($perm->acquire()){
-					$subs[] = $perm->get();
-					$perm->release();
-				}else{
-					unset($this->defSubs[$k]);
-				}
-			}
-		}
-
-		return $subs;
-	}
-
-	/**
-	 * @param string      $permission
-	 * @param Permissible $permissible
-	 */
-	public function subscribeToPermission($permission, Permissible $permissible){
-		if(!isset($this->permSubs[$permission])){
-			$this->permSubs[$permission] = [];
-		}
-		$this->permSubs[$permission][spl_object_hash($permissible)] = $permissible;
-	}
-
-	/**
-	 * @param string      $permission
-	 * @param Permissible $permissible
-	 */
-	public function unsubscribeFromPermission($permission, Permissible $permissible){
-		if(isset($this->permSubs[$permission])){
-			unset($this->permSubs[$permission][spl_object_hash($permissible)]);
-			if(count($this->permSubs[$permission]) === 0){
-				unset($this->permSubs[$permission]);
-			}
-		}
-	}
-
-	/**
-	 * @param string $permission
-	 *
-	 * @return Permissible[]
-	 */
-	public function getPermissionSubscriptions($permission){
-		if(isset($this->permSubs[$permission])){
-			return $this->permSubs[$permission];
-			$subs = [];
-			foreach($this->permSubs[$permission] as $k => $perm){
-				/** @var \WeakRef $perm */
-				if($perm->acquire()){
-					$subs[] = $perm->get();
-					$perm->release();
-				}else{
-					unset($this->permSubs[$permission][$k]);
-				}
-			}
-
-			return $subs;
-		}
-
-		return [];
-	}
-
-	/**
-	 * @param boolean     $op
-	 * @param Permissible $permissible
-	 */
-	public function subscribeToDefaultPerms($op, Permissible $permissible){
-		if($op === true){
-			$this->defSubsOp[spl_object_hash($permissible)] = $permissible;
-		}else{
-			$this->defSubs[spl_object_hash($permissible)] = $permissible;
-		}
-	}
-
-	/**
-	 * @param boolean     $op
-	 * @param Permissible $permissible
-	 */
-	public function unsubscribeFromDefaultPerms($op, Permissible $permissible){
-		if($op === true){
-			unset($this->defSubsOp[spl_object_hash($permissible)]);
-		}else{
-			unset($this->defSubs[spl_object_hash($permissible)]);
-		}
-	}
-
-	/**
-	 * @return Permission[]
-	 */
-	public function getPermissions(){
-		return $this->permissions;
-	}
-
-	/**
-	 * @param Plugin $plugin
-	 *
-	 * @return bool
-	 */
-	public function isPluginEnabled(Plugin $plugin){
-		if($plugin instanceof Plugin and isset($this->plugins[$plugin->getDescription()->getName()])){
-			return $plugin->isEnabled();
-		}else{
-			return false;
-		}
-	}
-
-	/**
-	 * @param Plugin $plugin
-	 */
-	public function enablePlugin(Plugin $plugin){
-		if(!$plugin->isEnabled()){
-			try{
-				foreach($plugin->getDescription()->getPermissions() as $perm){
-					$this->addPermission($perm);
-				}
-				$plugin->getPluginLoader()->enablePlugin($plugin);
-			}catch(\Throwable $e){
-				$this->server->getLogger()->logException($e);
-				$this->disablePlugin($plugin);
-			}
-		}
-	}
-
-	/**
-	 * @param Permission $permission
-	 *
-	 * @return bool
-	 */
-	public function addPermission(Permission $permission){
-		if(!isset($this->permissions[$permission->getName()])){
-			$this->permissions[$permission->getName()] = $permission;
-			$this->calculatePermissionDefault($permission);
-
-			return true;
-		}
-
-		return false;
 	}
 
 	/**
@@ -620,17 +706,6 @@ class PluginManager {
 		}
 	}
 
-	/**
-	 * @param string|Permission $permission
-	 */
-	public function removePermission($permission){
-		if($permission instanceof Permission){
-			unset($this->permissions[$permission->getName()]);
-		}else{
-			unset($this->permissions[$permission]);
-		}
-	}
-
 	public function clearPlugins(){
 		$this->disablePlugins();
 		$this->plugins = [];
@@ -638,19 +713,6 @@ class PluginManager {
 		$this->permissions = [];
 		$this->defaultPerms = [];
 		$this->defaultPermsOp = [];
-	}
-
-	public function disablePlugins(){
-		foreach($this->getPlugins() as $plugin){
-			$this->disablePlugin($plugin);
-		}
-	}
-
-	/**
-	 * @return Plugin[]
-	 */
-	public function getPlugins(){
-		return $this->plugins;
 	}
 
 	/**

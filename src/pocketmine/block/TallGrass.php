@@ -59,7 +59,6 @@ class TallGrass extends Flowable {
 			2 => "Fern",
 			3 => ""
 		];
-
 		return $names[$this->meta & 0x03];
 	}
 
@@ -90,8 +89,8 @@ class TallGrass extends Flowable {
 	 * @return bool
 	 */
 	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		$down = $this->getSide(0);
-		if($down->getId() === self::GRASS){
+		$down = $this->getSide(0)->getId();
+		if($down === self::GRASS or $down === self::DIRT){
 			$this->getLevel()->setBlock($block, $this, true);
 
 			return true;
@@ -109,7 +108,7 @@ class TallGrass extends Flowable {
 	public function onUpdate($type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			if($this->getSide(0)->isTransparent() === true){ //Replace with common break method
-				$this->getLevel()->setBlock($this, new Air(), true, true);
+				$this->getLevel()->setBlock($this, new Air(), false, false);
 
 				return Level::BLOCK_UPDATE_NORMAL;
 			}

@@ -41,6 +41,13 @@ class FurnaceInventory extends ContainerInventory {
 	}
 
 	/**
+	 * @return Furnace
+	 */
+	public function getHolder(){
+		return $this->holder;
+	}
+
+	/**
 	 * @return Item
 	 */
 	public function getResult(){
@@ -97,12 +104,5 @@ class FurnaceInventory extends ContainerInventory {
 		parent::onSlotChange($index, $before, $send);
 
 		$this->getHolder()->scheduleUpdate();
-	}
-
-	/**
-	 * @return InventoryHolder|Furnace
-	 */
-	public function getHolder(){
-		return $this->holder;
 	}
 }

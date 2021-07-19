@@ -28,6 +28,7 @@ use pocketmine\network\mcpe\protocol\MobEffectPacket;
 use pocketmine\Player;
 
 class Effect {
+
 	const SPEED = 1;
 	const SLOWNESS = 2;
 	const HASTE = 3;
@@ -37,11 +38,11 @@ class Effect {
 	const STRENGTH = 5;
 	const HEALING = 6;
 	const HARMING = 7;
-	const JUMP = 8;
+	const JUMP_BOOST = 8, JUMP = 8;
 	const NAUSEA = 9;
 	const CONFUSION = 9;
 	const REGENERATION = 10;
-	const DAMAGE_RESISTANCE = 11;
+	const RESISTANCE = 11, DAMAGE_RESISTANCE = 11;
 	const FIRE_RESISTANCE = 12;
 	const WATER_BREATHING = 13;
 	const INVISIBILITY = 14;
@@ -54,37 +55,10 @@ class Effect {
 	const HEALTH_BOOST = 21;
 	const ABSORPTION = 22;
 	const SATURATION = 23;
-
-	const MAX_DURATION = 2147483648;
+    const LEVITATION = 24;
 
 	/** @var Effect[] */
 	protected static $effects;
-	/** @var int */
-	protected $id;
-	protected $name;
-	protected $duration;
-	protected $amplifier = 0;
-	protected $color;
-	protected $show = true;
-	protected $ambient = false;
-	protected $bad;
-
-	/**
-	 * Effect constructor.
-	 *
-	 * @param      $id
-	 * @param      $name
-	 * @param      $r
-	 * @param      $g
-	 * @param      $b
-	 * @param bool $isBad
-	 */
-	public function __construct($id, $name, $r, $g, $b, $isBad = false){
-		$this->id = $id;
-		$this->name = $name;
-		$this->bad = (bool) $isBad;
-		$this->setColor($r, $g, $b);
-	}
 
 	public static function init(){
 		self::$effects = new \SplFixedArray(256);
@@ -115,19 +89,8 @@ class Effect {
 
 		self::$effects[Effect::ABSORPTION] = new Effect(Effect::ABSORPTION, "%potion.absorption", 36, 107, 251);
 		self::$effects[Effect::SATURATION] = new Effect(Effect::SATURATION, "%potion.saturation", 255, 0, 255);
-	}
 
-	/**
-	 * @param $name
-	 *
-	 * @return null|Effect
-	 */
-	public static function getEffectByName($name){
-		if(defined(Effect::class . "::" . strtoupper($name))){
-			return self::getEffect(constant(Effect::class . "::" . strtoupper($name)));
-		}
-
-		return null;
+        self::$effects[Effect::LEVITATION] = new Effect(Effect::LEVITATION, "%potion.levitation", 206, 255, 255);
 	}
 
 	/**
@@ -139,8 +102,53 @@ class Effect {
 		if(isset(self::$effects[$id])){
 			return clone self::$effects[(int) $id];
 		}
-
 		return null;
+	}
+
+	/**
+	 * @param $name
+	 *
+	 * @return null|Effect
+	 */
+	public static function getEffectByName($name){
+		if(defined(Effect::class . "::" . strtoupper($name))){
+			return self::getEffect(constant(Effect::class . "::" . strtoupper($name)));
+		}
+		return null;
+	}
+
+	/** @var int */
+	protected $id;
+
+	protected $name;
+
+	protected $duration;
+
+	protected $amplifier = 0;
+
+	protected $color;
+
+	protected $show = true;
+
+	protected $ambient = false;
+
+	protected $bad;
+
+	/**
+	 * Effect constructor.
+	 *
+	 * @param      $id
+	 * @param      $name
+	 * @param      $r
+	 * @param      $g
+	 * @param      $b
+	 * @param bool $isBad
+	 */
+	public function __construct($id, $name, $r, $g, $b, $isBad = false){
+		$this->id = $id;
+		$this->name = $name;
+		$this->bad = (bool) $isBad;
+		$this->setColor($r, $g, $b);
 	}
 
 	/**
@@ -151,13 +159,78 @@ class Effect {
 	}
 
 	/**
+	 * @return int
+	 */
+	public function getId(){
+		return $this->id;
+	}
+
+	/**
+	 * Sets the number of ticks remaining until the effect expires.
+	 *
+	 * @throws \InvalidArgumentException
+	 *
+	 * @return $this
+	 */
+	public function setDuration(int $ticks){
+		if($ticks < 0 or $ticks > INT32_MAX){
+			throw new \InvalidArgumentException("Effect duration must be in range 0 - " . INT32_MAX . ", got $ticks");
+		}
+		$this->duration = $ticks;
+		return $this;
+	}
+
+	public function getDuration(){
+		return $this->duration;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isVisible(){
+		return $this->show;
+	}
+
+	/**
 	 * @param $bool
 	 *
 	 * @return $this
 	 */
 	public function setVisible($bool){
 		$this->show = (bool) $bool;
+		return $this;
+	}
 
+	/**
+	 * Returns the level of this effect, which is always one higher than the amplifier.
+	 *
+	 * @return int
+	 */
+	public function getEffectLevel() : int{
+		return $this->amplifier + 1;
+	}
+
+	/**
+	 * Returns whether the duration has run out.
+	 */
+	public function hasExpired() : bool{
+		return $this->duration <= 0;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getAmplifier(){
+		return $this->amplifier;
+	}
+
+	/**
+	 * @param int $amplifier
+	 *
+	 * @return $this
+	 */
+	public function setAmplifier(int $amplifier){
+		$this->amplifier = ($amplifier & 0xff);
 		return $this;
 	}
 
@@ -175,7 +248,6 @@ class Effect {
 	 */
 	public function setAmbient($ambient = true){
 		$this->ambient = (bool) $ambient;
-
 		return $this;
 	}
 
@@ -196,40 +268,29 @@ class Effect {
 				if(($interval = (25 >> $this->amplifier)) > 0){
 					return ($this->duration % $interval) === 0;
 				}
-
 				return true;
 			case Effect::WITHER:
 				if(($interval = (50 >> $this->amplifier)) > 0){
 					return ($this->duration % $interval) === 0;
 				}
-
 				return true;
 			case Effect::REGENERATION:
 				if(($interval = (40 >> $this->amplifier)) > 0){
 					return ($this->duration % $interval) === 0;
 				}
-
 				return true;
 			case Effect::HUNGER:
-				if($this->amplifier < 0){ // prevents hacking with amplifier -1
-					return false;
-				}
-				if(($interval = 20) > 0){
-					return ($this->duration % $interval) === 0;
-				}
-
 				return true;
 			case Effect::HEALING:
 			case Effect::HARMING:
 				return true;
 			case Effect::SATURATION:
+			    //If forced to last longer than 1 tick, these apply every tick.
 				if(($interval = (20 >> $this->amplifier)) > 0){
 					return ($this->duration % $interval) === 0;
 				}
-
 				return true;
 		}
-
 		return false;
 	}
 
@@ -258,11 +319,11 @@ class Effect {
 				break;
 			case Effect::HUNGER:
 				if($entity instanceof Human){
-					$entity->exhaust(0.5 * $this->amplifier, PlayerExhaustEvent::CAUSE_POTION);
+					$entity->exhaust(0.025 * $this->getEffectLevel(), PlayerExhaustEvent::CAUSE_POTION);
 				}
 				break;
 			case Effect::HEALING:
-				$level = $this->amplifier + 1;
+				$level = $this->getEffectLevel();
 				if(($entity->getHealth() + 4 * $level) <= $entity->getMaxHealth()){
 					$ev = new EntityRegainHealthEvent($entity, 4 * $level, EntityRegainHealthEvent::CAUSE_MAGIC);
 					$entity->heal($ev->getAmount(), $ev);
@@ -272,7 +333,7 @@ class Effect {
 				}
 				break;
 			case Effect::HARMING:
-				$level = $this->amplifier + 1;
+				$level = $this->getEffectLevel();
 				if(($entity->getHealth() - 6 * $level) >= 0){
 					$ev = new EntityDamageEvent($entity, EntityDamageEvent::CAUSE_MAGIC, 6 * $level);
 					$entity->attack($ev->getFinalDamage(), $ev);
@@ -331,21 +392,21 @@ class Effect {
 			if($this->id === Effect::SPEED){
 				$attr = $entity->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED);
 				if($modify and $oldEffect !== null){
-					$speed = $attr->getValue() / (1 + 0.2 * ($oldEffect->getAmplifier() + 1));
+					$speed = $attr->getValue() / (1 + 0.2 * ($oldEffect->getEffectLevel()));
 				}else{
 					$speed = $attr->getValue();
 				}
-				$speed *= (1 + 0.2 * ($this->amplifier + 1));
+				$speed *= (1 + 0.2 * ($this->getEffectLevel()));
 				$attr->setValue($speed);
 			}elseif($this->id === Effect::SLOWNESS){
 				$attr = $entity->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED);
 				if($modify and $oldEffect !== null){
-					$speed = $attr->getValue() / (1 - 0.15 * ($oldEffect->getAmplifier() + 1));
+					$speed = $attr->getValue() / (1 - 0.15 * ($oldEffect->getEffectLevel()));
 				}else{
 					$speed = $attr->getValue();
 				}
-				$speed *= (1 - (0.15 * $this->amplifier + 1));
-				$attr->setValue($speed);
+				$speed *= (1 - (0.15 * $this->getEffectLevel()));
+				$attr->setValue($speed, true);
 			}
 		}
 
@@ -353,53 +414,6 @@ class Effect {
 			$entity->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_INVISIBLE, true);
 			$entity->setNameTagVisible(false);
 		}
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getId(){
-		return $this->id;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getAmplifier(){
-		return $this->amplifier;
-	}
-
-	/**
-	 * @param int $amplifier
-	 *
-	 * @return $this
-	 */
-	public function setAmplifier(int $amplifier){
-		$this->amplifier = $amplifier & 0xff;
-
-		return $this;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isVisible(){
-		return $this->show;
-	}
-
-	public function getDuration(){
-		return $this->duration;
-	}
-
-	/**
-	 * @param $ticks
-	 *
-	 * @return $this
-	 */
-	public function setDuration($ticks){
-		$this->duration = (($ticks > self::MAX_DURATION) ? self::MAX_DURATION : $ticks);
-
-		return $this;
 	}
 
 	/**
@@ -416,10 +430,10 @@ class Effect {
 
 			if($this->id === Effect::SPEED){
 				$attr = $entity->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED);
-				$attr->setValue($attr->getValue() / (1 + 0.2 * ($this->amplifier + 1)));
+				$attr->setValue($attr->getValue() / (1 + 0.2 * ($this->getEffectLevel())));
 			}elseif($this->id === Effect::SLOWNESS){
 				$attr = $entity->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED);
-				$attr->setValue($attr->getValue() / (1 - 0.15 * ($this->amplifier + 1)));
+				$attr->setValue($attr->getValue() / (1 - 0.15 * ($this->getEffectLevel())));
 			}
 		}
 

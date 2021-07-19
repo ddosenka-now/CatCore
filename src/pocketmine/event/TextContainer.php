@@ -36,10 +36,10 @@ class TextContainer {
 	}
 
 	/**
-	 * @return string
+	 * @param $text
 	 */
-	public function __toString(){
-		return $this->getText();
+	public function setText($text){
+		$this->text = $text;
 	}
 
 	/**
@@ -50,9 +50,9 @@ class TextContainer {
 	}
 
 	/**
-	 * @param $text
+	 * @return string
 	 */
-	public function setText($text){
-		$this->text = $text;
+	public function __toString(){
+		return $this->getText();
 	}
 }

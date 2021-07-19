@@ -63,7 +63,7 @@ class ParticleCommand extends VanillaCommand {
 	/**
 	 * ParticleCommand constructor.
 	 *
-	 * @param string $name
+	 * @param $name
 	 */
 	public function __construct($name){
 		parent::__construct(
@@ -114,7 +114,6 @@ class ParticleCommand extends VanillaCommand {
 
 		if($particle === null){
 			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.particle.notFound", [$name]));
-
 			return true;
 		}
 

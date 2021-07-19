@@ -26,11 +26,10 @@ use pocketmine\entity\Entity;
 use pocketmine\level\Level;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\DoubleTag;
-use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\FloatTag;
+use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
-
 
 class SpawnEgg extends Item {
 	/**
@@ -90,17 +89,13 @@ class SpawnEgg extends Item {
 			$entity = Entity::createEntity($this->meta, $level, $nbt);
 
 			if($entity instanceof Entity){
-				if($player->isSurvival()){
-					$item = $player->getInventory()->getItemInHand();
-					$item->setCount($item->getCount() - 1);
-					$player->getInventory()->setItemInHand($item);
-				}
+				--$this->count;
 				$entity->spawnToAll();
 
 				return true;
 			}
-		}
 
-		return false;
+			return false;
+		}
 	}
 }

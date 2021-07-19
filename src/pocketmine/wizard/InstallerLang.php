@@ -1,22 +1,20 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
- *
+*╭━━━╮╱╱╭╮╭━━━╮
+*┃╭━╮┃╱╭╯╰┫╭━╮┃
+*┃┃╱╰╋━┻╮╭┫┃╱╰╋━━┳━┳━━╮
+*┃┃╱╭┫╭╮┃┃┃┃╱╭┫╭╮┃╭┫┃━┫
+*┃╰━╯┃╭╮┃╰┫╰━╯┃╰╯┃┃┃┃━┫
+*╰━━━┻╯╰┻━┻━━━┻━━┻╯╰━━╯
+*
+*Автор: https://vk.com/dixsin
+*
+*Версия ядра: 6.0-release
+*
+*Ядро переделано очень сильно, в отличии от *LiteCore тут куча всяких приколов и плюшек, *автор не несёт ответственности за насилие, *избиение и т.п умышленные действия!
+*
+*Советую войти в группу в вк: vk.com/*uptex_mcpe!
 */
 
 namespace pocketmine\wizard;
@@ -31,7 +29,10 @@ class InstallerLang {
 		"rus" => "Русский",
 		"ita" => "Italiano",
 		"kor" => "한국어",
-		"deu" => "Deutsch"
+		"deu" => "Deutsch",
+		"fra" => "Français",
+		"ind" => "Bahasa Indonesia",
+		"ukr" => "Хохл'вский"
 	];
 	private $texts = [];
 	private $lang;
@@ -75,6 +76,13 @@ class InstallerLang {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getLang(){
+		return ($this->lang);
+	}
+
+	/**
 	 * @param        $langfile
 	 * @param string $lang
 	 */
@@ -89,22 +97,6 @@ class InstallerLang {
 			$line = explode("=", $line);
 			$this->texts[$lang][trim(array_shift($line))] = trim(str_replace(["\\n", "\\N",], "\n", implode("=", $line)));
 		}
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getLang(){
-		return ($this->lang);
-	}
-
-	/**
-	 * @param $name
-	 *
-	 * @return mixed
-	 */
-	public function __get($name){
-		return $this->get($name);
 	}
 
 	/**
@@ -126,6 +118,15 @@ class InstallerLang {
 		}else{
 			return $this->texts[$this->lang][$name];
 		}
+	}
+
+	/**
+	 * @param $name
+	 *
+	 * @return mixed
+	 */
+	public function __get($name){
+		return $this->get($name);
 	}
 
 }

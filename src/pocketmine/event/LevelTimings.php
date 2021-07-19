@@ -21,6 +21,7 @@
 
 namespace pocketmine\event;
 
+use pocketmine\event\Timings;
 use pocketmine\level\Level;
 
 class LevelTimings {
@@ -81,6 +82,7 @@ class LevelTimings {
 	public $syncChunkLoadTileTicksTimer;
 	/** @var TimingsHandler */
 	public $syncChunkLoadPostTimer;
+	public $syncChunkSaveTimer;
 
 	/**
 	 * LevelTimings constructor.
@@ -107,16 +109,18 @@ class LevelTimings {
 		$this->tileEntityTick = new TimingsHandler("** " . $name . "tileEntityTick");
 		$this->tileEntityPending = new TimingsHandler("** " . $name . "tileEntityPending");
 
-		$this->syncChunkSendTimer = new TimingsHandler("** " . $name . "syncChunkSend");
-		$this->syncChunkSendPrepareTimer = new TimingsHandler("** " . $name . "syncChunkSendPrepare");
+		Timings::init(); //make sure the timers we want are available
+		$this->syncChunkSendTimer = new TimingsHandler("** " . $name . "syncChunkSend", Timings::$playerChunkSendTimer);
+		$this->syncChunkSendPrepareTimer = new TimingsHandler("** " . $name . "syncChunkSendPrepare", Timings::$playerChunkSendTimer);
 
-		$this->syncChunkLoadTimer = new TimingsHandler("** " . $name . "syncChunkLoad");
+		$this->syncChunkLoadTimer = new TimingsHandler("** " . $name . "syncChunkLoad", Timings::$worldLoadTimer);
 		$this->syncChunkLoadDataTimer = new TimingsHandler("** " . $name . "syncChunkLoad - Data");
 		$this->syncChunkLoadStructuresTimer = new TimingsHandler("** " . $name . "syncChunkLoad - Structures");
 		$this->syncChunkLoadEntitiesTimer = new TimingsHandler("** " . $name . "syncChunkLoad - Entities");
 		$this->syncChunkLoadTileEntitiesTimer = new TimingsHandler("** " . $name . "syncChunkLoad - TileEntities");
 		$this->syncChunkLoadTileTicksTimer = new TimingsHandler("** " . $name . "syncChunkLoad - TileTicks");
 		$this->syncChunkLoadPostTimer = new TimingsHandler("** " . $name . "syncChunkLoad - Post");
+		$this->syncChunkSaveTimer = new TimingsHandler("** " . $name . "syncChunkSave", Timings::$worldSaveTimer);
 
 		$this->tracker = new TimingsHandler($name . "tracker");
 		$this->doTick = new TimingsHandler($name . "doTick");

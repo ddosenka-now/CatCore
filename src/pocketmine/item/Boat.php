@@ -21,15 +21,15 @@
 
 namespace pocketmine\item;
 
-use pocketmine\level\Level;
 use pocketmine\block\Block;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\Player;
+use pocketmine\entity\Boat as BoatEntity;
+use pocketmine\level\Level;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\DoubleTag;
 use pocketmine\nbt\tag\FloatTag;
-use pocketmine\entity\Boat as BoatEntity;
+use pocketmine\nbt\tag\IntTag;
+use pocketmine\nbt\tag\ListTag;
+use pocketmine\Player;
 
 class Boat extends Item {
 	/**
@@ -88,7 +88,6 @@ class Boat extends Item {
 			$count = $item->getCount();
 			if(--$count <= 0){
 				$player->getInventory()->setItemInHand(Item::get(Item::AIR));
-
 				return true;
 			}
 

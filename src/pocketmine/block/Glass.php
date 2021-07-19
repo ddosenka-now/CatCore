@@ -21,8 +21,8 @@
 
 namespace pocketmine\block;
 
-use pocketmine\item\Item;
 use pocketmine\item\enchantment\Enchantment;
+use pocketmine\item\Item;
 
 class Glass extends Transparent {
 
@@ -30,8 +30,6 @@ class Glass extends Transparent {
 
 	/**
 	 * Glass constructor.
-	 *
-	 * @param int $meta
 	 */
 	public function __construct($meta = 0){
 		$this->meta = $meta;

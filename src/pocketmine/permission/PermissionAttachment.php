@@ -89,6 +89,11 @@ class PermissionAttachment {
 		return $this->permissions;
 	}
 
+	public function clearPermissions(){
+		$this->permissions = [];
+		$this->permissible->recalculatePermissions();
+	}
+
 	/**
 	 * @param bool[] $permissions
 	 */
@@ -96,14 +101,6 @@ class PermissionAttachment {
 		foreach($permissions as $key => $value){
 			$this->permissions[$key] = (bool) $value;
 		}
-		$this->permissible->recalculatePermissions();
-	}
-
-	/**
-	 * @return bool[]
-	 */
-	public function clearPermissions(){
-		$this->permissions = [];
 		$this->permissible->recalculatePermissions();
 	}
 

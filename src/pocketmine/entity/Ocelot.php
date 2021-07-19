@@ -23,8 +23,8 @@ namespace pocketmine\entity;
 
 use pocketmine\level\Level;
 use pocketmine\nbt\tag\ByteTag;
-use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\Player;
 
 class Ocelot extends Animal {
@@ -39,9 +39,16 @@ class Ocelot extends Animal {
 
 	public $width = 0.312;
 	public $length = 2.188;
-	public $height = 0.75;
+	public $height = 0;
 
 	public $dropExp = [1, 3];
+
+	/**
+	 * @return string
+	 */
+	public function getName() : string{
+		return "Ocelot";
+	}
 
 	/**
 	 * Ocelot constructor.
@@ -59,24 +66,17 @@ class Ocelot extends Animal {
 	}
 
 	/**
-	 * @return int
-	 */
-	public function getCatType() : int{
-		return (int) $this->namedtag["CatType"];
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getName() : string{
-		return "Ocelot";
-	}
-
-	/**
 	 * @param int $type
 	 */
 	public function setCatType(int $type){
 		$this->namedtag->CatType = new ByteTag("CatType", $type);
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getCatType() : int{
+		return (int) $this->namedtag["CatType"];
 	}
 
 	/**

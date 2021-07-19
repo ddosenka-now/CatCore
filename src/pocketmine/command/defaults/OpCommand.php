@@ -32,13 +32,13 @@ class OpCommand extends VanillaCommand {
 	/**
 	 * OpCommand constructor.
 	 *
-	 * @param string $name
+	 * @param $name
 	 */
 	public function __construct($name){
 		parent::__construct(
 			$name,
 			"%pocketmine.command.op.description",
-			"%pocketmine.command.op.usage"
+			"%commands.op.usage"
 		);
 		$this->setPermission("pocketmine.command.op.give");
 	}
@@ -69,7 +69,6 @@ class OpCommand extends VanillaCommand {
 			$player->sendMessage(TextFormat::GRAY . "You are now op!");
 		}
 		$player->setOp(true);
-
 		return true;
 	}
 }

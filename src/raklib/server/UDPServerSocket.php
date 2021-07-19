@@ -2,11 +2,11 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
+ *  ____            _        _   __  __ _                  __  __ ____  
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
  * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -21,21 +21,39 @@
 
 namespace raklib\server;
 
+use function socket_bind;
+use function socket_close;
+use function socket_create;
+use function socket_last_error;
+use function socket_recvfrom;
+use function socket_sendto;
+use function socket_set_nonblock;
+use function socket_set_option;
+use function socket_strerror;
+use function strlen;
+use function trim;
+use const AF_INET;
+use const SO_RCVBUF;
+use const SO_SNDBUF;
+use const SOCK_DGRAM;
+use const SOCKET_EADDRINUSE;
+use const SOL_SOCKET;
+use const SOL_UDP;
+
 class UDPServerSocket{
-	/** @var \Logger */
-	protected $logger;
 	protected $socket;
 
-	public function __construct(\ThreadedLogger $logger, $port = 19132, $interface = "0.0.0.0"){
+	public function __construct($port = 19132, $interface = "0.0.0.0"){
 		$this->socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
-		//socket_set_option($this->socket, SOL_SOCKET, SO_BROADCAST, 1); //Allow sending broadcast messages
+
 		if(@socket_bind($this->socket, $interface, $port) === true){
-			socket_set_option($this->socket, SOL_SOCKET, SO_REUSEADDR, 0);
 			$this->setSendBuffer(1024 * 1024 * 8)->setRecvBuffer(1024 * 1024 * 8);
 		}else{
-			$logger->critical("**** FAILED TO BIND TO " . $interface . ":" . $port . "!", true, true, 0);
-			$logger->critical("Perhaps a server is already running on that port?", true, true, 0);
-			exit(1);
+			$error = socket_last_error($this->socket);
+			if($error === SOCKET_EADDRINUSE){ //platform error messages aren't consistent
+				throw new \RuntimeException("Failed to bind socket: Something else is already running on $interface:$port");
+			}
+			throw new \RuntimeException("Failed to bind to " . $port . ": " . trim(socket_strerror(socket_last_error($this->socket))));
 		}
 		socket_set_nonblock($this->socket);
 	}
@@ -53,10 +71,14 @@ class UDPServerSocket{
 	 * @param string &$source
 	 * @param int    &$port
 	 *
-	 * @return int
+	 * @return int|bool
 	 */
 	public function readPacket(&$buffer, &$source, &$port){
-		return socket_recvfrom($this->socket, $buffer, 65535, 0, $source, $port);
+		return @socket_recvfrom($this->socket, $buffer, 65535, 0, $source, $port);
+	}
+
+	public function getLastError() : int{
+		return socket_last_error($this->socket);
 	}
 
 	/**
@@ -64,7 +86,7 @@ class UDPServerSocket{
 	 * @param string $dest
 	 * @param int    $port
 	 *
-	 * @return int
+	 * @return int|bool
 	 */
 	public function writePacket($buffer, $dest, $port){
 		return socket_sendto($this->socket, $buffer, strlen($buffer), 0, $dest, $port);
@@ -93,5 +115,3 @@ class UDPServerSocket{
 	}
 
 }
-
-?>

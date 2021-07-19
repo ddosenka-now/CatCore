@@ -22,10 +22,10 @@
 
 namespace pocketmine\entity;
 
-use pocketmine\network\mcpe\protocol\AddEntityPacket;
-use pocketmine\Player;
-use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
 use pocketmine\item\Item as ItemItem;
+use pocketmine\network\mcpe\protocol\AddEntityPacket;
+use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
+use pocketmine\Player;
 
 class Stray extends Skeleton {
 	const NETWORK_ID = 46;

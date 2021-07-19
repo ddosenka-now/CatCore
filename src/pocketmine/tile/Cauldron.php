@@ -22,11 +22,11 @@
 namespace pocketmine\tile;
 
 use pocketmine\level\Level;
+use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\ShortTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\utils\Color;
 
@@ -49,6 +49,13 @@ class Cauldron extends Spawnable {
 			$nbt->Items = new ListTag("Items", []);
 		}
 		parent::__construct($level, $nbt);
+	}
+
+	/**
+	 * @return mixed|null
+	 */
+	public function getPotionId(){
+		return $this->namedtag["PotionId"];
 	}
 
 	/**
@@ -90,18 +97,9 @@ class Cauldron extends Spawnable {
 			$green = ($color >> 8) & 0xff;
 			$red = ($color >> 16) & 0xff;
 			$blue = ($color) & 0xff;
-
 			return Color::getRGB($red, $green, $blue);
 		}
-
 		return null;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isCustomColor(){
-		return isset($this->namedtag->CustomColor);
 	}
 
 	/**
@@ -123,6 +121,13 @@ class Cauldron extends Spawnable {
 	 */
 	public function getCustomColorBlue(){
 		return ($this->namedtag["CustomColor"]) & 0xff;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isCustomColor(){
+		return isset($this->namedtag->CustomColor);
 	}
 
 	/**
@@ -164,14 +169,6 @@ class Cauldron extends Spawnable {
 		if($this->getPotionId() === 0xffff and $this->isCustomColor()){
 			$nbt->CustomColor = $this->namedtag->CustomColor;
 		}
-
 		return $nbt;
-	}
-
-	/**
-	 * @return null
-	 */
-	public function getPotionId(){
-		return $this->namedtag["PotionId"];
 	}
 }

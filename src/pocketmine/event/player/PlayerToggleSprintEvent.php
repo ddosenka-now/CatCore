@@ -25,7 +25,6 @@ use pocketmine\event\Cancellable;
 use pocketmine\Player;
 
 class PlayerToggleSprintEvent extends PlayerEvent implements Cancellable {
-
 	public static $handlerList = null;
 
 	/** @var bool */
@@ -47,13 +46,6 @@ class PlayerToggleSprintEvent extends PlayerEvent implements Cancellable {
 	 */
 	public function isSprinting(){
 		return $this->isSprinting;
-	}
-
-	/**
-	 * @return EventName|string
-	 */
-	public function getName(){
-		return "PlayerToggleSprintEvent";
 	}
 
 }

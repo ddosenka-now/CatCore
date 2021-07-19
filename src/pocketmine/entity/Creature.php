@@ -43,7 +43,6 @@ abstract class Creature extends Living {
 				if($this->deadTicks >= 20){
 					$this->despawnFromAll();
 				}
-
 				return true;
 			}
 			if($this->isAlive()){
@@ -70,7 +69,6 @@ abstract class Creature extends Living {
 			}
 		}
 		parent::entityBaseTick();
-
 		return parent::onUpdate($tick);
 	}
 
@@ -83,13 +81,14 @@ abstract class Creature extends Living {
 		foreach($this->getViewers() as $viewer){
 			if($this->distance($viewer->getLocation()) <= $distance) return true;
 		}
-
 		return false;
 	}
 
 	/**
 	 * @param float             $damage
 	 * @param EntityDamageEvent $source
+	 *
+	 * @return bool|void
 	 */
 	public function attack($damage, EntityDamageEvent $source){
 		parent::attack($damage, $source);
@@ -121,35 +120,29 @@ abstract class Creature extends Living {
 				if($this->whatBlock($level, new Vector3($x, $y + 1, $z)) == "block" or $this->whatBlock($level, new Vector3($x, $y + 1, $z)) == "half" or $this->whatBlock($level, new Vector3($x, $y + 1, $z)) == "high"){  //上方一格被堵住了
 					//echo "上方卡住 \n";
 					if($reason) return 'up!';
-
 					return false;  //上方卡住
 				}else{
 					//echo "GO向前走 \n";
 					if($reason) return 'GO';
-
 					return $y;  //向前走
 				}
 			}elseif($this->whatBlock($level, new Vector3($x, $y - 1, $z)) == "water"){  //水
 				//echo "下水游泳 \n";
 				if($reason) return 'swim';
-
 				return $y - 1;  //降低一格向前走（下水游泳）
 			}elseif($this->whatBlock($level, new Vector3($x, $y - 1, $z)) == "half"){  //半砖
 				//echo "下到半砖 \n";
 				if($reason) return 'half';
-
 				return $y - 0.5;  //向下跳0.5格
 			}elseif($this->whatBlock($level, new Vector3($x, $y - 1, $z)) == "lava"){  //岩浆
 				//echo "前方岩浆 \n";
 				if($reason) return 'lava';
-
 				return false;  //前方岩浆
 			}elseif($this->whatBlock($level, new Vector3($x, $y - 1, $z)) == "air"){  //空气
 				//echo "考虑向下跳 ";
 				if($this->whatBlock($level, new Vector3($x, $y - 2, $z)) == "block"){
 					//echo "GO向下跳 \n";
 					if($reason) return 'down';
-
 					return $y - 1;  //向下跳
 				}else{ //前方悬崖
 					//echo "前方悬崖 \n";
@@ -166,24 +159,20 @@ abstract class Creature extends Living {
 			if($this->whatBlock($level, new Vector3($x, $y + 1, $z)) == "water"){  //上面还是水
 				//echo "向上游 \n";
 				if($reason) return 'inwater';
-
 				return $y + 1;  //向上游，防溺水
 			}elseif($this->whatBlock($level, new Vector3($x, $y + 1, $z)) == "block" or $this->whatBlock($level, new Vector3($x, $y + 1, $z)) == "half"){  //上方一格被堵住了
 				if($this->whatBlock($level, new Vector3($x, $y - 1, $z)) == "block" or $this->whatBlock($level, new Vector3($x, $y - 1, $z)) == "half"){  //下方一格被也堵住了
 					//echo "上下都被卡住 \n";
 					if($reason) return 'up!_down!';
-
 					return false;  //上下都被卡住
 				}else{
 					//echo "向下游 \n";
 					if($reason) return 'up!';
-
 					return $y - 1;  //向下游，防卡住
 				}
 			}else{
 				//echo "游泳ing... \n";
 				if($reason) return 'swim...';
-
 				return $y;  //向前游
 			}
 		}elseif($this->whatBlock($level, new Vector3($x, $y, $z)) == "half"){  //半砖
@@ -192,19 +181,16 @@ abstract class Creature extends Living {
 				//return false;  //上方卡住
 			}else{
 				if($reason) return 'halfGO';
-
 				return $y + 0.5;
 			}
 
 		}elseif($this->whatBlock($level, new Vector3($x, $y, $z)) == "lava"){  //岩浆
 			//echo "前方岩浆 \n";
 			if($reason) return 'lava';
-
 			return false;
 		}elseif($this->whatBlock($level, new Vector3($x, $y, $z)) == "high"){  //1.5格高方块
 			//echo "前方栅栏 \n";
 			if($reason) return 'high';
-
 			return false;
 		}elseif($this->whatBlock($level, new Vector3($x, $y, $z)) == "climb"){  //梯子
 			//echo "前方梯子 \n";
@@ -220,23 +206,19 @@ abstract class Creature extends Living {
 			if($this->whatBlock($level, new Vector3($x, $y + 1, $z)) != "air"){  //前方是面墙
 				//echo "前方是墙 \n";
 				if($reason) return 'wall';
-
 				return false;
 			}else{
 				if($this->whatBlock($level, new Vector3($x, $y + 2, $z)) == "block" or $this->whatBlock($level, new Vector3($x, $y + 2, $z)) == "half" or $this->whatBlock($level, new Vector3($x, $y + 2, $z)) == "high"){  //上方两格被堵住了
 					//echo "2格处被堵 \n";
 					if($reason) return 'up2!';
-
 					return false;
 				}else{
 					//echo "GO向上跳 \n";
 					if($reason) return 'upGO';
-
 					return $y + 1;  //向上跳
 				}
 			}
 		}
-
 		return false;
 	}
 
@@ -356,7 +338,6 @@ abstract class Creature extends Living {
 		}
 
 		$yaw = -$yaw;
-
 		return $yaw;
 	}
 

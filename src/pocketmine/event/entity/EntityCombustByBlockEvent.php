@@ -46,11 +46,4 @@ class EntityCombustByBlockEvent extends EntityCombustEvent {
 		return $this->combuster;
 	}
 
-	/**
-	 * @return EventName|string
-	 */
-	public function getName(){
-		return "EntityCombustByBlockEvent";
-	}
-
 }

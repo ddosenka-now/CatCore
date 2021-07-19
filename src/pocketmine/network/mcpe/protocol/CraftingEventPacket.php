@@ -44,6 +44,9 @@ class CraftingEventPacket extends DataPacket {
 		return parent::clean();
 	}
 
+	/**
+	 *
+	 */
 	public function decode(){
 		$this->windowId = $this->getByte();
 		$this->type = $this->getVarInt();
@@ -60,8 +63,18 @@ class CraftingEventPacket extends DataPacket {
 		}
 	}
 
+	/**
+	 *
+	 */
 	public function encode(){
 
+	}
+
+	/**
+	 * @return string Current packet name
+	 */
+	public function getName(){
+		return "CraftingEventPacket";
 	}
 
 }

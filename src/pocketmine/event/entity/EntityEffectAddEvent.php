@@ -21,10 +21,9 @@
 
 namespace pocketmine\event\entity;
 
-use pocketmine\entity\Entity;
-
-use pocketmine\event\Cancellable;
 use pocketmine\entity\Effect;
+use pocketmine\entity\Entity;
+use pocketmine\event\Cancellable;
 
 class EntityEffectAddEvent extends EntityEvent implements Cancellable {
 
@@ -50,12 +49,4 @@ class EntityEffectAddEvent extends EntityEvent implements Cancellable {
 	public function getEffect(){
 		return $this->effect;
 	}
-
-	/**
-	 * @return string
-	 */
-	public function getName(){
-		return "EntityEffectAddEvent";
-	}
-
 }

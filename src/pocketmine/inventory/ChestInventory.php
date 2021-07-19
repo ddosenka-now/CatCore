@@ -24,8 +24,8 @@ namespace pocketmine\inventory;
 use pocketmine\block\TrappedChest;
 use pocketmine\level\Level;
 use pocketmine\network\mcpe\protocol\BlockEventPacket;
+use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\Player;
-
 use pocketmine\tile\Chest;
 
 class ChestInventory extends ContainerInventory {
@@ -39,21 +39,10 @@ class ChestInventory extends ContainerInventory {
 	}
 
 	/**
-	 * @param bool $withAir
-	 *
-	 * @return array|\pocketmine\item\Item[]
+	 * @return Chest
 	 */
-	public function getContents($withAir = false){
-		if($withAir){
-			$contents = [];
-			for($i = 0; $i < $this->getSize(); ++$i){
-				$contents[$i] = $this->getItem($i);
-			}
-
-			return $contents;
-		}
-
-		return parent::getContents();
+	public function getHolder(){
+		return $this->holder;
 	}
 
 	/**
@@ -70,7 +59,8 @@ class ChestInventory extends ContainerInventory {
 			$pk->case1 = 1;
 			$pk->case2 = 2;
 			if(($level = $this->getHolder()->getLevel()) instanceof Level){
-				$level->addChunkPacket($this->getHolder()->getX() >> 4, $this->getHolder()->getZ() >> 4, $pk);
+				$level->broadcastLevelSoundEvent($this->getHolder(), LevelSoundEventPacket::SOUND_CHEST_OPEN);
+				$level->addChunkPacket($this->getHolder()->getFloorX() >> 4, $this->getHolder()->getFloorZ() >> 4, $pk);
 			}
 		}
 
@@ -83,13 +73,6 @@ class ChestInventory extends ContainerInventory {
 				}
 			}
 		}
-	}
-
-	/**
-	 * @return InventoryHolder|Chest
-	 */
-	public function getHolder(){
-		return $this->holder;
 	}
 
 	/**
@@ -114,7 +97,8 @@ class ChestInventory extends ContainerInventory {
 			$pk->case1 = 1;
 			$pk->case2 = 0;
 			if(($level = $this->getHolder()->getLevel()) instanceof Level){
-				$level->addChunkPacket($this->getHolder()->getX() >> 4, $this->getHolder()->getZ() >> 4, $pk);
+				$level->broadcastLevelSoundEvent($this->getHolder(), LevelSoundEventPacket::SOUND_CHEST_CLOSED);
+				$level->addChunkPacket($this->getHolder()->getFloorX() >> 4, $this->getHolder()->getFloorZ() >> 4, $pk);
 			}
 		}
 		parent::onClose($who);

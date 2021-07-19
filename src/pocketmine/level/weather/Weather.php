@@ -64,35 +64,10 @@ class Weather {
 	}
 
 	/**
-	 * @param $weather
-	 *
-	 * @return int
+	 * @return bool
 	 */
-	public static function getWeatherFromString($weather){
-		if(is_int($weather)){
-			if($weather <= 3){
-				return $weather;
-			}
-
-			return self::SUNNY;
-		}
-		switch(strtolower($weather)){
-			case "clear":
-			case "sunny":
-			case "fine":
-				return self::SUNNY;
-			case "rain":
-			case "rainy":
-				return self::RAINY;
-			case "thunder":
-				return self::THUNDER;
-			case "rain_thunder":
-			case "rainy_thunder":
-			case "storm":
-				return self::RAINY_THUNDER;
-			default:
-				return self::SUNNY;
-		}
+	public function canCalculate() : bool{
+		return $this->canCalculate;
 	}
 
 	/**
@@ -111,7 +86,9 @@ class Weather {
 			$this->duration -= $tickDiff;
 
 			if($this->duration <= 0){
-				$duration = mt_rand(6000, 12000); //TODO: Check if this is correct.
+				$duration = mt_rand(
+					min($this->level->getServer()->weatherRandomDurationMin, $this->level->getServer()->weatherRandomDurationMax),
+					max($this->level->getServer()->weatherRandomDurationMin, $this->level->getServer()->weatherRandomDurationMax));
 
 				if($this->weatherNow === self::SUNNY){
 					$weather = $this->randomWeatherData[array_rand($this->randomWeatherData)];
@@ -136,13 +113,6 @@ class Weather {
 	}
 
 	/**
-	 * @return bool
-	 */
-	public function canCalculate() : bool{
-		return $this->canCalculate;
-	}
-
-	/**
 	 * @param int $wea
 	 * @param int $duration
 	 */
@@ -155,51 +125,6 @@ class Weather {
 			$this->duration = $ev->getDuration();
 			$this->sendWeatherToAll();
 		}
-	}
-
-	public function sendWeatherToAll(){
-		foreach($this->level->getPlayers() as $player){
-			$this->sendWeather($player);
-		}
-	}
-
-	/**
-	 * @param Player $p
-	 */
-	public function sendWeather(Player $p){
-		$pks = [
-			new LevelEventPacket(),
-			new LevelEventPacket()
-		];
-
-		$pks[0]->evid = LevelEventPacket::EVENT_STOP_RAIN;
-		$pks[0]->data = $this->strength1;
-		$pks[1]->evid = LevelEventPacket::EVENT_STOP_THUNDER;
-		$pks[1]->data = $this->strength2;
-
-		switch($this->weatherNow){
-			case self::RAIN:
-				$pks[0]->evid = LevelEventPacket::EVENT_START_RAIN;
-				$pks[0]->data = $this->strength1;
-				break;
-			case self::RAINY_THUNDER:
-				$pks[0]->evid = LevelEventPacket::EVENT_START_RAIN;
-				$pks[0]->data = $this->strength1;
-				$pks[1]->evid = LevelEventPacket::EVENT_START_THUNDER;
-				$pks[1]->data = $this->strength2;
-				break;
-			case self::THUNDER:
-				$pks[1]->evid = LevelEventPacket::EVENT_START_THUNDER;
-				$pks[1]->data = $this->strength2;
-				break;
-			default:
-				break;
-		}
-
-		foreach($pks as $pk){
-			$p->dataPacket($pk);
-		}
-		$p->weatherData = [$this->weatherNow, $this->strength1, $this->strength2];
 	}
 
 	/**
@@ -217,17 +142,48 @@ class Weather {
 	}
 
 	/**
-	 * @return bool
-	 */
-	public function isSunny() : bool{
-		return $this->getWeather() === self::SUNNY;
-	}
-
-	/**
 	 * @return int
 	 */
 	public function getWeather() : int{
 		return $this->weatherNow;
+	}
+
+	/**
+	 * @param $weather
+	 *
+	 * @return int
+	 */
+	public static function getWeatherFromString($weather){
+		if(is_int($weather)){
+			if($weather <= 3){
+				return $weather;
+			}
+			return self::SUNNY;
+		}
+		switch(strtolower($weather)){
+			case "clear":
+			case "sunny":
+			case "fine":
+				return self::SUNNY;
+			case "rain":
+			case "rainy":
+				return self::RAINY;
+			case "thunder":
+				return self::THUNDER;
+			case "rain_thunder":
+			case "rainy_thunder":
+			case "storm":
+				return self::RAINY_THUNDER;
+			default:
+				return self::SUNNY;
+		}
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isSunny() : bool{
+		return $this->getWeather() === self::SUNNY;
 	}
 
 	/**
@@ -256,6 +212,53 @@ class Weather {
 	 */
 	public function getStrength() : array{
 		return [$this->strength1, $this->strength2];
+	}
+
+	/**
+	 * @param Player $p
+	 */
+	public function sendWeather(Player $p){
+		$pks = [
+			new LevelEventPacket(),
+			new LevelEventPacket()
+		];
+
+		//Set defaults. These will be sent if the case statement defaults.
+		$pks[0]->evid = LevelEventPacket::EVENT_STOP_RAIN;
+		$pks[0]->data = $this->strength1;
+		$pks[1]->evid = LevelEventPacket::EVENT_STOP_THUNDER;
+		$pks[1]->data = $this->strength2;
+
+		switch($this->weatherNow){
+			//If the weather is not clear, overwrite the packet values with these
+			case self::RAIN:
+				$pks[0]->evid = LevelEventPacket::EVENT_START_RAIN;
+				$pks[0]->data = $this->strength1;
+				break;
+			case self::RAINY_THUNDER:
+				$pks[0]->evid = LevelEventPacket::EVENT_START_RAIN;
+				$pks[0]->data = $this->strength1;
+				$pks[1]->evid = LevelEventPacket::EVENT_START_THUNDER;
+				$pks[1]->data = $this->strength2;
+				break;
+			case self::THUNDER:
+				$pks[1]->evid = LevelEventPacket::EVENT_START_THUNDER;
+				$pks[1]->data = $this->strength2;
+				break;
+			default:
+				break;
+		}
+
+		foreach($pks as $pk){
+			$p->dataPacket($pk);
+		}
+		$p->weatherData = [$this->weatherNow, $this->strength1, $this->strength2];
+	}
+
+	public function sendWeatherToAll(){
+		foreach($this->level->getPlayers() as $player){
+			$this->sendWeather($player);
+		}
 	}
 
 }

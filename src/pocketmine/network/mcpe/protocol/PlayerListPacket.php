@@ -45,10 +45,16 @@ class PlayerListPacket extends DataPacket {
 		return parent::clean();
 	}
 
+	/**
+	 *
+	 */
 	public function decode(){
 
 	}
 
+	/**
+	 *
+	 */
 	public function encode(){
 		$this->reset();
 		$this->putByte($this->type);
@@ -64,6 +70,13 @@ class PlayerListPacket extends DataPacket {
 				$this->putUUID($d[0]);
 			}
 		}
+	}
+
+	/**
+	 * @return string Current packet name
+	 */
+	public function getName(){
+		return "PlayerListPacket";
 	}
 
 }

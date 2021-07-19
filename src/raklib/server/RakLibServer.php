@@ -15,16 +15,57 @@
 
 namespace raklib\server;
 
+use raklib\RakLib;
+use function error_get_last;
+use function array_reverse;
+use function error_reporting;
+use function function_exists;
+use function gc_enable;
+use function get_class;
+use function getcwd;
+use function gettype;
+use function ini_set;
+use function is_object;
+use function method_exists;
+use function mt_rand;
+use function preg_replace;
+use function realpath;
+use function register_shutdown_function;
+use function set_error_handler;
+use function str_replace;
+use function strval;
+use function substr;
+use function trim;
+use function xdebug_get_function_stack;
+use const DIRECTORY_SEPARATOR;
+use const E_ALL;
+use const E_COMPILE_ERROR;
+use const E_COMPILE_WARNING;
+use const E_CORE_ERROR;
+use const E_CORE_WARNING;
+use const E_DEPRECATED;
+use const E_ERROR;
+use const E_NOTICE;
+use const E_PARSE;
+use const E_RECOVERABLE_ERROR;
+use const E_STRICT;
+use const E_USER_DEPRECATED;
+use const E_USER_ERROR;
+use const E_USER_NOTICE;
+use const E_USER_WARNING;
+use const E_WARNING;
+use const PHP_INT_MAX;
 
 class RakLibServer extends \Thread{
 	protected $port;
 	protected $interface;
 	/** @var \ThreadedLogger */
 	protected $logger;
-	protected $loader;
 
-	public $loadPaths;
+	/** @var string */
+	protected $loaderPath;
 
+	/** @var bool */
 	protected $shutdown;
 
 	/** @var \Threaded */
@@ -32,29 +73,39 @@ class RakLibServer extends \Thread{
 	/** @var \Threaded */
 	protected $internalQueue;
 
+	/** @var string */
 	protected $mainPath;
+
+	/** @var int */
+	protected $serverId = 0;
+	/** @var int */
+	protected $maxMtuSize;
+	/** @var int */
+	private $protocolVersion;
 
 	/**
 	 * @param \ThreadedLogger $logger
-	 * @param \ClassLoader    $loader
+	 * @param string          $autoloaderPath Path to Composer autoloader
 	 * @param int             $port
 	 * @param string          $interface
+	 * @param int             $maxMtuSize
+	 * @param int|null        $overrideProtocolVersion Optional custom protocol version to use, defaults to current RakLib's protocol
 	 *
-	 * @throws \Throwable
+	 * @throws \Exception
 	 */
-	public function __construct(\ThreadedLogger $logger, \ClassLoader $loader, $port, $interface = "0.0.0.0"){
+	public function __construct(\ThreadedLogger $logger, $autoloaderPath, $port, $interface = "0.0.0.0", bool $autoStart = true, int $maxMtuSize = 1492, ?int $overrideProtocolVersion = null){
 		$this->port = (int) $port;
 		if($port < 1 or $port > 65536){
 			throw new \Exception("Invalid port range");
 		}
 
 		$this->interface = $interface;
+
+		$this->serverId = mt_rand(0, PHP_INT_MAX);
+		$this->maxMtuSize = $maxMtuSize;
+
 		$this->logger = $logger;
-		$this->loader = $loader;
-		$loadPaths = [];
-		$this->addDependency($loadPaths, new \ReflectionClass($logger));
-		$this->addDependency($loadPaths, new \ReflectionClass($loader));
-		$this->loadPaths = array_reverse($loadPaths);
+		$this->loaderPath = $autoloaderPath;
 		$this->shutdown = false;
 
 		$this->externalQueue = new \Threaded;
@@ -63,22 +114,13 @@ class RakLibServer extends \Thread{
 		if(\Phar::running(true) !== ""){
 			$this->mainPath = \Phar::running(true);
 		}else{
-			$this->mainPath = \getcwd() . DIRECTORY_SEPARATOR;
-		}
-		$this->start();
-	}
-
-	protected function addDependency(array &$loadPaths, \ReflectionClass $dep){
-		if($dep->getFileName() !== false){
-			$loadPaths[$dep->getName()] = $dep->getFileName();
+			$this->mainPath = realpath(getcwd()) . DIRECTORY_SEPARATOR;
 		}
 
-		if($dep->getParentClass() instanceof \ReflectionClass){
-			$this->addDependency($loadPaths, $dep->getParentClass());
-		}
-
-		foreach($dep->getInterfaces() as $interface){
-			$this->addDependency($loadPaths, $interface);
+		$this->protocolVersion = $overrideProtocolVersion ?? RakLib::DEFAULT_PROTOCOL_VERSION;
+		
+		if($autoStart){
+			$this->start();
 		}
 	}
 
@@ -96,6 +138,18 @@ class RakLibServer extends \Thread{
 
 	public function getInterface(){
 		return $this->interface;
+	}
+
+	/**
+	 * Returns the RakNet server ID
+	 * @return int
+	 */
+	public function getServerId() : int{
+		return $this->serverId;
+	}
+
+	public function getProtocolVersion() : int{
+		return $this->protocolVersion;
 	}
 
 	/**
@@ -135,16 +189,25 @@ class RakLibServer extends \Thread{
 		return $this->externalQueue->shift();
 	}
 
+	/**
+	 * @return void
+	 */
 	public function shutdownHandler(){
 		if($this->shutdown !== true){
-			$this->getLogger()->emergency("RakLib crashed!");
+			$error = error_get_last();
+			if($error !== null){
+				$this->logger->emergency("Fatal error: " . $error["message"] . " in " . $error["file"] . " on line " . $error["line"]);
+			}else{
+				$this->logger->emergency("RakLib shutdown unexpectedly");
+			}
 		}
 	}
 
-	public function errorHandler($errno, $errstr, $errfile, $errline, $context, $trace = null){
+	public function errorHandler($errno, $errstr, $errfile, $errline){
 		if(error_reporting() === 0){
 			return false;
 		}
+		
 		$errorConversion = [
 			E_ERROR => "E_ERROR",
 			E_WARNING => "E_WARNING",
@@ -160,25 +223,23 @@ class RakLibServer extends \Thread{
 			E_STRICT => "E_STRICT",
 			E_RECOVERABLE_ERROR => "E_RECOVERABLE_ERROR",
 			E_DEPRECATED => "E_DEPRECATED",
-			E_USER_DEPRECATED => "E_USER_DEPRECATED",
+			E_USER_DEPRECATED => "E_USER_DEPRECATED"
 		];
-		$errno = isset($errorConversion[$errno]) ? $errorConversion[$errno] : $errno;
-		if(($pos = strpos($errstr, "\n")) !== false){
-			$errstr = substr($errstr, 0, $pos);
-		}
-		$oldFile = $errfile;
+		$errno = $errorConversion[$errno] ?? $errno;
+
+		$errstr = preg_replace('/\s+/', ' ', trim($errstr));
 		$errfile = $this->cleanPath($errfile);
 
 		$this->getLogger()->debug("An $errno error happened: \"$errstr\" in \"$errfile\" at line $errline");
 
-		foreach(($trace = $this->getTrace($trace === null ? 3 : 0, $trace)) as $i => $line){
+		foreach($this->getTrace(2) as $i => $line){
 			$this->getLogger()->debug($line);
 		}
 
 		return true;
 	}
 
-	public function getTrace($start = 1, $trace = null){
+	public function getTrace($start = 0, $trace = null){
 		if($trace === null){
 			if(function_exists("xdebug_get_function_stack")){
 				$trace = array_reverse(xdebug_get_function_stack());
@@ -190,7 +251,7 @@ class RakLibServer extends \Thread{
 
 		$messages = [];
 		$j = 0;
-		for($i = (int) $start; isset($trace[$i]); ++$i, ++$j){
+		for($i = $start; isset($trace[$i]); ++$i, ++$j){
 			$params = "";
 			if(isset($trace[$i]["args"]) or isset($trace[$i]["params"])){
 				if(isset($trace[$i]["args"])){
@@ -209,29 +270,29 @@ class RakLibServer extends \Thread{
 	}
 
 	public function cleanPath($path){
-		return rtrim(str_replace(["\\", ".php", "phar://", rtrim(str_replace(["\\", "phar://"], ["/", ""], $this->mainPath), "/")], ["/", "", "", ""], $path), "/");
+		return str_replace(["\\", ".php", "phar://", str_replace(["\\", "phar://"], ["/", ""], $this->mainPath)], ["/", "", "", ""], $path);
 	}
 
 	public function run(){
-		//Load removed dependencies, can't use require_once()
-		foreach($this->loadPaths as $name => $path){
-			if(!class_exists($name, false) and !interface_exists($name, false)){
-				require($path);
-			}
+		try{
+			$this->loaderPath->register(true);
+
+			gc_enable();
+			error_reporting(-1);
+			ini_set("display_errors", 1);
+			ini_set("display_startup_errors", 1);
+
+			set_error_handler([$this, "errorHandler"], E_ALL);
+			register_shutdown_function([$this, "shutdownHandler"]);
+
+
+			$socket = new UDPServerSocket($this->port, $this->interface);
+			$manager = new SessionManager($this, $socket, $this->maxMtuSize);
+			$this->serverId = $manager->getID();
+			$manager->run();
+		}catch(\Throwable $e){
+			$this->logger->logException($e);
 		}
-		$this->loader->register(true);
-
-		gc_enable();
-		error_reporting(-1);
-		ini_set("display_errors", 1);
-		ini_set("display_startup_errors", 1);
-
-		set_error_handler([$this, "errorHandler"], E_ALL);
-		register_shutdown_function([$this, "shutdownHandler"]);
-
-
-		$socket = new UDPServerSocket($this->getLogger(), $this->port, $this->interface);
-		new SessionManager($this, $socket);
 	}
 
 }

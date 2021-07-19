@@ -21,18 +21,18 @@
 
 namespace pocketmine\entity;
 
+use pocketmine\item\Potion;
 use pocketmine\level\Level;
 use pocketmine\level\particle\SpellParticle;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\ShortTag;
 use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\Player;
-use pocketmine\item\Potion;
 
 class ThrownPotion extends Projectile {
 	const NETWORK_ID = 86;
 
-	const DATA_POTION_ID = 16;
+	const DATA_POTION_ID = 37;
 
 	public $width = 0.25;
 	public $length = 0.25;
@@ -68,6 +68,22 @@ class ThrownPotion extends Projectile {
 		return (int) $this->namedtag["PotionId"];
 	}
 
+	public function splash(){
+		if(!$this->hasSplashed){
+			$this->hasSplashed = true;
+			$color = Potion::getColor($this->getPotionId());
+			$this->getLevel()->addParticle(new SpellParticle($this, $color[0], $color[1], $color[2]));
+			$radius = 6;
+			foreach ($this->getLevel()->getNearbyEntities($this->getBoundingBox()->grow($radius, $radius, $radius)) as $p) {
+				foreach(Potion::getEffectsById($this->getPotionId()) as $effect){
+					$p->addEffect($effect);
+				}
+			}
+
+			$this->kill();
+		}
+	}
+
 	/**
 	 * @param $currentTick
 	 *
@@ -92,24 +108,6 @@ class ThrownPotion extends Projectile {
 		$this->timings->stopTiming();
 
 		return $hasUpdate;
-	}
-
-	public function splash(){
-		if(!$this->hasSplashed){
-			$this->hasSplashed = true;
-			$color = Potion::getColor($this->getPotionId());
-			$this->getLevel()->addParticle(new SpellParticle($this, $color[0], $color[1], $color[2]));
-			$players = $this->getViewers();
-			foreach($players as $p){
-				if($p->distance($this) <= 6){
-					foreach(Potion::getEffectsById($this->getPotionId()) as $effect){
-						$p->addEffect($effect);
-					}
-				}
-			}
-
-			$this->kill();
-		}
 	}
 
 	/**

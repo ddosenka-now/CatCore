@@ -24,6 +24,8 @@ namespace pocketmine\network\mcpe\protocol;
 #include <rules/DataPacket.h>
 
 
+use pocketmine\item\Item;
+
 class UseItemPacket extends DataPacket {
 
 	const NETWORK_ID = ProtocolInfo::USE_ITEM_PACKET;
@@ -42,6 +44,9 @@ class UseItemPacket extends DataPacket {
 	public $posZ;
 	public $slot;
 
+	/**
+	 *
+	 */
 	public function decode(){
 		$this->getBlockCoords($this->x, $this->y, $this->z);
 		$this->blockId = $this->getUnsignedVarInt();
@@ -52,8 +57,18 @@ class UseItemPacket extends DataPacket {
 		$this->item = $this->getSlot();
 	}
 
+	/**
+	 *
+	 */
 	public function encode(){
 
+	}
+
+	/**
+	 * @return string Current packet name
+	 */
+	public function getName(){
+		return "UseItemPacket";
 	}
 
 }

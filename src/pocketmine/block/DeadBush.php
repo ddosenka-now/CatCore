@@ -21,8 +21,8 @@
 
 namespace pocketmine\block;
 
-use pocketmine\level\Level;
 use pocketmine\item\Item;
+use pocketmine\level\Level;
 use pocketmine\Player;
 
 class DeadBush extends Flowable {
@@ -63,10 +63,8 @@ class DeadBush extends Flowable {
 			$down->getId() === Block::HARDENED_CLAY or $down->getId() === Block::STAINED_CLAY
 		){
 			$this->getLevel()->setBlock($block, $this, true);
-
 			return true;
 		}
-
 		return false;
 	}
 

@@ -27,7 +27,7 @@ use pocketmine\level\Level;
 use pocketmine\Player;
 use pocketmine\Server;
 
-class CocoaBlock extends Solid {
+class CocoaBlock extends Transparent{
 
 	protected $id = self::COCOA_BLOCK;
 
@@ -85,11 +85,9 @@ class CocoaBlock extends Solid {
 			if(!$ev->isCancelled()){
 				$this->getLevel()->setBlock($this, $ev->getNewState(), true, true);
 			}
-			$item->count--;
-
+            $item->pop();
 			return true;
 		}
-
 		return false;
 	}
 
@@ -103,7 +101,6 @@ class CocoaBlock extends Solid {
 			$faces = [3, 4, 2, 5, 3, 4, 2, 5, 3, 4, 2, 5];
 			if($this->getSide($faces[$this->meta])->isTransparent() === true){
 				$this->getLevel()->useBreakOn($this);
-
 				return Level::BLOCK_UPDATE_NORMAL;
 			}
 		}elseif($type === Level::BLOCK_UPDATE_RANDOM){
@@ -122,7 +119,6 @@ class CocoaBlock extends Solid {
 				return Level::BLOCK_UPDATE_RANDOM;
 			}
 		}
-
 		return false;
 	}
 
@@ -149,11 +145,9 @@ class CocoaBlock extends Solid {
 				];
 				$this->meta = $faces[$face];
 				$this->getLevel()->setBlock($block, Block::get(Item::COCOA_BLOCK, $this->meta), true);
-
 				return true;
 			}
 		}
-
 		return false;
 	}
 
@@ -169,7 +163,6 @@ class CocoaBlock extends Solid {
 		}else{
 			$drops[] = [Item::DYE, 3, 1];
 		}
-
 		return $drops;
 	}
 }

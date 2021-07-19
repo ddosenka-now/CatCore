@@ -32,15 +32,28 @@ class ContainerSetDataPacket extends DataPacket {
 	public $property;
 	public $value;
 
+	/**
+	 *
+	 */
 	public function decode(){
 
 	}
 
+	/**
+	 *
+	 */
 	public function encode(){
 		$this->reset();
 		$this->putByte($this->windowid);
 		$this->putVarInt($this->property);
 		$this->putVarInt($this->value);
+	}
+
+	/**
+	 * @return string Current packet name
+	 */
+	public function getName(){
+		return "ContainerSetDataPacket";
 	}
 
 }

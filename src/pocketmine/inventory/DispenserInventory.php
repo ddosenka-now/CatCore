@@ -34,7 +34,7 @@ class DispenserInventory extends ContainerInventory {
 	}
 
 	/**
-	 * @return InventoryHolder|Dispenser
+	 * @return Dispenser
 	 */
 	public function getHolder(){
 		return $this->holder;

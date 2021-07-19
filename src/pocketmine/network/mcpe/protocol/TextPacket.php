@@ -35,21 +35,22 @@ class TextPacket extends DataPacket {
 	const TYPE_TIP = 4;
 	const TYPE_SYSTEM = 5;
 	const TYPE_WHISPER = 6;
-	const TYPE_ANNOUNCEMENT = 7;
 
 	public $type;
 	public $source;
 	public $message;
 	public $parameters = [];
 
+	/**
+	 *
+	 */
 	public function decode(){
 		$this->type = $this->getByte();
 		switch($this->type){
 			case self::TYPE_POPUP:
 			case self::TYPE_CHAT:
-			case self::TYPE_WHISPER:
 				/** @noinspection PhpMissingBreakStatementInspection */
-			case self::TYPE_ANNOUNCEMENT:
+			case self::TYPE_WHISPER:
 				$this->source = $this->getString();
 			case self::TYPE_RAW:
 			case self::TYPE_TIP:
@@ -60,21 +61,23 @@ class TextPacket extends DataPacket {
 			case self::TYPE_TRANSLATION:
 				$this->message = $this->getString();
 				$count = $this->getUnsignedVarInt();
-				for($i = 0; $i < $count; ++$i){
+				for($i = 0; $i < $count && !$this->feof(); ++$i){
 					$this->parameters[] = $this->getString();
 				}
 		}
 	}
 
+	/**
+	 *
+	 */
 	public function encode(){
 		$this->reset();
 		$this->putByte($this->type);
 		switch($this->type){
 			case self::TYPE_POPUP:
 			case self::TYPE_CHAT:
-			case self::TYPE_WHISPER:
 				/** @noinspection PhpMissingBreakStatementInspection */
-			case self::TYPE_ANNOUNCEMENT:
+			case self::TYPE_WHISPER:
 				$this->putString($this->source);
 			case self::TYPE_RAW:
 			case self::TYPE_TIP:
@@ -92,7 +95,7 @@ class TextPacket extends DataPacket {
 	}
 
 	/**
-	 * @return PacketName|string
+	 * @return string
 	 */
 	public function getName(){
 		return "TextPacket";

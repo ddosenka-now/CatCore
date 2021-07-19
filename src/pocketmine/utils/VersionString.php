@@ -36,7 +36,7 @@ class VersionString {
 	 *
 	 * @param string $version
 	 */
-	public function __construct($version = \pocketmine\VERSION){
+	public function __construct($version = "1.1.5"){
 		if(is_int($version)){
 			$this->minor = $version & 0x1F;
 			$this->major = ($version >> 5) & 0x0F;
@@ -48,6 +48,13 @@ class VersionString {
 			$this->development = true;
 			$this->build = 0;
 		}
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getNumber() : int{
+		return (($this->generation << 9) + ($this->major << 5) + $this->minor);
 	}
 
 	/**
@@ -79,17 +86,24 @@ class VersionString {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getRelease(){
+		return $this->generation . "." . $this->major . ($this->minor > 0 ? "." . $this->minor : "");
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getBuild(){
+		return $this->build;
+	}
+
+	/**
 	 * @return bool
 	 */
 	public function isDev(){
 		return $this->development === true;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function __toString(){
-		return $this->get();
 	}
 
 	/**
@@ -104,8 +118,8 @@ class VersionString {
 	/**
 	 * @return string
 	 */
-	public function getRelease(){
-		return $this->generation . "." . $this->major . ($this->minor > 0 ? "." . $this->minor : "");
+	public function __toString(){
+		return $this->get();
 	}
 
 	/**
@@ -134,19 +148,5 @@ class VersionString {
 		}else{
 			return 0; //Same version
 		}
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getNumber(){
-		return (int) (($this->generation << 9) + ($this->major << 5) + $this->minor);
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getBuild(){
-		return $this->build;
 	}
 }

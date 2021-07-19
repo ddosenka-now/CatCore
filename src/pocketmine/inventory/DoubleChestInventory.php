@@ -23,10 +23,8 @@ namespace pocketmine\inventory;
 
 use pocketmine\item\Item;
 use pocketmine\level\Level;
-
 use pocketmine\network\mcpe\protocol\BlockEventPacket;
 use pocketmine\Player;
-
 use pocketmine\tile\Chest;
 
 class DoubleChestInventory extends ChestInventory implements InventoryHolder {
@@ -40,12 +38,13 @@ class DoubleChestInventory extends ChestInventory implements InventoryHolder {
 	 *
 	 * @param Chest $left
 	 * @param Chest $right
-	 */
+     * @noinspection PhpMissingParentConstructorInspection
+     */
 	public function __construct(Chest $left, Chest $right){
-		$this->left = $left->getRealInventory();
-		$this->right = $right->getRealInventory();
-		$items = array_merge($this->left->getContents(true), $this->right->getContents(true));
-		BaseInventory::__construct($this, InventoryType::get(InventoryType::DOUBLE_CHEST), $items);
+        $this->left = $left->getRealInventory();
+        $this->right = $right->getRealInventory();
+
+        BaseInventory::__construct($this, InventoryType::get(InventoryType::DOUBLE_CHEST));
 	}
 
 	/**
@@ -56,22 +55,10 @@ class DoubleChestInventory extends ChestInventory implements InventoryHolder {
 	}
 
 	/**
-	 * @return InventoryHolder|Chest
+	 * @return Chest
 	 */
 	public function getHolder(){
 		return $this->left->getHolder();
-	}
-
-	/**
-	 * @return array
-	 */
-	public function getContents($withAir = false){
-		$contents = [];
-		for($i = 0; $i < $this->getSize(); ++$i){
-			$contents[$i] = $this->getItem($i);
-		}
-
-		return $contents;
 	}
 
 	/**
@@ -80,7 +67,34 @@ class DoubleChestInventory extends ChestInventory implements InventoryHolder {
 	 * @return Item
 	 */
 	public function getItem($index){
-		return $index < $this->left->getSize() ? $this->left->getItem($index) : $this->right->getItem($index - $this->right->getSize());
+		return $index < $this->left->getSize() ? $this->left->getItem($index) : $this->right->getItem($index - $this->left->getSize());
+	}
+
+    /**
+     * @param int $index
+     * @param Item $item
+     *
+     * @param bool $send
+     * @return bool
+     */
+	public function setItem($index, Item $item, $send = true){
+		$old = $this->getItem($index);
+		if($index < $this->left->getSize() ? $this->left->setItem($index, $item, $send) : $this->right->setItem($index - $this->left->getSize(), $item, $send)){
+			$this->onSlotChange($index, $old, $send);
+			return true;
+		}
+		return false;
+	}
+
+	public function getContents(bool $includeEmpty = false) : array{
+		$result = $this->left->getContents($includeEmpty);
+		$leftSize = $this->left->getSize();
+
+		foreach($this->right->getContents($includeEmpty) as $i => $item){
+			$result[$i + $leftSize] = $item;
+		}
+
+		return $result;
 	}
 
     /**
@@ -91,7 +105,6 @@ class DoubleChestInventory extends ChestInventory implements InventoryHolder {
 		if(count($items) > $this->size){
 			$items = array_slice($items, 0, $this->size, true);
 		}
-
 
 		for($i = 0; $i < $this->size; ++$i){
 			if(!isset($items[$i])){
@@ -106,27 +119,10 @@ class DoubleChestInventory extends ChestInventory implements InventoryHolder {
 				$this->clear($i);
 			}
 		}
-	}
 
-    /**
-     * @param int $index
-     *
-     * @param bool $send
-     * @return bool
-     */
-	public function clear($index, $send = true){
-		return $index < $this->left->getSize() ? $this->left->clear($index) : $this->right->clear($index - $this->right->getSize());
-	}
-
-    /**
-     * @param int $index
-     * @param Item $item
-     *
-     * @param bool $send
-     * @return bool
-     */
-	public function setItem($index, Item $item, $send = true){
-		return $index < $this->left->getSize() ? $this->left->setItem($index, $item) : $this->right->setItem($index - $this->right->getSize(), $item);
+		if($send){
+			$this->sendContents($this->getViewers());
+		}
 	}
 
 	/**
@@ -178,5 +174,10 @@ class DoubleChestInventory extends ChestInventory implements InventoryHolder {
 	 */
 	public function getRightSide(){
 		return $this->right;
+	}
+
+	public function invalidate(){
+		$this->left = null;
+		$this->right = null;
 	}
 }

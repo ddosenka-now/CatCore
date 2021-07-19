@@ -34,10 +34,16 @@ class UpdateAttributesPacket extends DataPacket {
 	/** @var Attribute[] */
 	public $entries = [];
 
+	/**
+	 *
+	 */
 	public function decode(){
 
 	}
 
+	/**
+	 *
+	 */
 	public function encode(){
 		$this->reset();
 		$this->putEntityId($this->entityId);
@@ -49,6 +55,13 @@ class UpdateAttributesPacket extends DataPacket {
 			$this->putLFloat($entry->getDefaultValue());
 			$this->putString($entry->getName());
 		}
+	}
+
+	/**
+	 * @return string Current packet name
+	 */
+	public function getName(){
+		return "UpdateAttributesPacket";
 	}
 
 }

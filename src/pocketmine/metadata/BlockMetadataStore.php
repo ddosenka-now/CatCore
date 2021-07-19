@@ -56,7 +56,7 @@ class BlockMetadataStore extends MetadataStore {
 	 * @param mixed  $block
 	 * @param string $metadataKey
 	 *
-	 * @return MetadataValue[]|\WeakMap
+	 * @return MetadataValue[]
 	 */
 	public function getMetadata($block, $metadataKey){
 		if(!($block instanceof Block)){
@@ -96,7 +96,7 @@ class BlockMetadataStore extends MetadataStore {
 			throw new \InvalidArgumentException("Object must be a Block");
 		}
 		if($block->getLevel() === $this->owningLevel){
-			parent::hasMetadata($block, $metadataKey, $owningPlugin);
+			parent::removeMetadata($block, $metadataKey, $owningPlugin);
 		}else{
 			throw new \InvalidStateException("Block does not belong to world " . $this->owningLevel->getName());
 		}

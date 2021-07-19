@@ -63,11 +63,9 @@ abstract class Tool extends Item {
 	 * TODO: Move this to each item
 	 *
 	 * @param Entity|Block $object
-	 * @param int          $type
+	 * @param int          $type 1 for break, 2 for touch
 	 *
 	 * @return bool
-	 * @internal param $ 1 for break|2 for Touch $type
-	 *
 	 */
 	public function useOn($object, $type = 1){
 		if($this->isUnbreakable()){
@@ -85,31 +83,25 @@ abstract class Tool extends Item {
 				if($this->isHoe() !== false or $this->isSword() !== false){
 					//Hoe and Sword
 					$this->meta++;
-
 					return true;
 				}elseif($this->isPickaxe() !== false or $this->isAxe() !== false or $this->isShovel() !== false){
 					//Pickaxe Axe and Shovel
 					$this->meta += 2;
-
 					return true;
 				}
-
 				return true;//Other tool do not lost durability white hitting
 			}elseif($object instanceof Block){
 				if($this->isShears() !== false){
 					if($object->getToolType() === Tool::TYPE_SHEARS){//This should be checked in each block
 						$this->meta++;
 					}
-
 					return true;
 				}elseif($object->getHardness() > 0){//Sword Pickaxe Axe and Shovel
 					if($this->isSword() !== false){
 						$this->meta += 2;
-
 						return true;
 					}elseif($this->isPickaxe() !== false or $this->isAxe() !== false or $this->isShovel() !== false){
 						$this->meta += 1;
-
 						return true;
 					}
 				}
@@ -117,63 +109,10 @@ abstract class Tool extends Item {
 		}elseif($type === 2){//For Touch. only trigger when OnActivate return true
 			if($this->isHoe() !== false or $this->id === self::FLINT_STEEL or $this->isShovel() !== false){
 				$this->meta++;
-
 				return true;
 			}
 		}
-
 		return true;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isUnbreakable(){
-		$tag = $this->getNamedTagEntry("Unbreakable");
-
-		return $tag !== null and $tag->getValue() > 0;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isHoe(){
-		return false;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isSword(){
-		return false;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isPickaxe(){
-		return false;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isAxe(){
-		return false;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isShovel(){
-		return false;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isShears(){
-		return ($this->id === self::SHEARS);
 	}
 
 	/**
@@ -207,6 +146,56 @@ abstract class Tool extends Item {
 		}
 
 		return $levels[$type];
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isUnbreakable(){
+		$tag = $this->getNamedTagEntry("Unbreakable");
+		return $tag !== null and $tag->getValue() > 0;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isPickaxe(){
+		return false;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isAxe(){
+		return false;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isSword(){
+		return false;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isShovel(){
+		return false;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isHoe(){
+		return false;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isShears(){
+		return ($this->id === self::SHEARS);
 	}
 
 	/**

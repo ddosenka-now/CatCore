@@ -37,15 +37,28 @@ class SetSpawnPositionPacket extends DataPacket {
 	public $z;
 	public $spawnForced;
 
+	/**
+	 *
+	 */
 	public function decode(){
 
 	}
 
+	/**
+	 *
+	 */
 	public function encode(){
 		$this->reset();
 		$this->putVarInt($this->spawnType);
 		$this->putBlockCoords($this->x, $this->y, $this->z);
 		$this->putBool($this->spawnForced);
+	}
+
+	/**
+	 * @return string Current packet name
+	 */
+	public function getName(){
+		return "SetSpawnPositionPacket";
 	}
 
 }

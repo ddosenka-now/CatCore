@@ -21,9 +21,9 @@
 
 namespace pocketmine\block;
 
+use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
-use pocketmine\item\enchantment\Enchantment;
 
 class PackedIce extends Solid {
 
@@ -31,8 +31,6 @@ class PackedIce extends Solid {
 
 	/**
 	 * PackedIce constructor.
-	 *
-	 * @param int $meta
 	 */
 	public function __construct($meta = 0){
 		$this->meta = $meta;

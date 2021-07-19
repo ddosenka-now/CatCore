@@ -1,60 +1,49 @@
 <?php
 
-/*██████████████████████████████████████████████████████████████████████████████████████████████████████████████
-/*█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒███▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▄▄▒▒███▒▒▄▄▄▄▄▄▄▄▄▄▒▒█
-/*█▒▒▄▄▒▒▒▒▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▄▄▒▒█▒▒▒▒▒▒▄▄▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▄▄▒▒█▒▒▄▄▒▒▒▒▒▒▒▒▄▄▒▒███▒▒▄▄▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▒▒████▒▒▄▄▒▒███▒▒▄▄▒▒█████████
-/*█▒▒▄▄▒▒█████████▒▒▄▄▒▒▒▒▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▒▒▒▒▒▒▒▒▄▄▒▒███▒▒▄▄▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▒▒█████████▒▒▄▄▄▄▄▄▄▄▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▄▄▒▒███▒▒▄▄▄▄▄▄▄▄▄▄▒▒█
-/*█▒▒▄▄▒▒█████████▒▒▄▄▒▒▒▒▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▒▒▒▒▒▒▄▄▒▒▒▒███▒▒▄▄▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████████
-/*█▒▒▄▄▒▒▒▒▒▒▒▒▒▒█▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒▒▒▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▄▄▒▒█▒▒▄▄▒▒██▒▒▄▄▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▒▒██▒▒▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█
-/*█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒██▒▒▒▒▒▒█████▒▒▒▒▒▒█████▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒██▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
-/*██████████████████████████████████████████████████████████████████████████████████████████████████████████████
 /*
-/* × ████████████████████████ ×
-/*    █       © Free Software, ® https://vk.com/dixsin        █
-/*    █ Этот софт не приватный, но Харнэс может       █
-/*    █ дать по ебалу за его распространение! Не        █
-/*    █  пытайтесь скрыть то, что вы слили мой софт █
-/* × ████████████████████████ ×
+*╭━━━╮╱╱╭╮╭━━━╮
+*┃╭━╮┃╱╭╯╰┫╭━╮┃
+*┃┃╱╰╋━┻╮╭┫┃╱╰╋━━┳━┳━━╮
+*┃┃╱╭┫╭╮┃┃┃┃╱╭┫╭╮┃╭┫┃━┫
+*┃╰━╯┃╭╮┃╰┫╰━╯┃╰╯┃┃┃┃━┫
+*╰━━━┻╯╰┻━┻━━━┻━━┻╯╰━━╯
+*
+*Автор: https://vk.com/dixsin
+*
+*Версия ядра: 6.0-release
+*
+*Ядро переделано очень сильно, в отличии от *LiteCore тут куча всяких приколов и плюшек, *автор не несёт ответственности за насилие, *избиение и т.п умышленные действия!
+*
+*Советую войти в группу в вк: vk.com/*uptex_mcpe!
 */
 
 namespace pocketmine;
 
 
-use pocketmine\metadata\MetadataValue;
 use pocketmine\metadata\Metadatable;
+use pocketmine\metadata\MetadataValue;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\plugin\Plugin;
 
 class OfflinePlayer implements IPlayer, Metadatable {
 
+	/** @var string */
 	private $name;
+	/** @var Server */
 	private $server;
-	private $namedtag;
+	/** @var CompoundTag|null */
+	private $namedtag = null;
 
 	/**
 	 * @param Server $server
 	 * @param string $name
 	 */
-	public function __construct(Server $server, $name){
+	public function __construct(Server $server, string $name){
 		$this->server = $server;
 		$this->name = $name;
-		if(file_exists($this->server->getDataPath() . "players/" . strtolower($this->getName()) . ".dat")){
+		if($this->server->hasOfflinePlayerData($this->name)){
 			$this->namedtag = $this->server->getOfflinePlayerData($this->name);
-		}else{
-			$this->namedtag = null;
 		}
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getName() : string{
-		return $this->name;
 	}
 
 	/**
@@ -65,10 +54,10 @@ class OfflinePlayer implements IPlayer, Metadatable {
 	}
 
 	/**
-	 * @return Player
+	 * @return string
 	 */
-	public function getPlayer(){
-		return $this->server->getPlayerExact($this->getName());
+	public function getName() : string{
+		return $this->name;
 	}
 
 	/**
@@ -79,6 +68,13 @@ class OfflinePlayer implements IPlayer, Metadatable {
 	}
 
 	/**
+	 * @return bool
+	 */
+	public function isOp(){
+		return $this->server->isOp(strtolower($this->getName()));
+	}
+
+	/**
 	 * @param bool $value
 	 */
 	public function setOp($value){
@@ -86,18 +82,11 @@ class OfflinePlayer implements IPlayer, Metadatable {
 			return;
 		}
 
-		if($value === true){
+		if($value){
 			$this->server->addOp(strtolower($this->getName()));
 		}else{
 			$this->server->removeOp(strtolower($this->getName()));
 		}
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isOp(){
-		return $this->server->isOp(strtolower($this->getName()));
 	}
 
 	/**
@@ -111,7 +100,7 @@ class OfflinePlayer implements IPlayer, Metadatable {
 	 * @param bool $value
 	 */
 	public function setBanned($value){
-		if($value === true){
+		if($value){
 			$this->server->getNameBans()->addBan($this->getName(), null, null, null);
 		}else{
 			$this->server->getNameBans()->remove($this->getName());
@@ -129,11 +118,18 @@ class OfflinePlayer implements IPlayer, Metadatable {
 	 * @param bool $value
 	 */
 	public function setWhitelisted($value){
-		if($value === true){
+		if($value){
 			$this->server->addWhitelist(strtolower($this->getName()));
 		}else{
 			$this->server->removeWhitelist(strtolower($this->getName()));
 		}
+	}
+
+	/**
+	 * @return Player
+	 */
+	public function getPlayer(){
+		return $this->server->getPlayerExact($this->getName());
 	}
 
 	/**
@@ -168,7 +164,7 @@ class OfflinePlayer implements IPlayer, Metadatable {
 	/**
 	 * @param string $metadataKey
 	 *
-	 * @return MetadataValue[]|\WeakMap
+	 * @return MetadataValue[]
 	 */
 	public function getMetadata($metadataKey){
 		return $this->server->getPlayerMetadata()->getMetadata($this, $metadataKey);

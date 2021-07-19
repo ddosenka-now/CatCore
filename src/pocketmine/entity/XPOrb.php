@@ -116,13 +116,17 @@ class XPOrb extends Entity {
 						$this->kill();
 						$this->close();
 						if($this->getExperience() > 0){
-							$this->level->addSound(new ExpPickupSound($target, mt_rand(0, 1000)));
+							$target->level->addSound(new ExpPickupSound($target, mt_rand(0, 1000)));
 							$target->addXp($this->getExperience());
 							$target->resetXpCooldown();
 						}
 					}
 				}
 			}
+		}
+
+		if ($this->level == null) {
+			return false;
 		}
 
 		$this->move($this->motionX, $this->motionY, $this->motionZ);
@@ -135,10 +139,16 @@ class XPOrb extends Entity {
 	}
 
 	/**
-	 * @return int
+	 * @param Entity $entity
+	 *
+	 * @return bool
 	 */
-	public function getExperience(){
-		return $this->experience;
+	public function canCollideWith(Entity $entity){
+		return false;
+	}
+
+	public function canBeCollidedWith() : bool{
+		return false;
 	}
 
 	/**
@@ -149,12 +159,10 @@ class XPOrb extends Entity {
 	}
 
 	/**
-	 * @param Entity $entity
-	 *
-	 * @return bool
+	 * @return int
 	 */
-	public function canCollideWith(Entity $entity){
-		return false;
+	public function getExperience(){
+		return $this->experience;
 	}
 
 	/**

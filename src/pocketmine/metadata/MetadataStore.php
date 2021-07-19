@@ -58,26 +58,13 @@ abstract class MetadataStore {
 	}
 
 	/**
-	 * Creates a unique name for the object receiving metadata by combining
-	 * unique data from the subject with a metadataKey.
-	 *
-	 * @param Metadatable $subject
-	 * @param string      $metadataKey
-	 *
-	 * @return string
-	 *
-	 * @throws \InvalidArgumentException
-	 */
-	public abstract function disambiguate(Metadatable $subject, $metadataKey);
-
-	/**
 	 * Returns all metadata values attached to an object. If multiple
 	 * have attached metadata, each will value will be included.
 	 *
 	 * @param mixed  $subject
 	 * @param string $metadataKey
 	 *
-	 * @return MetadataValue[]|\WeakMap
+	 * @return MetadataValue[]
 	 *
 	 * @throws \Exception
 	 */
@@ -138,4 +125,17 @@ abstract class MetadataStore {
 			}
 		}
 	}
+
+	/**
+	 * Creates a unique name for the object receiving metadata by combining
+	 * unique data from the subject with a metadataKey.
+	 *
+	 * @param Metadatable $subject
+	 * @param string      $metadataKey
+	 *
+	 * @return string
+	 *
+	 * @throws \InvalidArgumentException
+	 */
+	public abstract function disambiguate(Metadatable $subject, $metadataKey);
 }

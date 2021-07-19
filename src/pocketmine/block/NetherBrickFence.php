@@ -16,12 +16,15 @@
  * @author PocketMine Team
  * @link http://www.pocketmine.net/
  *
- */
+ *
+*/
 
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
+use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Vector3;
 
 class NetherBrickFence extends Transparent {
 
@@ -34,21 +37,6 @@ class NetherBrickFence extends Transparent {
 	 */
 	public function __construct($meta = 0){
 		$this->meta = $meta;
-	}
-
-	/**
-	 * @param Item $item
-	 *
-	 * @return float|int
-	 */
-	public function getBreakTime(Item $item){
-		if($item instanceof Air){
-			//Breaking by hand
-			return 10;
-		}else{
-			// Other breaktimes are equal to woodfences.
-			return parent::getBreakTime($item);
-		}
 	}
 
 	/**
@@ -73,13 +61,26 @@ class NetherBrickFence extends Transparent {
 		return "Nether Brick Fence";
 	}
 
+	protected function recalculateBoundingBox(){
+		$width = 0.375;
+
+		return new AxisAlignedBB(
+			$this->x + ($this->canConnect($this->getSide(Vector3::SIDE_WEST)) ? 0 : $width),
+			$this->y,
+			$this->z + ($this->canConnect($this->getSide(Vector3::SIDE_NORTH)) ? 0 : $width),
+			$this->x + 1 - ($this->canConnect($this->getSide(Vector3::SIDE_EAST)) ? 0 : $width),
+			$this->y + 1.5,
+			$this->z + 1 - ($this->canConnect($this->getSide(Vector3::SIDE_SOUTH)) ? 0 : $width)
+		);
+	}
+
 	/**
 	 * @param Block $block
 	 *
 	 * @return bool
 	 */
 	public function canConnect(Block $block){
-		return ($block instanceof NetherBrickFence) or ($block->isSolid() and !$block->isTransparent());
+		return $block instanceof NetherBrickFence or $block instanceof FenceGate or ($block->isSolid() and !$block->isTransparent());
 	}
 
 	/**

@@ -39,7 +39,6 @@ class Wood2 extends Wood {
 			2 => "Unknown",
 			3 => "Unknown"
 		];
-
 		return $names[$this->meta & 0x03];
 	}
 }

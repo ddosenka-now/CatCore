@@ -44,6 +44,13 @@ class Villager extends Creature implements NPC, Ageable {
 	public $height = 1.8;
 
 	/**
+	 * @return string
+	 */
+	public function getName() : string{
+		return "Villager";
+	}
+
+	/**
 	 * Villager constructor.
 	 *
 	 * @param Level       $level
@@ -59,20 +66,11 @@ class Villager extends Creature implements NPC, Ageable {
 		$this->setDataProperty(self::DATA_PROFESSION_ID, self::DATA_TYPE_BYTE, $this->getProfession());
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getProfession() : int{
-		$pro = (int) $this->namedtag["Profession"];
-
-		return min(4, max(0, $pro));
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getName() : string{
-		return "Villager";
+	protected function initEntity(){
+		parent::initEntity();
+		if(!isset($this->namedtag->Profession)){
+			$this->setProfession(self::PROFESSION_FARMER);
+		}
 	}
 
 	/**
@@ -97,25 +95,26 @@ class Villager extends Creature implements NPC, Ageable {
 	}
 
 	/**
-	 * @return bool
-	 */
-	public function isBaby(){
-		return $this->getDataFlag(self::DATA_FLAGS, self::DATA_FLAG_BABY);
-	}
-
-	protected function initEntity(){
-		parent::initEntity();
-		if(!isset($this->namedtag->Profession)){
-			$this->setProfession(self::PROFESSION_FARMER);
-		}
-	}
-
-	/**
 	 * Sets the villager profession
 	 *
 	 * @param int $profession
 	 */
 	public function setProfession(int $profession){
 		$this->namedtag->Profession = new ByteTag("Profession", $profession);
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getProfession() : int{
+		$pro = (int) $this->namedtag["Profession"];
+		return min(4, max(0, $pro));
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isBaby(){
+		return $this->getDataFlag(self::DATA_FLAGS, self::DATA_FLAG_BABY);
 	}
 }

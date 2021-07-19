@@ -15,8 +15,13 @@
 
 namespace raklib\protocol;
 
+use function explode;
+use function inet_ntop;
+use function inet_pton;
+use function strlen;
+use const AF_INET6;
 #ifndef COMPILE
-use raklib\Binary;
+use pocketmine\utils\Binary;
 #endif
 
 #include <rules/RakLibPacket.h>
@@ -28,6 +33,11 @@ abstract class Packet{
 	public $buffer;
 	public $sendTime;
 
+	public function __construct($buffer = "", $offset = 0){
+		$this->buffer = $buffer;
+		$this->offset = $offset;
+	}
+
 	protected function get($len){
 		if($len < 0){
 			$this->offset = strlen($this->buffer) - 1;
@@ -37,15 +47,10 @@ abstract class Packet{
 			return substr($this->buffer, $this->offset);
 		}
 
-		$buffer = "";
-		for(; $len > 0; --$len, ++$this->offset){
-			$buffer .= $this->buffer{$this->offset};
-		}
-
-		return $buffer;
+		return $len === 1 ? $this->buffer[$this->offset++] : substr($this->buffer, ($this->offset += $len) - $len, $len);
 	}
 
-	protected function getLong($signed = true){
+	protected function getLong(){
 		return Binary::readLong($this->get(8));
 	}
 
@@ -66,7 +71,7 @@ abstract class Packet{
 	}
 
 	protected function getByte(){
-		return ord($this->buffer{$this->offset++});
+		return ord($this->buffer[$this->offset++]);
 	}
 
 	protected function getString(){
@@ -78,13 +83,20 @@ abstract class Packet{
 		if($version === 4){
 			$addr = ((~$this->getByte()) & 0xff) .".". ((~$this->getByte()) & 0xff) .".". ((~$this->getByte()) & 0xff) .".". ((~$this->getByte()) & 0xff);
 			$port = $this->getShort(false);
+		}elseif($version === 6){
+			//http://man7.org/linux/man-pages/man7/ipv6.7.html
+			Binary::readLShort($this->get(2)); //Family, AF_INET6
+			$port = $this->getShort(false);
+			$this->getInt(); //flow info
+			$addr = inet_ntop($this->get(16));
+			$this->getInt(); //scope ID
 		}else{
-			//TODO: IPv6
+			throw new \UnexpectedValueException("Unknown IP address version $version");
 		}
 	}
 
 	protected function feof(){
-		return !isset($this->buffer{$this->offset});
+		return !isset($this->buffer[$this->offset]);
 	}
 
 	protected function put($str){
@@ -127,21 +139,48 @@ abstract class Packet{
 				$this->putByte((~((int) $b)) & 0xff);
 			}
 			$this->putShort($port);
+		}elseif($version === 6){
+			$this->put(Binary::writeLShort(AF_INET6));
+			$this->putShort($port);
+			$this->putInt(0);
+			$this->put(inet_pton($addr));
+			$this->putInt(0);
 		}else{
-			//IPv6
+			throw new \InvalidArgumentException("IP version $version is not supported");
 		}
 	}
 
 	public function encode(){
-		$this->buffer = chr(static::$ID);
+		$this->reset();
+		$this->encodeHeader();
+		$this->encodePayload();
 	}
 
+	protected function encodeHeader(){
+		$this->putByte(static::$ID);
+	}
+
+	abstract protected function encodePayload();
+
 	public function decode(){
-		$this->offset = 1;
+		$this->offset = 0;
+		$this->decodeHeader();
+		$this->decodePayload();
+	}
+
+	protected function decodeHeader(){
+		$this->getByte(); //PID
+	}
+
+	abstract protected function decodePayload();
+
+	public function reset(){
+		$this->buffer = "";
+		$this->offset = 0;
 	}
 
 	public function clean(){
-		$this->buffer = null;
+		$this->buffer = "";
 		$this->offset = 0;
 		$this->sendTime = null;
 		return $this;

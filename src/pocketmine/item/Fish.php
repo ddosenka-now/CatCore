@@ -63,7 +63,6 @@ class Fish extends Food {
 		}elseif($this->meta === self::FISH_PUFFERFISH){
 			return 1.2;
 		}
-
 		return 0;
 	}
 
@@ -80,7 +79,6 @@ class Fish extends Food {
 		}elseif($this->meta === self::FISH_PUFFERFISH){
 			return 0.2;
 		}
-
 		return 0;
 	}
 

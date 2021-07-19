@@ -30,8 +30,6 @@ class Clay extends Solid {
 
 	/**
 	 * Clay constructor.
-	 *
-	 * @param int $meta
 	 */
 	public function __construct($meta = 0){
 		$this->meta = $meta;

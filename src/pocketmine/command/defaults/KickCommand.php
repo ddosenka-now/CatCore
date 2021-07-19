@@ -32,13 +32,13 @@ class KickCommand extends VanillaCommand {
 	/**
 	 * KickCommand constructor.
 	 *
-	 * @param string $name
+	 * @param $name
 	 */
 	public function __construct($name){
 		parent::__construct(
 			$name,
 			"%pocketmine.command.kick.description",
-			"%pocketmine.command.kick.usage"
+			"%commands.kick.usage"
 		);
 		$this->setPermission("pocketmine.command.kick");
 	}

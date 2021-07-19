@@ -31,7 +31,7 @@ class ListCommand extends VanillaCommand {
 	/**
 	 * ListCommand constructor.
 	 *
-	 * @param string $name
+	 * @param $name
 	 */
 	public function __construct($name){
 		parent::__construct(

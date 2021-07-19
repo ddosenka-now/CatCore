@@ -23,10 +23,11 @@ namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\level\Level;
+use pocketmine\level\sound\ButtonClickSound;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 
-class Lever extends Solid {
+class Lever extends RedstoneSource {
 	protected $id = self::LEVER;
 
 	/**
@@ -79,17 +80,7 @@ class Lever extends Solid {
 				return Level::BLOCK_UPDATE_NORMAL;
 			}
 		}
-
 		return false;
-	}
-
-	/**
-	 * @param Block|null $from
-	 *
-	 * @return bool
-	 */
-	public function isActivated(Block $from = null){
-		return (($this->meta & 0x08) === 0x08);
 	}
 
 	/**
@@ -122,30 +113,15 @@ class Lever extends Solid {
 				$this->meta = $faces[$face];
 			}
 			$this->getLevel()->setBlock($block, $this, true, false);
-
 			return true;
 		}
-
 		return false;
 	}
 
 	/**
-	 * @param Item        $item
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function onActivate(Item $item, Player $player = null){
-		$this->meta ^= 0x08;
-		$this->getLevel()->setBlock($this, $this, true, false);
-		if($this->isActivated()) $this->activate();
-		else $this->deactivate();
-
-		return true;
-	}
-
-	/**
 	 * @param array $ignore
+	 *
+	 * @return bool|void
 	 */
 	public function activate(array $ignore = []){
 		parent::activate($ignore);
@@ -172,6 +148,8 @@ class Lever extends Solid {
 
 	/**
 	 * @param array $ignore
+	 *
+	 * @return bool|void
 	 */
 	public function deactivate(array $ignore = []){
 		parent::deactivate($ignore);
@@ -197,7 +175,24 @@ class Lever extends Solid {
 	}
 
 	/**
+	 * @param Item        $item
+	 * @param Player|null $player
+	 *
+	 * @return bool
+	 */
+	public function onActivate(Item $item, Player $player = null){
+		$this->meta ^= 0x08;
+		$this->getLevel()->setBlock($this, $this, true, false);
+		$this->getLevel()->addSound(new ButtonClickSound($this));
+		if($this->isActivated()) $this->activate();
+		else $this->deactivate();
+		return true;
+	}
+
+	/**
 	 * @param Item $item
+	 *
+	 * @return mixed|void
 	 */
 	public function onBreak(Item $item){
 		if($this->isActivated()){
@@ -206,6 +201,15 @@ class Lever extends Solid {
 			$this->deactivate();
 		}
 		$this->getLevel()->setBlock($this, new Air(), true, false);
+	}
+
+	/**
+	 * @param Block|null $from
+	 *
+	 * @return bool
+	 */
+	public function isActivated(Block $from = null){
+		return (($this->meta & 0x08) === 0x08);
 	}
 
 	/**

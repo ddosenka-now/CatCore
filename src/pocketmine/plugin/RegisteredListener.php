@@ -52,7 +52,7 @@ class RegisteredListener {
 	 * @param EventExecutor  $executor
 	 * @param int            $priority
 	 * @param Plugin         $plugin
-	 * @param boolean        $ignoreCancelled
+	 * @param bool           $ignoreCancelled
 	 * @param TimingsHandler $timings
 	 */
 	public function __construct(Listener $listener, EventExecutor $executor, $priority, Plugin $plugin, $ignoreCancelled, TimingsHandler $timings){
@@ -97,14 +97,14 @@ class RegisteredListener {
 		$this->timings->stopTiming();
 	}
 
+	public function __destruct(){
+		$this->timings->remove();
+	}
+
 	/**
 	 * @return bool
 	 */
 	public function isIgnoringCancelled(){
 		return $this->ignoreCancelled === true;
-	}
-
-	public function __destruct(){
-		$this->timings->remove();
 	}
 }

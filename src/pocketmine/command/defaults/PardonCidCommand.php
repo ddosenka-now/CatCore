@@ -31,13 +31,13 @@ class PardonCidCommand extends VanillaCommand {
 	/**
 	 * PardonCidCommand constructor.
 	 *
-	 * @param string $name
+	 * @param $name
 	 */
 	public function __construct($name){
 		parent::__construct(
 			$name,
 			"%pocketmine.command.unban.cid.description",
-			"%pocketmine.command.unban.cid.usage"
+			"%commands.unbancid.usage"
 		);
 		$this->setPermission("pocketmine.command.pardoncid");
 	}
@@ -56,7 +56,6 @@ class PardonCidCommand extends VanillaCommand {
 
 		if(count($args) !== 1){
 			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-
 			return false;
 		}
 

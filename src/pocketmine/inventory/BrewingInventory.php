@@ -35,6 +35,13 @@ class BrewingInventory extends ContainerInventory {
 	}
 
 	/**
+	 * @return BrewingStand
+	 */
+	public function getHolder(){
+		return $this->holder;
+	}
+
+	/**
 	 * @param Item $item
 	 */
 	public function setIngredient(Item $item){
@@ -58,12 +65,5 @@ class BrewingInventory extends ContainerInventory {
 
 		$this->getHolder()->scheduleUpdate();
 		$this->getHolder()->updateSurface();
-	}
-
-	/**
-	 * @return InventoryHolder|BrewingStand
-	 */
-	public function getHolder(){
-		return $this->holder;
 	}
 }

@@ -39,7 +39,6 @@ class CraftingDataPacket extends DataPacket {
 	const ENTRY_FURNACE = 2;
 	const ENTRY_FURNACE_DATA = 3;
 	const ENTRY_MULTI = 4;
-	const ENTRY_SHULKER_BOX = 5; //TODO
 
 	/** @var object[] */
 	public $entries = [];
@@ -54,10 +53,13 @@ class CraftingDataPacket extends DataPacket {
 		return parent::clean();
 	}
 
+	/**
+	 *
+	 */
 	public function decode(){
 		$entries = [];
 		$recipeCount = $this->getUnsignedVarInt();
-		for($i = 0; $i < $recipeCount; ++$i){
+		for($i = 0; $i < $recipeCount && !$this->feof(); ++$i){
 			$entry = [];
 			$entry["type"] = $recipeType = $this->getVarInt();
 
@@ -66,12 +68,12 @@ class CraftingDataPacket extends DataPacket {
 					$ingredientCount = $this->getUnsignedVarInt();
 					/** @var Item */
 					$entry["input"] = [];
-					for($j = 0; $j < $ingredientCount; ++$j){
+					for($j = 0; $j < $ingredientCount && !$this->feof(); ++$j){
 						$entry["input"][] = $this->getSlot();
 					}
 					$resultCount = $this->getUnsignedVarInt();
 					$entry["output"] = [];
-					for($k = 0; $k < $resultCount; ++$k){
+					for($k = 0; $k < $resultCount && !$this->feof(); ++$k){
 						$entry["output"][] = $this->getSlot();
 					}
 					$entry["uuid"] = $this->getUUID()->toString();
@@ -82,12 +84,12 @@ class CraftingDataPacket extends DataPacket {
 					$entry["height"] = $this->getVarInt();
 					$count = $entry["width"] * $entry["height"];
 					$entry["input"] = [];
-					for($j = 0; $j < $count; ++$j){
+					for($j = 0; $j < $count && !$this->feof(); ++$j){
 						$entry["input"][] = $this->getSlot();
 					}
 					$resultCount = $this->getUnsignedVarInt();
 					$entry["output"] = [];
-					for($k = 0; $k < $resultCount; ++$k){
+					for($k = 0; $k < $resultCount && !$this->feof(); ++$k){
 						$entry["output"][] = $this->getSlot();
 					}
 					$entry["uuid"] = $this->getUUID()->toString();
@@ -109,47 +111,6 @@ class CraftingDataPacket extends DataPacket {
 			$entries[] = $entry;
 		}
 		$this->getBool(); //cleanRecipes
-	}
-
-	/**
-	 * @param ShapelessRecipe $recipe
-	 */
-	public function addShapelessRecipe(ShapelessRecipe $recipe){
-		$this->entries[] = $recipe;
-	}
-
-	/**
-	 * @param ShapedRecipe $recipe
-	 */
-	public function addShapedRecipe(ShapedRecipe $recipe){
-		$this->entries[] = $recipe;
-	}
-
-	/**
-	 * @param FurnaceRecipe $recipe
-	 */
-	public function addFurnaceRecipe(FurnaceRecipe $recipe){
-		$this->entries[] = $recipe;
-	}
-
-	public function encode(){
-		$this->reset();
-		$this->putUnsignedVarInt(count($this->entries));
-
-		$writer = new BinaryStream();
-		foreach($this->entries as $d){
-			$entryType = self::writeEntry($d, $writer);
-			if($entryType >= 0){
-				$this->putVarInt($entryType);
-				$this->put($writer->getBuffer());
-			}else{
-				$this->putVarInt(-1);
-			}
-
-			$writer->reset();
-		}
-
-		$this->putBool($this->cleanRecipes);
 	}
 
 	/**
@@ -235,6 +196,57 @@ class CraftingDataPacket extends DataPacket {
 
 			return CraftingDataPacket::ENTRY_FURNACE;
 		}
+	}
+
+	/**
+	 * @param ShapelessRecipe $recipe
+	 */
+	public function addShapelessRecipe(ShapelessRecipe $recipe){
+		$this->entries[] = $recipe;
+	}
+
+	/**
+	 * @param ShapedRecipe $recipe
+	 */
+	public function addShapedRecipe(ShapedRecipe $recipe){
+		$this->entries[] = $recipe;
+	}
+
+	/**
+	 * @param FurnaceRecipe $recipe
+	 */
+	public function addFurnaceRecipe(FurnaceRecipe $recipe){
+		$this->entries[] = $recipe;
+	}
+
+	/**
+	 *
+	 */
+	public function encode(){
+		$this->reset();
+		$this->putUnsignedVarInt(count($this->entries));
+
+		$writer = new BinaryStream();
+		foreach($this->entries as $d){
+			$entryType = self::writeEntry($d, $writer);
+			if($entryType >= 0){
+				$this->putVarInt($entryType);
+				$this->put($writer->getBuffer());
+			}else{
+				$this->putVarInt(-1);
+			}
+
+			$writer->reset();
+		}
+
+		$this->putBool($this->cleanRecipes);
+	}
+
+	/**
+	 * @return string Current packet name
+	 */
+	public function getName(){
+		return "CraftingDataPacket";
 	}
 
 }

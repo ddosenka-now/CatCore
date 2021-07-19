@@ -22,8 +22,8 @@
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
-use pocketmine\Player;
 use pocketmine\level\sound\ButtonClickSound;
+use pocketmine\Player;
 
 class StoneButton extends WoodenButton {
 	protected $id = self::STONE_BUTTON;
@@ -33,13 +33,6 @@ class StoneButton extends WoodenButton {
 	 */
 	public function getName() : string{
 		return "Stone Button";
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isSolid(){
-		return false;
 	}
 
 	/**
@@ -54,9 +47,8 @@ class StoneButton extends WoodenButton {
 			$this->getLevel()->setBlock($this, $this, true, false);
 			$this->getLevel()->addSound(new ButtonClickSound($this));
 			$this->activate();
-			$this->getLevel()->scheduleDelayedBlockUpdate($this, 20);
+			$this->getLevel()->scheduleUpdate($this, 40);
 		}
-
 		return true;
 	}
 }

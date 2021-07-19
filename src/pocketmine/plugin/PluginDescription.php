@@ -38,6 +38,8 @@ class PluginDescription {
 	private $prefix = null;
 	private $order = PluginLoadOrder::POSTWORLD;
 
+	private $geniapi;
+
 	/**
 	 * @var Permission[]
 	 */
@@ -56,14 +58,19 @@ class PluginDescription {
 	 * @throws PluginException
 	 */
 	private function loadMap(array $plugin){
-		$this->name = preg_replace("[^A-Za-z0-9 _.-]", "", $plugin["name"]);
-		if($this->name === ""){
+		$this->name = $plugin["name"];
+		if(preg_match('/^[A-Za-z0-9 _.-]+$/', $this->name) === 0){
 			throw new PluginException("Invalid PluginDescription name");
 		}
 		$this->name = str_replace(" ", "_", $this->name);
 		$this->version = $plugin["version"];
 		$this->main = $plugin["main"];
 		$this->api = !is_array($plugin["api"]) ? [$plugin["api"]] : $plugin["api"];
+		if(!isset($plugin["geniapi"])){
+			$this->geniapi = ["1.0.0"];
+		}else{
+			$this->geniapi = !is_array($plugin["geniapi"]) ? [$plugin["geniapi"]] : $plugin["geniapi"];
+		}
 
 		if(stripos($this->main, "pocketmine\\") === 0){
 			throw new PluginException("Invalid PluginDescription main, cannot start within the PocketMine namespace");
@@ -129,6 +136,12 @@ class PluginDescription {
 		return $this->api;
 	}
 
+	/**
+	 * @return array
+	 */
+	public function getCompatibleGeniApis(){
+		return $this->geniapi;
+	}
 
 	/**
 	 * @return array

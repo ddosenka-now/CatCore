@@ -37,18 +37,6 @@ class TranslationContainer extends TextContainer {
 	}
 
 	/**
-	 * @param string[] $params
-	 */
-	public function setParameters(array $params){
-		$i = 0;
-		foreach($params as $str){
-			$this->params[$i] = (string) $str;
-
-			++$i;
-		}
-	}
-
-	/**
 	 * @return string[]
 	 */
 	public function getParameters(){
@@ -74,5 +62,17 @@ class TranslationContainer extends TextContainer {
 		}
 
 		$this->params[(int) $i] = $str;
+	}
+
+	/**
+	 * @param string[] $params
+	 */
+	public function setParameters(array $params){
+		$i = 0;
+		foreach($params as $str){
+			$this->params[$i] = (string) $str;
+
+			++$i;
+		}
 	}
 }

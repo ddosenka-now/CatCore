@@ -1,5 +1,27 @@
 <?php
 
+/*
+ *
+ *  _____            _               _____           
+ * / ____|          (_)             |  __ \          
+ *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
+ *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
+ *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
+ *                         __/ |                    
+ *                        |___/                     
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * @author GenisysPro
+ * @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+*/
+
 namespace pocketmine\item;
 
 use pocketmine\block\Block;
@@ -86,7 +108,6 @@ class FireCharge extends Item {
 							$this->useOn($block, 2);
 							$player->getInventory()->setItemInHand($this);
 						}
-
 						return true;
 					}
 				}
@@ -94,7 +115,6 @@ class FireCharge extends Item {
 
 			$z_max = $tz;
 			$z_min = $tz;
-			$count_z = 0;
 			for($z = $tz + 1; $level->getBlock($this->temporalVector->setComponents($tx, $ty, $z))->getId() == Block::OBSIDIAN; $z++){
 				$z_max++;
 			}
@@ -128,7 +148,6 @@ class FireCharge extends Item {
 							$this->useOn($block, 2);
 							$player->getInventory()->setItemInHand($this);
 						}
-
 						return true;
 					}
 				}
@@ -141,7 +160,7 @@ class FireCharge extends Item {
 			/** @var Fire $block */
 			$block = $level->getBlock($block);
 			if($block->getSide(Vector3::SIDE_DOWN)->isTopFacingSurfaceSolid() or $block->canNeighborBurn()){
-				$level->scheduleDelayedBlockUpdate($block, $block->getTickRate() + mt_rand(0, 10));
+				$level->scheduleUpdate($block, $block->getTickRate() + mt_rand(0, 10));
 			}
 
 			if($player->isSurvival()){

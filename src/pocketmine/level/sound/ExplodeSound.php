@@ -23,7 +23,6 @@ namespace pocketmine\level\sound;
 
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
-use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 
 class ExplodeSound extends GenericSound {
 	/**
@@ -33,6 +32,6 @@ class ExplodeSound extends GenericSound {
 	 * @param int     $pitch
 	 */
 	public function __construct(Vector3 $pos, $pitch = 0){
-		parent::__construct($pos, LevelSoundEventPacket::SOUND_EXPLODE, $pitch);
+		parent::__construct($pos, LevelEventPacket::EVENT_CAULDRON_EXPLODE, $pitch);
 	}
 }

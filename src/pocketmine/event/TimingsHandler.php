@@ -101,16 +101,6 @@ class TimingsHandler {
 		}
 	}
 
-	public function reset(){
-		$this->count = 0;
-		$this->curCount = 0;
-		$this->violations = 0;
-		$this->curTickTotal = 0;
-		$this->totalTime = 0;
-		$this->start = 0;
-		$this->timingDepth = 0;
-	}
-
 	/**
 	 * @param bool $measure
 	 */
@@ -163,6 +153,16 @@ class TimingsHandler {
 				$this->parent->stopTiming();
 			}
 		}
+	}
+
+	public function reset(){
+		$this->count = 0;
+		$this->curCount = 0;
+		$this->violations = 0;
+		$this->curTickTotal = 0;
+		$this->totalTime = 0;
+		$this->start = 0;
+		$this->timingDepth = 0;
 	}
 
 	public function remove(){

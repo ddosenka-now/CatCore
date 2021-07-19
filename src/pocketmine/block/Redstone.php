@@ -24,7 +24,7 @@ namespace pocketmine\block;
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
 
-class Redstone extends Solid {
+class Redstone extends RedstoneSource {
 
 	protected $id = self::REDSTONE_BLOCK;
 
@@ -35,6 +35,36 @@ class Redstone extends Solid {
 	 */
 	public function __construct($meta = 0){
 		$this->meta = $meta;
+	}
+
+	/**
+	 * @return \pocketmine\math\AxisAlignedBB
+	 */
+	public function getBoundingBox(){
+		return Block::getBoundingBox();
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function canBeFlowedInto(){
+		return false;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isSolid(){
+		return true;
+	}
+
+	/**
+	 * @param Block|null $from
+	 *
+	 * @return bool
+	 */
+	public function isActivated(Block $from = null){
+		return true;
 	}
 
 	/**

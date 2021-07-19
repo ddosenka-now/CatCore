@@ -26,14 +26,14 @@ use pocketmine\item\Tool;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\IntTag;
+use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 use pocketmine\tile\Chest as TileChest;
 use pocketmine\tile\Tile;
 
-class TrappedChest extends Solid {
+class TrappedChest extends RedstoneSource {
 	protected $id = self::TRAPPED_CHEST;
 
 	/**
@@ -52,22 +52,7 @@ class TrappedChest extends Solid {
 		if($this->boundingBox === null){
 			$this->boundingBox = $this->recalculateBoundingBox();
 		}
-
 		return $this->boundingBox;
-	}
-
-	/**
-	 * @return AxisAlignedBB
-	 */
-	protected function recalculateBoundingBox(){
-		return new AxisAlignedBB(
-			$this->x + 0.0625,
-			$this->y,
-			$this->z + 0.0625,
-			$this->x + 0.9375,
-			$this->y + 0.9475,
-			$this->z + 0.9375
-		);
 	}
 
 	/**
@@ -94,15 +79,15 @@ class TrappedChest extends Solid {
 	/**
 	 * @return float
 	 */
-	public function getResistance(){
-		return $this->getHardness() * 5;
+	public function getHardness(){
+		return 2.5;
 	}
 
 	/**
-	 * @return float
+	 * @return float|int
 	 */
-	public function getHardness(){
-		return 2.5;
+	public function getResistance(){
+		return $this->getHardness() * 5;
 	}
 
 	/**
@@ -117,6 +102,20 @@ class TrappedChest extends Solid {
 	 */
 	public function getToolType(){
 		return Tool::TYPE_AXE;
+	}
+
+	/**
+	 * @return AxisAlignedBB
+	 */
+	protected function recalculateBoundingBox(){
+		return new AxisAlignedBB(
+			$this->x + 0.0625,
+			$this->y,
+			$this->z + 0.0625,
+			$this->x + 0.9375,
+			$this->y + 0.9475,
+			$this->z + 0.9375
+		);
 	}
 
 	/**

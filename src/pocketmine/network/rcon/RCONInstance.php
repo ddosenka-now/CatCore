@@ -25,17 +25,37 @@ use pocketmine\Thread;
 use pocketmine\utils\Binary;
 use pocketmine\utils\MainLogger;
 
-class RCONInstance extends Thread {
-	public $stop;
+class RCONInstance extends Thread{
+	private const STATUS_DISCONNECTED = -1;
+	private const STATUS_AUTHENTICATING = 0;
+	private const STATUS_CONNECTED = 1;
+
+	/** @var string */
 	public $cmd;
+	/** @var string */
 	public $response;
-	public $serverStatus;
+
+	/** @var resource */
 	private $socket;
+	/** @var string */
 	private $password;
+	/** @var int */
 	private $maxClients;
+	/** @var bool */
 	private $waiting;
+
 	/** @var MainLogger */
 	private $logger;
+
+	public $serverStatus;
+
+	/**
+	 * @return bool
+	 */
+	public function isWaiting(){
+		return $this->waiting;
+	}
+
 
 	/**
 	 * RCONInstance constructor.
@@ -55,7 +75,7 @@ class RCONInstance extends Thread {
 		$this->maxClients = (int) $maxClients;
 		for($n = 0; $n < $this->maxClients; ++$n){
 			$this->{"client" . $n} = null;
-			$this->{"status" . $n} = 0;
+			$this->{"status" . $n} = self::STATUS_DISCONNECTED;
 			$this->{"timeout" . $n} = 0;
 		}
 
@@ -63,10 +83,48 @@ class RCONInstance extends Thread {
 	}
 
 	/**
-	 * @return bool
+	 * @param $client
+	 * @param $requestID
+	 * @param $packetType
+	 * @param $payload
+	 *
+	 * @return int
 	 */
-	public function isWaiting(){
-		return $this->waiting === true;
+	private function writePacket($client, $requestID, $packetType, $payload){
+		$pk = Binary::writeLInt((int) $requestID)
+			. Binary::writeLInt((int) $packetType)
+			. $payload
+			. "\x00\x00"; //Terminate payload and packet
+		return socket_write($client, Binary::writeLInt(strlen($pk)) . $pk);
+	}
+
+	/**
+	 * @param $client
+	 * @param $requestID
+	 * @param $packetType
+	 * @param $payload
+	 *
+	 * @return bool|null
+	 */
+	private function readPacket($client, &$requestID, &$packetType, &$payload){
+		socket_set_nonblock($client);
+		$d = @socket_read($client, 4);
+		if($this->stop === true){
+			return false;
+		}elseif($d === false){
+			return null;
+		}elseif($d === "" or strlen($d) < 4){
+			return false;
+		}
+		socket_set_block($client);
+		$size = Binary::readLInt($d);
+		if($size < 0 or $size > 65535){
+			return false;
+		}
+		$requestID = Binary::readLInt(socket_read($client, 4));
+		$packetType = Binary::readLInt(socket_read($client, 4));
+		$payload = rtrim(socket_read($client, $size + 2)); //Strip two null bytes
+		return true;
 	}
 
 	public function close(){
@@ -74,7 +132,6 @@ class RCONInstance extends Thread {
 	}
 
 	public function run(){
-
 		while($this->stop !== true){
 			$this->synchronized(function(){
 				$this->wait(2000);
@@ -90,7 +147,7 @@ class RCONInstance extends Thread {
 					for($n = 0; $n < $this->maxClients; ++$n){
 						if($this->{"client" . $n} === null){
 							$this->{"client" . $n} = $client;
-							$this->{"status" . $n} = 0;
+							$this->{"status" . $n} = self::STATUS_AUTHENTICATING;
 							$this->{"timeout" . $n} = microtime(true) + 5;
 							$done = true;
 							break;
@@ -105,24 +162,22 @@ class RCONInstance extends Thread {
 			for($n = 0; $n < $this->maxClients; ++$n){
 				$client = &$this->{"client" . $n};
 				if($client !== null){
-					if($this->{"status" . $n} !== -1 and $this->stop !== true){
-						if($this->{"status" . $n} === 0 and $this->{"timeout" . $n} < microtime(true)){ //Timeout
-							$this->{"status" . $n} = -1;
+					if($this->{"status" . $n} !== self::STATUS_DISCONNECTED and !$this->stop){
+						if($this->{"status" . $n} === self::STATUS_AUTHENTICATING and $this->{"timeout" . $n} < microtime(true)){ //Timeout
+							$this->{"status" . $n} = self::STATUS_DISCONNECTED;
 							continue;
 						}
-						$p = $this->readPacket($client, $size, $requestID, $packetType, $payload);
+						$p = $this->readPacket($client, $requestID, $packetType, $payload);
 						if($p === false){
-							$this->{"status" . $n} = -1;
-							continue;
-						}elseif($p === null){
+							$this->{"status" . $n} = self::STATUS_DISCONNECTED;
 							continue;
 						}
 
 						switch($packetType){
 							case 9: //Protocol check
-								if($this->{"status" . $n} !== 1){
-									$this->{"status" . $n} = -1;
-									continue;
+								if($this->{"status" . $n} !== self::STATUS_CONNECTED){
+									$this->{"status" . $n} = self::STATUS_DISCONNECTED;
+									break;
 								}
 								$this->writePacket($client, $requestID, 0, RCON::PROTOCOL_VERSION);
 								$this->response = "";
@@ -130,9 +185,9 @@ class RCONInstance extends Thread {
 								if($payload == RCON::PROTOCOL_VERSION) $this->logger->setSendMsg(true); //GeniRCON output
 								break;
 							case 4: //Logger
-								if($this->{"status" . $n} !== 1){
-									$this->{"status" . $n} = -1;
-									continue;
+								if($this->{"status" . $n} !== self::STATUS_CONNECTED){
+									$this->{"status" . $n} = self::STATUS_DISCONNECTED;
+									break;
 								}
 								$res = (array) [
 									"serverStatus" => unserialize($this->serverStatus),
@@ -142,28 +197,27 @@ class RCONInstance extends Thread {
 								$this->response = "";
 								break;
 							case 3: //Login
-								if($this->{"status" . $n} !== 0){
-									$this->{"status" . $n} = -1;
-									continue;
+								if($this->{"status" . $n} !== self::STATUS_AUTHENTICATING){
+									$this->{"status" . $n} = self::STATUS_DISCONNECTED;
+									break;
 								}
 								if($payload === $this->password){
 									socket_getpeername($client, $addr, $port);
 									$this->response = "[INFO] Successful Rcon connection from: /$addr:$port";
 									$this->response = "";
 									$this->writePacket($client, $requestID, 2, "");
-									$this->{"status" . $n} = 1;
+								    $this->{"status" . $n} = self::STATUS_CONNECTED;
 								}else{
-									$this->{"status" . $n} = -1;
+									$this->{"status" . $n} = self::STATUS_DISCONNECTED;
 									$this->writePacket($client, -1, 2, "");
-									continue;
 								}
 								break;
 							case 2: //Command
-								if($this->{"status" . $n} !== 1){
-									$this->{"status" . $n} = -1;
-									continue;
+								if($this->{"status" . $n} !== self::STATUS_CONNECTED){
+									$this->{"status" . $n} = self::STATUS_DISCONNECTED;
+									break;
 								}
-								if(strlen($payload) > 0){
+								if($payload !== ""){
 									$this->cmd = ltrim($payload);
 									$this->synchronized(function(){
 										$this->waiting = true;
@@ -183,62 +237,12 @@ class RCONInstance extends Thread {
 						@socket_set_block($client);
 						@socket_read($client, 1);
 						@socket_close($client);
-						$this->{"status" . $n} = 0;
+						$this->{"status" . $n} = self::STATUS_DISCONNECTED;
 						$this->{"client" . $n} = null;
 					}
 				}
 			}
 		}
-		unset($this->socket, $this->cmd, $this->response, $this->stop);
-		exit(0);
-	}
-
-	/**
-	 * @param $client
-	 * @param $size
-	 * @param $requestID
-	 * @param $packetType
-	 * @param $payload
-	 *
-	 * @return bool|null
-	 */
-	private function readPacket($client, &$size, &$requestID, &$packetType, &$payload){
-		socket_set_nonblock($client);
-		$d = @socket_read($client, 4);
-		if($this->stop === true){
-			return false;
-		}elseif($d === false){
-			return null;
-		}elseif($d === "" or strlen($d) < 4){
-			return false;
-		}
-		socket_set_block($client);
-		$size = Binary::readLInt($d);
-		if($size < 0 or $size > 65535){
-			return false;
-		}
-		$requestID = Binary::readLInt(socket_read($client, 4));
-		$packetType = Binary::readLInt(socket_read($client, 4));
-		$payload = rtrim(socket_read($client, $size + 2)); //Strip two null bytes
-
-		return true;
-	}
-
-	/**
-	 * @param $client
-	 * @param $requestID
-	 * @param $packetType
-	 * @param $payload
-	 *
-	 * @return int
-	 */
-	private function writePacket($client, $requestID, $packetType, $payload){
-		$pk = Binary::writeLInt((int) $requestID)
-			. Binary::writeLInt((int) $packetType)
-			. $payload
-			. "\x00\x00"; //Terminate payload and packet
-
-		return socket_write($client, Binary::writeLInt(strlen($pk)) . $pk);
 	}
 
 	/**

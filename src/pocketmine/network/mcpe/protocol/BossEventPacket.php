@@ -32,14 +32,27 @@ class BossEventPacket extends DataPacket {
 	public $eid;
 	public $type;
 
+	/**
+	 *
+	 */
 	public function decode(){
 
 	}
 
+	/**
+	 *
+	 */
 	public function encode(){
 		$this->reset();
 		$this->putEntityId($this->eid);
 		$this->putUnsignedVarInt($this->type);
+	}
+
+	/**
+	 * @return string Current packet name
+	 */
+	public function getName(){
+		return "BossEventPacket";
 	}
 
 }

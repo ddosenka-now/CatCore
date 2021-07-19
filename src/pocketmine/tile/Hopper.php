@@ -54,54 +54,21 @@ class Hopper extends Spawnable implements InventoryHolder, Container, Nameable {
 		if(!isset($nbt->TransferCooldown) or !($nbt->TransferCooldown instanceof IntTag)){
 			$nbt->TransferCooldown = new IntTag("TransferCooldown", 0);
 		}
+
 		parent::__construct($level, $nbt);
+
 		$this->inventory = new HopperInventory($this);
+
 		if(!isset($this->namedtag->Items) or !($this->namedtag->Items instanceof ListTag)){
 			$this->namedtag->Items = new ListTag("Items", []);
 			$this->namedtag->Items->setTagType(NBT::TAG_Compound);
 		}
+
 		for($i = 0; $i < $this->getSize(); ++$i){
-			$this->inventory->setItem($i, $this->getItem($i));
+			$this->inventory->setItem($i, $this->getItem($i), false);
 		}
+
 		$this->scheduleUpdate();
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getSize(){
-		return 5;
-	}
-
-	/**
-	 * This method should not be used by plugins, use the Inventory
-	 *
-	 * @param int $index
-	 *
-	 * @return Item
-	 */
-	public function getItem($index){
-		$i = $this->getSlotIndex($index);
-		if($i < 0){
-			return Item::get(Item::AIR, 0, 0);
-		}else{
-			return Item::nbtDeserialize($this->namedtag->Items[$i]);
-		}
-	}
-
-	/**
-	 * @param $index
-	 *
-	 * @return int
-	 */
-	protected function getSlotIndex($index){
-		foreach($this->namedtag->Items as $i => $slot){
-			if((int) $slot["Slot"] === (int) $index){
-				return (int) $i;
-			}
-		}
-
-		return -1;
 	}
 
 	public function close(){
@@ -109,15 +76,11 @@ class Hopper extends Spawnable implements InventoryHolder, Container, Nameable {
 			foreach($this->getInventory()->getViewers() as $player){
 				$player->removeWindow($this->getInventory());
 			}
+
+			$this->inventory = null;
+			
 			parent::close();
 		}
-	}
-
-	/**
-	 * @return HopperInventory
-	 */
-	public function getInventory(){
-		return $this->inventory;
 	}
 
 	public function activate(){
@@ -126,6 +89,17 @@ class Hopper extends Spawnable implements InventoryHolder, Container, Nameable {
 
 	public function deactivate(){
 		$this->isPowered = false;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function canUpdate(){
+		return $this->namedtag->TransferCooldown->getValue() === 0 and !$this->isPowered;
+	}
+
+	public function resetCooldownTicks(){
+		$this->namedtag->TransferCooldown->setValue(8);
 	}
 
 	/**
@@ -164,7 +138,6 @@ class Hopper extends Spawnable implements InventoryHolder, Container, Nameable {
 
 		if(!$this->canUpdate()){ //Hoppers only update CONTENTS every 8th tick
 			$this->namedtag->TransferCooldown->setValue($this->namedtag->TransferCooldown->getValue() - 1);
-
 			return true;
 		}
 
@@ -194,12 +167,13 @@ class Hopper extends Spawnable implements InventoryHolder, Container, Nameable {
 					if($item->getId() === Item::AIR or $item->getCount() < 1){
 						continue;
 					}
-					$targetItem = clone $item;
+
+                    $targetItem = clone $item;
 					$targetItem->setCount(1);
 
 					if($inv->canAddItem($targetItem)){
+                        $this->inventory->removeItem($targetItem);
 						$inv->addItem($targetItem);
-						$this->inventory->removeItem($targetItem);
 						$this->resetCooldownTicks();
 						if($target instanceof Hopper){
 							$target->resetCooldownTicks();
@@ -215,21 +189,32 @@ class Hopper extends Spawnable implements InventoryHolder, Container, Nameable {
 	}
 
 	/**
-	 * @return bool
+	 * @return HopperInventory
 	 */
-	public function canUpdate(){
-		return $this->namedtag->TransferCooldown->getValue() === 0 and !$this->isPowered;
+	public function getInventory(){
+		return $this->inventory;
 	}
 
-	public function resetCooldownTicks(){
-		$this->namedtag->TransferCooldown->setValue(8);
+	/**
+	 * @return int
+	 */
+	public function getSize(){
+		return 5;
 	}
 
-	public function saveNBT(){
-		$this->namedtag->Items = new ListTag("Items", []);
-		$this->namedtag->Items->setTagType(NBT::TAG_Compound);
-		for($index = 0; $index < $this->getSize(); ++$index){
-			$this->setItem($index, $this->inventory->getItem($index));
+	/**
+	 * This method should not be used by plugins, use the Inventory
+	 *
+	 * @param int $index
+	 *
+	 * @return Item
+	 */
+	public function getItem($index){
+		$i = $this->getSlotIndex($index);
+		if($i < 0){
+			return Item::get(Item::AIR, 0, 0);
+		}else{
+			return Item::nbtDeserialize($this->namedtag->Items[$i]);
 		}
 	}
 
@@ -263,10 +248,40 @@ class Hopper extends Spawnable implements InventoryHolder, Container, Nameable {
 	}
 
 	/**
+	 * @param $index
+	 *
+	 * @return int
+	 */
+	protected function getSlotIndex($index){
+		foreach($this->namedtag->Items as $i => $slot){
+			if((int) $slot["Slot"] === (int) $index){
+				return (int) $i;
+			}
+		}
+
+		return -1;
+	}
+
+	public function saveNBT(){
+		$this->namedtag->Items = new ListTag("Items", []);
+		$this->namedtag->Items->setTagType(NBT::TAG_Compound);
+		for($index = 0; $index < $this->getSize(); ++$index){
+			$this->setItem($index, $this->inventory->getItem($index));
+		}
+	}
+
+	/**
 	 * @return string
 	 */
 	public function getName() : string{
 		return isset($this->namedtag->CustomName) ? $this->namedtag->CustomName->getValue() : "Hopper";
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function hasName(){
+		return isset($this->namedtag->CustomName);
 	}
 
 	/**
@@ -275,10 +290,17 @@ class Hopper extends Spawnable implements InventoryHolder, Container, Nameable {
 	public function setName($str){
 		if($str === ""){
 			unset($this->namedtag->CustomName);
-
 			return;
 		}
 		$this->namedtag->CustomName = new StringTag("CustomName", $str);
+	}
+
+
+	/**
+	 * @return bool
+	 */
+	public function hasLock(){
+		return isset($this->namedtag->Lock);
 	}
 
 	/**
@@ -287,7 +309,6 @@ class Hopper extends Spawnable implements InventoryHolder, Container, Nameable {
 	public function setLock(string $itemName = ""){
 		if($itemName === ""){
 			unset($this->namedtag->Lock);
-
 			return;
 		}
 		$this->namedtag->Lock = new StringTag("Lock", $itemName);
@@ -321,19 +342,5 @@ class Hopper extends Spawnable implements InventoryHolder, Container, Nameable {
 		}
 
 		return $c;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function hasName(){
-		return isset($this->namedtag->CustomName);
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function hasLock(){
-		return isset($this->namedtag->Lock);
 	}
 }

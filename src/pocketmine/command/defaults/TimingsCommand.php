@@ -73,7 +73,6 @@ class TimingsCommand extends VanillaCommand {
 		}elseif($mode === "off"){
 			$sender->getServer()->getPluginManager()->setUseTimings(false);
 			$sender->sendMessage(new TranslationContainer("pocketmine.command.timings.disable"));
-
 			return true;
 		}
 
@@ -111,34 +110,37 @@ class TimingsCommand extends VanillaCommand {
 			if($paste){
 				fseek($fileTimings, 0);
 				$data = [
-					"syntax" => "text",
-					"poster" => $sender->getServer()->getName(),
-					"content" => stream_get_contents($fileTimings)
+					"browser" => $sender->getServer()->getName() . " " . $sender->getServer()->getPocketMineVersion(),
+					"data" => stream_get_contents($fileTimings)
 				];
 
-				$ch = curl_init("http://paste.ubuntu.com/");
+				$ch = curl_init("https://timings.pmmp.io?upload=true");
 				curl_setopt($ch, CURLOPT_POST, 1);
 				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 				curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 				curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
 				curl_setopt($ch, CURLOPT_FRESH_CONNECT, 1);
-				curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
 				curl_setopt($ch, CURLOPT_AUTOREFERER, false);
 				curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
 				curl_setopt($ch, CURLOPT_HEADER, true);
-				curl_setopt($ch, CURLOPT_HTTPHEADER, ["User-Agent: " . $this->getName() . " " . $sender->getServer()->getPocketMineVersion()]);
+				curl_setopt($ch, CURLOPT_HTTPHEADER, [
+					"User-Agent: " . $this->getName() . " " . $sender->getServer()->getPocketMineVersion(),
+					"Content-Type: application/x-www-form-urlencoded"
+				]);
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 				$data = curl_exec($ch);
+				$data = substr($data, curl_getinfo($ch, CURLINFO_HEADER_SIZE));
 				curl_close($ch);
-				if(preg_match('#^Location: http://paste\\.ubuntu\\.com/([0-9]{1,})/#m', $data, $matches) == 0){
+				if(!is_array($response = json_decode($data, true)) or !isset($response["id"])){
 					$sender->sendMessage(new TranslationContainer("pocketmine.command.timings.pasteError"));
 
 					return true;
 				}
 
 
-				$sender->sendMessage(new TranslationContainer("pocketmine.command.timings.timingsUpload", ["http://paste.ubuntu.com/" . $matches[1] . "/"]));
-				$sender->sendMessage(new TranslationContainer("pocketmine.command.timings.timingsRead", ["http://mcpetimings.com/?url=" . $matches[1]]));
+				$sender->sendMessage(new TranslationContainer("pocketmine.command.timings.timingsUpload", ["https://timings.pmmp.io/?id=" . $response["id"]]));
+				$sender->sendMessage(new TranslationContainer("pocketmine.command.timings.timingsRead", ["https://timings.pmmp.io/?id=" . $response["id"]]));
 				fclose($fileTimings);
 			}else{
 				fclose($fileTimings);

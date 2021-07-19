@@ -61,12 +61,4 @@ class EntityDrinkPotionEvent extends EntityEvent implements Cancellable {
 	public function getPotion(){
 		return $this->potion;
 	}
-
-	/**
-	 * @return EventName|string
-	 */
-	public function getName(){
-		return "EntityDrinkPotionEvent";
-	}
-
 }

@@ -69,6 +69,10 @@ class BrownMushroom extends Flowable {
 		return false;
 	}
 
+	protected function recalculateBoundingBox(){
+		return null;
+	}
+
 	/**
 	 * @param Item        $item
 	 * @param Block       $block
@@ -90,13 +94,6 @@ class BrownMushroom extends Flowable {
 		}
 
 		return false;
-	}
-
-	/**
-	 * @return null
-	 */
-	public function getBoundingBox(){
-		return null;
 	}
 
 }

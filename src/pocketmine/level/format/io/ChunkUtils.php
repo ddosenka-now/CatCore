@@ -28,16 +28,14 @@ class ChunkUtils {
 	/**
 	 * Re-orders a byte array (YZX -> XZY and vice versa)
 	 *
-	 * @param string $array length 4096
+	 * @param string $array length 512
 	 *
-	 * @return string length 4096
+	 * @return string length 512
 	 */
 	public static final function reorderByteArray(string $array) : string{
-		$result = str_repeat("\x00", 4096);
+		$result = str_repeat("\x00", 512);
 		if($array !== $result){
 			$i = 0;
-			$zM = 0;
-			$yM = 0;
 			for($x = 0; $x < 16; ++$x){
 				$zM = $x + 256;
 				for($z = $x; $z < $zM; $z += 16){
@@ -56,14 +54,14 @@ class ChunkUtils {
 	/**
 	 * Re-orders a nibble array (YZX -> XZY and vice versa)
 	 *
-	 * @param string $array length 2048
-	 *
-	 * @param string $commonValue
+	 * @param string $array       length 2048
+	 * @param string $commonValue length 1 common value to fill the default array with and to expect, may improve sort time
 	 *
 	 * @return string length 2048
 	 */
 	public static final function reorderNibbleArray(string $array, string $commonValue = "\x00") : string{
 		$result = str_repeat($commonValue, 2048);
+
 		if($array !== $result){
 			$i = 0;
 			for($x = 0; $x < 8; ++$x){
@@ -102,7 +100,6 @@ class ChunkUtils {
 		foreach($array as $i => $color){
 			$result{$i} = chr(($color >> 24) & 0xff);
 		}
-
 		return $result;
 	}
 

@@ -65,7 +65,6 @@ class DoubleWoodSlab extends Solid {
 			6 => "",
 			7 => ""
 		];
-
 		return "Double " . $names[$this->meta & 0x07] . " Wooden Slab";
 	}
 

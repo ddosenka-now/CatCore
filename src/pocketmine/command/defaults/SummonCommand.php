@@ -43,7 +43,7 @@ class SummonCommand extends VanillaCommand {
 		parent::__construct(
 			$name,
 			"%pocketmine.command.summon.description",
-			"%pocketmine.command.summon.usage"
+			"%commands.summon.usage"
 		);
 		$this->setPermission("pocketmine.command.summon");
 	}
@@ -62,7 +62,6 @@ class SummonCommand extends VanillaCommand {
 
 		if(count($args) != 1 and count($args) != 4 and count($args) != 5){
 			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-
 			return true;
 		}
 
@@ -80,12 +79,10 @@ class SummonCommand extends VanillaCommand {
 					$x = is_numeric($offset_x) ? ($sender->x + $offset_x) : $sender->x;
 				}else{                                                            //using in console
 					$sender->sendMessage(TextFormat::RED . "You must specify a position where the entity is spawned to when using in console");
-
 					return false;
 				}
 			}else{                                                                //other circumstances
 				$sender->sendMessage(TextFormat::RED . "Argument error");
-
 				return false;
 			}
 
@@ -99,12 +96,10 @@ class SummonCommand extends VanillaCommand {
 					$y = min(128, max(0, $y));
 				}else{                                                            //using in console
 					$sender->sendMessage(TextFormat::RED . "You must specify a position where the entity is spawned to when using in console");
-
 					return false;
 				}
 			}else{                                                                //other circumstances
 				$sender->sendMessage(TextFormat::RED . "Argument error");
-
 				return false;
 			}
 
@@ -117,12 +112,10 @@ class SummonCommand extends VanillaCommand {
 					$z = is_numeric($offset_z) ? ($sender->z + $offset_z) : $sender->z;
 				}else{                                                            //using in console
 					$sender->sendMessage(TextFormat::RED . "You must specify a position where the entity is spawned to when using in console");
-
 					return false;
 				}
 			}else{                                                                //other circumstances
 				$sender->sendMessage(TextFormat::RED . "Argument error");
-
 				return false;
 			}
 		}    //finish setting the location
@@ -134,7 +127,6 @@ class SummonCommand extends VanillaCommand {
 				$z = $sender->z;
 			}else{
 				$sender->sendMessage(TextFormat::RED . "You must specify a position where the entity is spawned to when using in console");
-
 				return false;
 			}
 		} //finish setting the location
@@ -158,7 +150,7 @@ class SummonCommand extends VanillaCommand {
 				new FloatTag("", 0)
 			]),
 		]);
-		if(count($args) == 5 and $args[4]{0} == "{"){//Tags are found
+		if(count($args) == 5 and $args[4][0] == "{"){//Tags are found
 			$nbtExtra = NBT::parseJSON($args[4]);
 			$nbt = NBT::combineCompoundTags($nbt, $nbtExtra, true);
 		}
@@ -167,11 +159,9 @@ class SummonCommand extends VanillaCommand {
 		if($entity instanceof Entity){
 			$entity->spawnToAll();
 			$sender->sendMessage("Successfully spawned entity $type at ($x, $y, $z)");
-
 			return true;
 		}else{
 			$sender->sendMessage(TextFormat::RED . "An error occurred when spawning the entity $type");
-
 			return false;
 		}
 	}

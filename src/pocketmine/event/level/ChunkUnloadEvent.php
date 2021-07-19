@@ -27,14 +27,5 @@ use pocketmine\event\Cancellable;
  * Called when a Chunk is unloaded
  */
 class ChunkUnloadEvent extends ChunkEvent implements Cancellable {
-
 	public static $handlerList = null;
-
-	/**
-	 * @return EventName|string
-	 */
-	public function getName(){
-		return "ChunkUnloadEvent";
-	}
-
 }

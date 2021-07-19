@@ -8,13 +8,22 @@
  * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
  * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
+ *  _____            _               _____           
+ * / ____|          (_)             |  __ \          
+ *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
+ *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
+ *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
+ *                         __/ |                    
+ *                        |___/                     
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author GenisysPro
+ * @link https://github.com/GenisysPro/GenisysPro
  *
  *
 */
@@ -37,7 +46,7 @@ class BanListCommand extends VanillaCommand {
 		parent::__construct(
 			$name,
 			"%pocketmine.command.banlist.description",
-			"%pocketmine.command.banlist.usage"
+			"%commands.banlist.usage"
 		);
 		$this->setPermission("pocketmine.command.ban.list");
 	}
@@ -55,7 +64,6 @@ class BanListCommand extends VanillaCommand {
 		}
 
 		$args[0] = (isset($args[0]) ? strtolower($args[0]) : "");
-		$title = "";
 
 		switch($args[0]){
 			case "ips":
@@ -72,7 +80,6 @@ class BanListCommand extends VanillaCommand {
 				break;
 			default:
 				$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-
 				return false;
 		}
 

@@ -69,16 +69,6 @@ class Perlin extends Noise {
 	/**
 	 * @param $x
 	 * @param $y
-	 *
-	 * @return mixed
-	 */
-	public function getNoise2D($x, $y){
-		return $this->getNoise3D($x, $y, 0);
-	}
-
-	/**
-	 * @param $x
-	 * @param $y
 	 * @param $z
 	 *
 	 * @return mixed
@@ -165,5 +155,15 @@ class Perlin extends Noise {
 			)
 		);
 		*/
+	}
+
+	/**
+	 * @param $x
+	 * @param $y
+	 *
+	 * @return mixed
+	 */
+	public function getNoise2D($x, $y){
+		return $this->getNoise3D($x, $y, 0);
 	}
 }

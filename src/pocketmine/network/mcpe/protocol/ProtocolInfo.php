@@ -1,41 +1,39 @@
 <?php
-
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *  _____            _               _____
+ * / ____|          (_)             |  __ \
+ *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                         __/ |
+ *                        |___/
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
+ * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author GenisysPro
+ * @link https://github.com/GenisysPro/GenisysPro
  *
  *
 */
-
 /**
  * Minecraft: PE multiplayer protocol implementation
  */
 
 namespace pocketmine\network\mcpe\protocol;
-
-
 interface ProtocolInfo {
-
 	/**
 	 * Actual Minecraft: PE protocol version
 	 */
 
-	const CURRENT_PROTOCOL = 437;
-	const ACCEPTED_PROTOCOLS = [113, 130, 131, 132, 136, 137, 140, 150, 160, 200, 201, 220, 223, 221, 222, 224, 223, 240, 260, 261, 270, 271, 273, 274, 280, 281, 282, 290, 291, 310, 311, 312, 313, 330, 331, 332, 340, 350, 351, 352, 353, 354, 360, 361, 370, 371, 385, 386, 387, 388, 389, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 404, 406, 407, 408, 414, 419, 420, 421, 422, 423, 424, 425, 427, 428, 429, 430, 431, 432, 433, 434, 435, 436, 437];
-	const MINECRAFT_VERSION = ["v1.1.0", "v1.1.1", "v1.1.2", "v1.1.3", "v1.1.4", "v1.1.5", "v1.1.7", "v1.2.0", "v1.9.0", "v1.12.0", "v1.14.0", "v1.16.0", "v1.16.201", "v1.16.221"];
-	const MINECRAFT_VERSION_NETWORK = "1.16.221";
+	const CURRENT_PROTOCOL = 113;
+	const ACCEPTED_PROTOCOLS = [113, 250, 400, 410];
+	const MINECRAFT_VERSION = ["v1.1.0", "v1.1.1", "v1.1.2", "v1.1.3", "v1.1.4", "v1.1.5", "v1.1.7"];
+	const MINECRAFT_VERSION_NETWORK = "6.0";
 
 	const LOGIN_PACKET = 0x01;
 	const PLAY_STATUS_PACKET = 0x02;
@@ -43,7 +41,7 @@ interface ProtocolInfo {
 	const CLIENT_TO_SERVER_HANDSHAKE_PACKET = 0x04;
 	const DISCONNECT_PACKET = 0x05;
 	const RESOURCE_PACKS_INFO_PACKET = 0x06;
-	const RESOURCE_PACK_STACK_PACKET = 0x07; //ResourcePacksStackPacket
+	const RESOURCE_PACK_STACK_PACKET = 0x07;
 	const RESOURCE_PACK_CLIENT_RESPONSE_PACKET = 0x08;
 	const TEXT_PACKET = 0x09;
 	const SET_TIME_PACKET = 0x0a;
@@ -101,14 +99,14 @@ interface ProtocolInfo {
 	const SET_PLAYER_GAME_TYPE_PACKET = 0x3e;
 	const PLAYER_LIST_PACKET = 0x3f;
 	const SIMPLE_EVENT_PACKET = 0x40;
-	const EVENT_PACKET = 0x41; //TelemetryEventPacket
+	const EVENT_PACKET = 0x41;
 	const SPAWN_EXPERIENCE_ORB_PACKET = 0x42;
-	const CLIENTBOUND_MAP_ITEM_DATA_PACKET = 0x43; //MapItemDataPacket
+	const CLIENTBOUND_MAP_ITEM_DATA_PACKET = 0x43;
 	const MAP_INFO_REQUEST_PACKET = 0x44;
 	const REQUEST_CHUNK_RADIUS_PACKET = 0x45;
 	const CHUNK_RADIUS_UPDATED_PACKET = 0x46;
 	const ITEM_FRAME_DROP_ITEM_PACKET = 0x47;
-	const REPLACE_ITEM_IN_SLOT_PACKET = 0x48; //ReplaceSelectedItemPacket
+	const REPLACE_ITEM_IN_SLOT_PACKET = 0x48;
 	const GAME_RULES_CHANGED_PACKET = 0x49;
 	const CAMERA_PACKET = 0x4a;
 	const ADD_ITEM_PACKET = 0x4b;
@@ -128,4 +126,6 @@ interface ProtocolInfo {
 	const SET_TITLE_PACKET = 0x59;
 	const ADD_BEHAVIOR_TREE_PACKET = 0x5a;
 	const STRUCTURE_BLOCK_UPDATE_PACKET = 0x5b;
+	const SHOW_STORE_OFFER_PACKET = 0x5c;
+	const PURCHASE_RECEIPT_PACKET = 0x5d;
 }

@@ -21,8 +21,8 @@
 
 namespace pocketmine\inventory;
 
-use pocketmine\Player;
 use pocketmine\item\Item;
+use pocketmine\Player;
 
 interface Transaction {
 
@@ -44,6 +44,11 @@ interface Transaction {
 	 * @return Item
 	 */
 	public function getTargetItem();
+	
+	/**
+	 * @return Item
+	 */
+	public function getSourceItem();
 
 	/**
 	 * @return float

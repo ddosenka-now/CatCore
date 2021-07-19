@@ -22,13 +22,18 @@
 namespace pocketmine\item;
 
 use pocketmine\entity\Entity;
-
 use pocketmine\event\entity\EntityEatItemEvent;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\Player;
-use pocketmine\Server;
 
 abstract class Food extends Item implements FoodSource {
+	/**
+	 * @return bool
+	 */
+	public function canBeConsumed() : bool{
+		return true;
+	}
+
 	/**
 	 * @param Entity $entity
 	 *
@@ -36,13 +41,6 @@ abstract class Food extends Item implements FoodSource {
 	 */
 	public function canBeConsumedBy(Entity $entity) : bool{
 		return $entity instanceof Player and ($entity->getFood() < $entity->getMaxFood()) and $this->canBeConsumed();
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function canBeConsumed() : bool{
-		return true;
 	}
 
 	/**
@@ -54,7 +52,6 @@ abstract class Food extends Item implements FoodSource {
 		}else{
 			$new = clone $this;
 			$new->count--;
-
 			return $new;
 		}
 	}
@@ -76,12 +73,9 @@ abstract class Food extends Item implements FoodSource {
 		if($human instanceof Player){
 			$human->dataPacket($pk);
 		}
+		$human->getLevel()->getServer()->broadcastPacket($human->getViewers(), $pk);
 
-		$server = $human->getLevel()->getServer();
-
-		$server->broadcastPacket($human->getViewers(), $pk);
-
-		Server::getInstance()->getPluginManager()->callEvent($ev = new EntityEatItemEvent($human, $this));
+		$human->getLevel()->getServer()->getPluginManager()->callEvent($ev = new EntityEatItemEvent($human, $this));
 
 		$human->addSaturation($ev->getSaturationRestore());
 		$human->addFood($ev->getFoodRestore());

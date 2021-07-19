@@ -27,7 +27,6 @@ use pocketmine\Player;
  * Called when a player leaves the server
  */
 class PlayerQuitEvent extends PlayerEvent {
-
 	public static $handlerList = null;
 
 	/** @var string */
@@ -48,17 +47,17 @@ class PlayerQuitEvent extends PlayerEvent {
 	}
 
 	/**
-	 * @return string
-	 */
-	public function getQuitMessage(){
-		return $this->quitMessage;
-	}
-
-	/**
 	 * @param $quitMessage
 	 */
 	public function setQuitMessage($quitMessage){
 		$this->quitMessage = $quitMessage;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getQuitMessage(){
+		return $this->quitMessage;
 	}
 
 	/**
@@ -73,13 +72,6 @@ class PlayerQuitEvent extends PlayerEvent {
 	 */
 	public function setAutoSave($value = true){
 		$this->autoSave = (bool) $value;
-	}
-
-	/**
-	 * @return EventName|string
-	 */
-	public function getName(){
-		return "PlayerQuitEvent";
 	}
 
 }

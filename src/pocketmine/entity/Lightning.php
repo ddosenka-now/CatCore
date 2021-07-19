@@ -23,10 +23,10 @@ namespace pocketmine\entity;
 
 use pocketmine\block\Liquid;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
+use pocketmine\item\Item as ItemItem;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\network\mcpe\protocol\ExplodePacket;
-use pocketmine\item\Item as ItemItem;
 use pocketmine\Player;
 
 class Lightning extends Animal {
@@ -44,8 +44,9 @@ class Lightning extends Animal {
 	}
 
 	public function initEntity(){
-		$this->setMaxHealth(2);
 		parent::initEntity();
+		$this->setMaxHealth(2);
+		$this->setHealth(2);
 	}
 
 	/**
@@ -59,7 +60,6 @@ class Lightning extends Animal {
 			$this->kill();
 			$this->close();
 		}
-
 		return true;
 	}
 
@@ -115,6 +115,10 @@ class Lightning extends Animal {
 						$ev->useArmors();
 					}
 					$entity->setOnFire(mt_rand(3, 8));
+				}
+
+				if($entity instanceof Creeper){
+					$entity->setPowered(true, $this);
 				}
 			}
 		}

@@ -34,7 +34,6 @@ class RedSandstone extends Sandstone {
 			2 => "Smooth Red Sandstone",
 			3 => "",
 		];
-
 		return $names[$this->meta & 0x03];
 	}
 }

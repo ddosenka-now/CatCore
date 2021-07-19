@@ -2,22 +2,22 @@
 
 /*
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
+ *  ____            _        _   __  __ _                  __  __ ____
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
+ * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
+ * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ * @author PocketMine Team
+ * @link http://www.pocketmine.net/
  *
- */
+ *
+*/
 
 namespace pocketmine\tile;
 
@@ -37,7 +37,7 @@ class FlowerPot extends Spawnable {
 	 * @param CompoundTag $nbt
 	 */
 	public function __construct(Level $level, CompoundTag $nbt){
-		if(!isset($nbt->item) or !($nbt->item instanceof ShortTag)){
+		if(!isset($nbt->item)){
 			$nbt->item = new ShortTag("item", 0);
 		}
 		if(!isset($nbt->mData)){
@@ -75,21 +75,10 @@ class FlowerPot extends Spawnable {
 	}
 
 	/**
-	 * @return bool
-	 */
-	public function isEmpty() : bool{
-		return $this->getItem()->getId() === Item::AIR;
-	}
-
-	/**
 	 * @return Item
 	 */
 	public function getItem() : Item{
 		return Item::get((int) ($this->namedtag["item"] ?? 0), (int) ($this->namedtag["mData"] ?? 0), 1);
-	}
-
-	public function removeItem(){
-		$this->setItem(Item::get(Item::AIR));
 	}
 
 	/**
@@ -99,6 +88,17 @@ class FlowerPot extends Spawnable {
 		$this->namedtag["item"] = $item->getId();
 		$this->namedtag["mData"] = $item->getDamage();
 		$this->onChanged();
+	}
+
+	public function removeItem(){
+		$this->setItem(Item::get(Item::AIR));
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isEmpty() : bool{
+		return $this->getItem()->getId() === Item::AIR;
 	}
 
 	/**

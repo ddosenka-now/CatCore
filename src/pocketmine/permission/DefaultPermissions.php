@@ -26,6 +26,23 @@ use pocketmine\Server;
 abstract class DefaultPermissions {
 	const ROOT = "pocketmine";
 
+	/**
+	 * @param Permission $perm
+	 * @param Permission $parent
+	 *
+	 * @return Permission
+	 */
+	public static function registerPermission(Permission $perm, Permission $parent = null){
+		if($parent instanceof Permission){
+			$parent->getChildren()[$perm->getName()] = true;
+
+			return self::registerPermission($perm);
+		}
+		Server::getInstance()->getPluginManager()->addPermission($perm);
+
+		return Server::getInstance()->getPluginManager()->getPermission($perm->getName());
+	}
+
 	public static function registerCorePermissions(){
 		$parent = self::registerPermission(new Permission(self::ROOT, "Allows using all PocketMine commands and utilities"));
 
@@ -90,9 +107,6 @@ abstract class DefaultPermissions {
 		self::registerPermission(new Permission(self::ROOT . ".command.effect.other", "Allows the user to give/take potion effects for other", Permission::DEFAULT_OP), $commands);
 		$effect->recalculatePermissibles();
 
-		self::registerPermission(new Permission(self::ROOT . ".command.bancid", "", Permission::DEFAULT_OP), $commands);
-		self::registerPermission(new Permission(self::ROOT . ".command.pardoncid", "", Permission::DEFAULT_OP), $commands);
-		self::registerPermission(new Permission(self::ROOT . ".command.bancidbyname", "", Permission::DEFAULT_OP), $commands);
 		self::registerPermission(new Permission(self::ROOT . ".command.enchant", "Allows the user to enchant items", Permission::DEFAULT_OP), $commands);
 		self::registerPermission(new Permission(self::ROOT . ".command.particle", "Allows the user to create particle effects", Permission::DEFAULT_OP), $commands);
 		self::registerPermission(new Permission(self::ROOT . ".command.teleport", "Allows the user to teleport players", Permission::DEFAULT_OP), $commands);
@@ -108,13 +122,25 @@ abstract class DefaultPermissions {
 		self::registerPermission(new Permission(self::ROOT . ".command.seed", "Allows the user to view the seed of the world", Permission::DEFAULT_OP), $commands);
 		self::registerPermission(new Permission(self::ROOT . ".command.status", "Allows the user to view the server performance", Permission::DEFAULT_OP), $commands);
 		self::registerPermission(new Permission(self::ROOT . ".command.gc", "Allows the user to fire garbage collection tasks", Permission::DEFAULT_OP), $commands);
-		self::registerPermission(new Permission(self::ROOT . ".command.dumpmemory", "Allows the user to dump memory contents", Permission::DEFAULT_OP), $commands);
+		self::registerPermission(new Permission(self::ROOT . ".command.dumpmemory", "Allows the user to dump memory contents", Permission::DEFAULT_FALSE), $commands);
 		self::registerPermission(new Permission(self::ROOT . ".command.timings", "Allows the user to records timings for all plugin events", Permission::DEFAULT_OP), $commands);
 		self::registerPermission(new Permission(self::ROOT . ".command.spawnpoint", "Allows the user to change player's spawnpoint", Permission::DEFAULT_OP), $commands);
 		self::registerPermission(new Permission(self::ROOT . ".command.setworldspawn", "Allows the user to change the world spawn", Permission::DEFAULT_OP), $commands);
+
+		self::registerPermission(new Permission(self::ROOT . ".command.extractphar", "", Permission::DEFAULT_OP), $commands);
+		self::registerPermission(new Permission(self::ROOT . ".command.extractplugin", "", Permission::DEFAULT_OP), $commands);
+		self::registerPermission(new Permission(self::ROOT . ".command.makeplugin", "", Permission::DEFAULT_OP), $commands);
+		self::registerPermission(new Permission(self::ROOT . ".command.makeserver", "", Permission::DEFAULT_OP), $commands);
+		self::registerPermission(new Permission(self::ROOT . ".command.loadplugin", "", Permission::DEFAULT_OP), $commands);
+		self::registerPermission(new Permission(self::ROOT . ".command.bancid", "", Permission::DEFAULT_OP), $commands);
+		self::registerPermission(new Permission(self::ROOT . ".command.pardoncid", "", Permission::DEFAULT_OP), $commands);
+		self::registerPermission(new Permission(self::ROOT . ".command.bancidbyname", "", Permission::DEFAULT_OP), $commands);
 		self::registerPermission(new Permission(self::ROOT . ".command.banipbyname", "", Permission::DEFAULT_OP), $commands);
 		self::registerPermission(new Permission(self::ROOT . ".command.weather", "", Permission::DEFAULT_OP), $commands);
 		self::registerPermission(new Permission(self::ROOT . ".command.loadplugin", "", Permission::DEFAULT_OP), $commands);
+		self::registerPermission(new Permission(self::ROOT . ".command.lvdat", "", Permission::DEFAULT_OP), $commands);
+		self::registerPermission(new Permission(self::ROOT . ".command.biome", "", Permission::DEFAULT_OP), $commands);
+		self::registerPermission(new Permission(self::ROOT . ".command.cave", "", Permission::DEFAULT_OP), $commands);
 		self::registerPermission(new Permission(self::ROOT . ".command.setblock", "", Permission::DEFAULT_OP), $commands);
 		self::registerPermission(new Permission(self::ROOT . ".command.fill", "", Permission::DEFAULT_OP), $commands);
 		self::registerPermission(new Permission(self::ROOT . ".command.summon", "", Permission::DEFAULT_OP), $commands);
@@ -125,22 +151,5 @@ abstract class DefaultPermissions {
 		$commands->recalculatePermissibles();
 
 		$parent->recalculatePermissibles();
-	}
-
-	/**
-	 * @param Permission $perm
-	 * @param Permission $parent
-	 *
-	 * @return Permission
-	 */
-	public static function registerPermission(Permission $perm, Permission $parent = null){
-		if($parent instanceof Permission){
-			$parent->getChildren()[$perm->getName()] = true;
-
-			return self::registerPermission($perm);
-		}
-		Server::getInstance()->getPluginManager()->addPermission($perm);
-
-		return Server::getInstance()->getPluginManager()->getPermission($perm->getName());
 	}
 }

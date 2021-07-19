@@ -27,15 +27,18 @@ use pocketmine\item\Item;
 use pocketmine\level\Level;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
-use pocketmine\nbt\tag\IntTag;
 use pocketmine\network\mcpe\protocol\ContainerSetDataPacket;
 use pocketmine\Server;
 
 class BrewingStand extends Spawnable implements InventoryHolder, Container, Nameable {
 	const MAX_BREW_TIME = 400;
+	/** @var BrewingInventory */
+	protected $inventory;
+
 	public static $ingredients = [
 		Item::NETHER_WART => 0,
 		Item::GLOWSTONE_DUST => 0,
@@ -55,8 +58,6 @@ class BrewingStand extends Spawnable implements InventoryHolder, Container, Name
 
 		Item::GUNPOWDER => 0,
 	];
-	/** @var BrewingInventory */
-	protected $inventory;
 
 	/**
 	 * BrewingStand constructor.
@@ -75,49 +76,11 @@ class BrewingStand extends Spawnable implements InventoryHolder, Container, Name
 			$this->namedtag->Items->setTagType(NBT::TAG_Compound);
 		}
 		for($i = 0; $i < $this->getSize(); ++$i){
-			$this->inventory->setItem($i, $this->getItem($i));
+			$this->inventory->setItem($i, $this->getItem($i), false);
 		}
 		/*if($this->namedtag["CookTime"] < self::MAX_BREW_TIME){
 			$this->scheduleUpdate();
 		}*/
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getSize(){
-		return 4;
-	}
-
-	/**
-	 * This method should not be used by plugins, use the Inventory
-	 *
-	 * @param int $index
-	 *
-	 * @return Item
-	 */
-	public function getItem($index){
-		$i = $this->getSlotIndex($index);
-		if($i < 0){
-			return Item::get(Item::AIR, 0, 0);
-		}else{
-			return Item::nbtDeserialize($this->namedtag->Items[$i]);
-		}
-	}
-
-	/**
-	 * @param $index
-	 *
-	 * @return int
-	 */
-	protected function getSlotIndex($index){
-		foreach($this->namedtag->Items as $i => $slot){
-			if($slot["Slot"] === $index){
-				return $i;
-			}
-		}
-
-		return -1;
 	}
 
 	/**
@@ -140,7 +103,6 @@ class BrewingStand extends Spawnable implements InventoryHolder, Container, Name
 	public function setName($str){
 		if($str === ""){
 			unset($this->namedtag->CustomName);
-
 			return;
 		}
 
@@ -152,20 +114,11 @@ class BrewingStand extends Spawnable implements InventoryHolder, Container, Name
 			foreach($this->getInventory()->getViewers() as $player){
 				$player->removeWindow($this->getInventory());
 			}
+
+			$this->inventory = null;
+			
 			parent::close();
 		}
-	}
-
-	/**
-	 * @return BrewingInventory
-	 */
-	public function getInventory(){
-		return $this->inventory;
-	}
-
-	public function updateSurface(){
-		$this->saveNBT();
-		$this->onChanged();
 	}
 
 	public function saveNBT(){
@@ -173,6 +126,44 @@ class BrewingStand extends Spawnable implements InventoryHolder, Container, Name
 		$this->namedtag->Items->setTagType(NBT::TAG_Compound);
 		for($index = 0; $index < $this->getSize(); ++$index){
 			$this->setItem($index, $this->inventory->getItem($index));
+		}
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getSize(){
+		return 4;
+	}
+
+	/**
+	 * @param $index
+	 *
+	 * @return int
+	 */
+	protected function getSlotIndex($index){
+		foreach($this->namedtag->Items as $i => $slot){
+			if($slot["Slot"] === $index){
+				return $i;
+			}
+		}
+
+		return -1;
+	}
+
+	/**
+	 * This method should not be used by plugins, use the Inventory
+	 *
+	 * @param int $index
+	 *
+	 * @return Item
+	 */
+	public function getItem($index){
+		$i = $this->getSlotIndex($index);
+		if($i < 0){
+			return Item::get(Item::AIR, 0, 0);
+		}else{
+			return Item::nbtDeserialize($this->namedtag->Items[$i]);
 		}
 	}
 
@@ -203,6 +194,32 @@ class BrewingStand extends Spawnable implements InventoryHolder, Container, Name
 		}
 
 		return true;
+	}
+
+	/**
+	 * @return BrewingInventory
+	 */
+	public function getInventory(){
+		return $this->inventory;
+	}
+
+	/**
+	 * @param Item $item
+	 *
+	 * @return bool
+	 */
+	public function checkIngredient(Item $item){
+		if(isset(self::$ingredients[$item->getId()])){
+			if(self::$ingredients[$item->getId()] === $item->getDamage()){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public function updateSurface(){
+		$this->saveNBT();
+		$this->onChanged();
 	}
 
 	/**
@@ -301,21 +318,6 @@ class BrewingStand extends Spawnable implements InventoryHolder, Container, Name
 	}
 
 	/**
-	 * @param Item $item
-	 *
-	 * @return bool
-	 */
-	public function checkIngredient(Item $item){
-		if(isset(self::$ingredients[$item->getId()])){
-			if(self::$ingredients[$item->getId()] === $item->getDamage()){
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
 	 * @return CompoundTag
 	 */
 	public function getSpawnCompound(){
@@ -331,7 +333,6 @@ class BrewingStand extends Spawnable implements InventoryHolder, Container, Name
 		if($this->hasName()){
 			$nbt->CustomName = $this->namedtag->CustomName;
 		}
-
 		return $nbt;
 	}
 }

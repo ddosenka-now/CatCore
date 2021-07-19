@@ -21,15 +21,21 @@
 
 namespace pocketmine\block;
 
-class DaylightDetectorInverted extends Solid {
+use pocketmine\item\Item;
+use pocketmine\Player;
+
+class DaylightDetectorInverted extends DaylightDetector {
 	protected $id = self::DAYLIGHT_SENSOR_INVERTED;
 
 	/**
-	 * DaylightDetectorInverted constructor.
+	 * @param Item        $item
+	 * @param Player|null $player
 	 *
-	 * @param int $meta
+	 * @return bool
 	 */
-	public function __construct($meta = 0){
-		$this->meta = $meta;
+	public function onActivate(Item $item, Player $player = null){
+		$this->getLevel()->setBlock($this, new DaylightDetector(), true, true);
+		$this->getTile()->onUpdate();
+		return true;
 	}
 }

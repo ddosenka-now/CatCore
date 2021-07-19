@@ -33,15 +33,28 @@ class BlockEntityDataPacket extends DataPacket {
 	public $z;
 	public $namedtag;
 
+	/**
+	 *
+	 */
 	public function decode(){
 		$this->getBlockCoords($this->x, $this->y, $this->z);
-		$this->namedtag = $this->get(true);
+		$this->namedtag = $this->getRemaining();
 	}
 
+	/**
+	 *
+	 */
 	public function encode(){
 		$this->reset();
 		$this->putBlockCoords($this->x, $this->y, $this->z);
 		$this->put($this->namedtag);
+	}
+
+	/**
+	 * @return string Current packet name
+	 */
+	public function getName(){
+		return "BlockEntityDataPacket";
 	}
 
 }

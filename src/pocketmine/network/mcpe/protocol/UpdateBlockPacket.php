@@ -44,15 +44,28 @@ class UpdateBlockPacket extends DataPacket {
 	public $blockData;
 	public $flags;
 
+	/**
+	 *
+	 */
 	public function decode(){
 
 	}
 
+	/**
+	 *
+	 */
 	public function encode(){
 		$this->reset();
 		$this->putBlockCoords($this->x, $this->y, $this->z);
 		$this->putUnsignedVarInt($this->blockId);
 		$this->putUnsignedVarInt(($this->flags << 4) | $this->blockData);
+	}
+
+	/**
+	 * @return string Current packet name
+	 */
+	public function getName(){
+		return "UpdateBlockPacket";
 	}
 
 }

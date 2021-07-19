@@ -34,19 +34,19 @@ class SplashPotion extends Item {
 	}
 
 	/**
+	 * @return int
+	 */
+	public function getMaxStackSize() : int{
+		return 1;
+	}
+
+	/**
 	 * @param int $meta
 	 *
 	 * @return string
 	 */
 	public function getNameByMeta(int $meta){
 		return "Splash " . Potion::getNameByMeta($meta);
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getMaxStackSize() : int{
-		return 1;
 	}
 
 

@@ -34,8 +34,6 @@ class Obsidian extends Solid {
 
 	/**
 	 * Obsidian constructor.
-	 *
-	 * @param int $meta
 	 */
 	public function __construct($meta = 0){
 		$this->meta = $meta;
@@ -62,7 +60,14 @@ class Obsidian extends Solid {
 	 * @return int
 	 */
 	public function getHardness(){
-		return 50;
+		return 35; //50 in PC
+	}
+
+	/**
+	 * @return float
+	 */
+	public function getBlastResistance() : float{
+		return 6000;
 	}
 
 	/**
@@ -82,6 +87,8 @@ class Obsidian extends Solid {
 
 	/**
 	 * @param Item $item
+	 *
+	 * @return mixed|void
 	 */
 	public function onBreak(Item $item){
 		parent::onBreak($item);

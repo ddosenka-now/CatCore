@@ -16,7 +16,7 @@
  * (at your option) any later version.
  *
  * @author Tesseract Team
- * @link http://www.github.com/TesseractTeam/Tesseract
+ * @link DEAD
  * 
  *
  */

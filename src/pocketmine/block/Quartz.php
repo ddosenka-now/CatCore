@@ -61,7 +61,6 @@ class Quartz extends Solid {
 			2 => "Quartz Pillar",
 			3 => "Quartz Block",
 		];
-
 		return $names[$this->meta & 0x03];
 	}
 
@@ -91,7 +90,6 @@ class Quartz extends Solid {
 			$this->meta = ($this->meta & 0x03) | $faces[$face];
 		}
 		$this->getLevel()->setBlock($block, $this, true, true);
-
 		return true;
 	}
 

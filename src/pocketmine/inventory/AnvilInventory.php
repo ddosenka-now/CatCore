@@ -23,7 +23,6 @@ namespace pocketmine\inventory;
 
 use pocketmine\item\Item;
 use pocketmine\item\EnchantedBook;
-use pocketmine\item\enchantment\Enchantment;
 use pocketmine\level\Position;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -46,6 +45,20 @@ class AnvilInventory extends TemporaryInventory {
 	}
 
 	/**
+	 * @return FakeBlockMenu|InventoryHolder
+	 */
+	public function getHolder(){
+		return $this->holder;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getResultSlotIndex(){
+		return self::RESULT;
+	}
+
+	/**
 	 * @param Player $player
 	 * @param Item   $resultItem
 	 *
@@ -63,7 +76,12 @@ class AnvilInventory extends TemporaryInventory {
 		$player->takeXpLevel($resultItem->getRepairCost());
 
 		$this->clearAll();
-
+		if(!$player->getServer()->allowInventoryCheats and !$player->isCreative()){
+			if(!$player->getFloatingInventory()->canAddItem($resultItem)){
+				return false;
+			}
+			$player->getFloatingInventory()->addItem($resultItem);
+		}
 		return true;
 	}
 
@@ -79,7 +97,6 @@ class AnvilInventory extends TemporaryInventory {
 		Server::getInstance()->getPluginManager()->callEvent($ev = new AnvilProcessEvent($this));
 		if($ev->isCancelled()){
 			$this->clearAll();
-
 			return false;
 		}
 		if($sacrifice instanceof EnchantedBook && $sacrifice->hasEnchantments()){ //Enchanted Books!
@@ -93,6 +110,12 @@ class AnvilInventory extends TemporaryInventory {
 			$player->takeXpLevel($resultItem->getRepairCost());
 
 			$this->clearAll();
+			if(!$player->getServer()->allowInventoryCheats and !$player->isCreative()){
+				if(!$player->getFloatingInventory()->canAddItem($resultItem)){
+					return false;
+				}
+				$player->getFloatingInventory()->addItem($resultItem);
+			}
 		}
 	}
 
@@ -105,15 +128,7 @@ class AnvilInventory extends TemporaryInventory {
 		if($transaction->getSlot() === $this->getResultSlotIndex()){
 			return false;
 		}
-
 		return true;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getResultSlotIndex(){
-		return self::RESULT;
 	}
 
 	/**
@@ -131,18 +146,7 @@ class AnvilInventory extends TemporaryInventory {
 	public function onClose(Player $who){
 		parent::onClose($who);
 
-		$this->getHolder()->getLevel()->dropItem($this->getHolder()->add(0.5, 0.5, 0.5), $this->getItem(0));
-		$this->getHolder()->getLevel()->dropItem($this->getHolder()->add(0.5, 0.5, 0.5), $this->getItem(1));
-		$this->clear(0);
-		$this->clear(1);
-		$this->clear(2);
-	}
-
-	/**
-	 * @return FakeBlockMenu|InventoryHolder
-	 */
-	public function getHolder(){
-		return $this->holder;
+		$this->dropContents($this->holder->getLevel(), $this->holder->add(0.5, 0.5, 0.5));
 	}
 
 }

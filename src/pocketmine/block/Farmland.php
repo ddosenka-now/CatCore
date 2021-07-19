@@ -25,7 +25,7 @@ use pocketmine\item\Item;
 use pocketmine\item\Tool;
 use pocketmine\math\AxisAlignedBB;
 
-class Farmland extends Solid {
+class Farmland extends Transparent{
 
 	protected $id = self::FARMLAND;
 
@@ -60,17 +60,6 @@ class Farmland extends Solid {
 	}
 
 	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		return [
-			[Item::DIRT, 0, 1],
-		];
-	}
-
-	/**
 	 * @return AxisAlignedBB
 	 */
 	protected function recalculateBoundingBox(){
@@ -79,8 +68,19 @@ class Farmland extends Solid {
 			$this->y,
 			$this->z,
 			$this->x + 1,
-			$this->y + 0.9375,
+			$this->y + 1, //TODO: this should be 0.9375, but MCPE currently treats them as a full block (https://bugs.mojang.com/browse/MCPE-12109)
 			$this->z + 1
 		);
+	}
+
+	/**
+	 * @param Item $item
+	 *
+	 * @return array
+	 */
+	public function getDrops(Item $item) : array{
+		return [
+			[Item::DIRT, 0, 1],
+		];
 	}
 }

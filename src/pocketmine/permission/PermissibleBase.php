@@ -59,6 +59,17 @@ class PermissibleBase implements Permissible {
 	}
 
 	/**
+	 * @return bool
+	 */
+	public function isOp(){
+		if($this->opable === null){
+			return false;
+		}else{
+			return $this->opable->isOp();
+		}
+	}
+
+	/**
 	 * @param bool $value
 	 *
 	 * @throws \Throwable
@@ -69,6 +80,15 @@ class PermissibleBase implements Permissible {
 		}else{
 			$this->opable->setOp($value);
 		}
+	}
+
+	/**
+	 * @param Permission|string $name
+	 *
+	 * @return bool
+	 */
+	public function isPermissionSet($name){
+		return isset($this->permissions[$name instanceof Permission ? $name->getName() : $name]);
 	}
 
 	/**
@@ -96,26 +116,6 @@ class PermissibleBase implements Permissible {
 	}
 
 	/**
-	 * @param Permission|string $name
-	 *
-	 * @return bool
-	 */
-	public function isPermissionSet($name){
-		return isset($this->permissions[$name instanceof Permission ? $name->getName() : $name]);
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isOp(){
-		if($this->opable === null){
-			return false;
-		}else{
-			return $this->opable->isOp();
-		}
-	}
-
-	/**
 	 * //TODO: tick scheduled attachments
 	 *
 	 * @param Plugin $plugin
@@ -127,9 +127,7 @@ class PermissibleBase implements Permissible {
 	 * @throws PluginException
 	 */
 	public function addAttachment(Plugin $plugin, $name = null, $value = null){
-		if($plugin === null){
-			throw new PluginException("Plugin cannot be null");
-		}elseif(!$plugin->isEnabled()){
+		if(!$plugin->isEnabled()){
 			throw new PluginException("Plugin " . $plugin->getDescription()->getName() . " is disabled");
 		}
 
@@ -142,6 +140,22 @@ class PermissibleBase implements Permissible {
 		$this->recalculatePermissions();
 
 		return $result;
+	}
+
+	/**
+	 * @param PermissionAttachment $attachment
+	 */
+	public function removeAttachment(PermissionAttachment $attachment){
+		if(isset($this->attachments[spl_object_hash($attachment)])){
+			unset($this->attachments[spl_object_hash($attachment)]);
+			if(($ex = $attachment->getRemovalCallback()) !== null){
+				$ex->attachmentRemoved($attachment);
+			}
+
+			$this->recalculatePermissions();
+
+		}
+
 	}
 
 	public function recalculatePermissions(){
@@ -166,9 +180,7 @@ class PermissibleBase implements Permissible {
 	}
 
 	public function clearPermissions(){
-		foreach(array_keys($this->permissions) as $name){
-			Server::getInstance()->getPluginManager()->unsubscribeFromPermission($name, $this->parent !== null ? $this->parent : $this);
-		}
+		Server::getInstance()->getPluginManager()->unsubscribeFromAllPermissions($this->parent ?? $this);
 
 		Server::getInstance()->getPluginManager()->unsubscribeFromDefaultPerms(false, $this->parent !== null ? $this->parent : $this);
 		Server::getInstance()->getPluginManager()->unsubscribeFromDefaultPerms(true, $this->parent !== null ? $this->parent : $this);
@@ -192,28 +204,6 @@ class PermissibleBase implements Permissible {
 				$this->calculateChildPermissions($perm->getChildren(), !$value, $attachment);
 			}
 		}
-	}
-
-	/**
-	 * @param PermissionAttachment $attachment
-	 *
-	 * @throws \Throwable
-	 */
-	public function removeAttachment(PermissionAttachment $attachment){
-		if($attachment === null){
-			throw new \InvalidStateException("Attachment cannot be null");
-		}
-
-		if(isset($this->attachments[spl_object_hash($attachment)])){
-			unset($this->attachments[spl_object_hash($attachment)]);
-			if(($ex = $attachment->getRemovalCallback()) !== null){
-				$ex->attachmentRemoved($attachment);
-			}
-
-			$this->recalculatePermissions();
-
-		}
-
 	}
 
 	/**

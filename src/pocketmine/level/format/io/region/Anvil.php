@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\level\format\io\region;
 
+
 use pocketmine\level\format\Chunk;
 use pocketmine\level\format\io\ChunkException;
 use pocketmine\level\format\io\ChunkUtils;
@@ -38,13 +39,6 @@ use pocketmine\utils\MainLogger;
 class Anvil extends McRegion {
 
 	const REGION_FILE_EXTENSION = "mca";
-
-	/**
-	 * @return string
-	 */
-	public static function getProviderName() : string{
-		return "anvil";
-	}
 
 	/**
 	 * @param Chunk $chunk
@@ -66,7 +60,7 @@ class Anvil extends McRegion {
 		$nbt->Sections->setTagType(NBT::TAG_Compound);
 		$subChunks = -1;
 		foreach($chunk->getSubChunks() as $y => $subChunk){
-			if($subChunk->isEmpty()){
+			if(!($subChunk instanceof SubChunk) or $subChunk->isEmpty()){
 				continue;
 			}
 			$nbt->Sections[++$subChunks] = new CompoundTag(null, [
@@ -83,11 +77,9 @@ class Anvil extends McRegion {
 
 		$entities = [];
 
-		foreach($chunk->getEntities() as $entity){
-			if(!($entity instanceof Player) and !$entity->closed){
-				$entity->saveNBT();
-				$entities[] = $entity->namedtag;
-			}
+        foreach($chunk->getSavableEntities() as $entity){
+            $entity->saveNBT();
+            $entities[] = $entity->namedtag;
 		}
 
 		$nbt->Entities = new ListTag("Entities", $entities);
@@ -144,7 +136,7 @@ class Anvil extends McRegion {
 			}
 
 			if(isset($chunk->BiomeColors)){
-				$biomeIds = ChunkUtils::convertBiomeColors($chunk->BiomeColors->getValue()); //Convert back to PC format (RIP colours D:)
+				$biomeIds = ChunkUtils::convertBiomeColors($chunk->BiomeColors->getValue()); //Convert back to original format
 			}elseif(isset($chunk->Biomes)){
 				$biomeIds = $chunk->Biomes->getValue();
 			}else{
@@ -163,13 +155,22 @@ class Anvil extends McRegion {
 			$result->setLightPopulated(isset($chunk->LightPopulated) ? ((bool) $chunk->LightPopulated->getValue()) : false);
 			$result->setPopulated(isset($chunk->TerrainPopulated) ? ((bool) $chunk->TerrainPopulated->getValue()) : false);
 			$result->setGenerated(true);
-
 			return $result;
 		}catch(\Throwable $e){
 			MainLogger::getLogger()->logException($e);
-
 			return null;
 		}
+	}
+
+	/**
+	 * @return string
+	 */
+	public static function getProviderName() : string{
+		return "anvil";
+	}
+
+	public static function getPcWorldFormatVersion() : int{
+		return 19133; //anvil
 	}
 
 	/**

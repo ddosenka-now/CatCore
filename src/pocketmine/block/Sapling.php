@@ -22,7 +22,7 @@
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
-use pocketmine\level\generator\normal\object\Tree;
+use pocketmine\level\generator\object\Tree;
 use pocketmine\level\Level;
 use pocketmine\Player;
 use pocketmine\utils\Random;
@@ -67,7 +67,6 @@ class Sapling extends Flowable {
 			6 => "",
 			7 => "",
 		];
-
 		return $names[$this->meta & 0x07];
 	}
 
@@ -106,7 +105,7 @@ class Sapling extends Flowable {
 			//TODO: change log type
 			Tree::growTree($this->getLevel(), $this->x, $this->y, $this->z, new Random(mt_rand()), $this->meta & 0x07, false);
 			if(($player->gamemode & 0x01) === 0){
-				$item->count--;
+                $item->pop();
 			}
 
 			return true;
@@ -128,7 +127,7 @@ class Sapling extends Flowable {
 				return Level::BLOCK_UPDATE_NORMAL;
 			}
 		}elseif($type === Level::BLOCK_UPDATE_RANDOM){ //Growth
-			if(mt_rand(1, 7) === 1){
+			if($this->getLevel()->getFullLightAt($this->x, $this->y, $this->z) >= 8 and mt_rand(1, 7) === 1){
 				if(($this->meta & 0x08) === 0x08){
 					Tree::growTree($this->getLevel(), $this->x, $this->y, $this->z, new Random(mt_rand()), $this->meta & 0x07, false);
 				}else{

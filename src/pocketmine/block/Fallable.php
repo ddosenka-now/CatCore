@@ -22,14 +22,16 @@
 namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
+use pocketmine\item\Item;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\DoubleTag;
-use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\IntTag;
+use pocketmine\nbt\tag\ListTag;
+use pocketmine\Player;
 
 abstract class Fallable extends Solid {
 
@@ -39,8 +41,8 @@ abstract class Fallable extends Solid {
 	public function onUpdate($type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			$down = $this->getSide(Vector3::SIDE_DOWN);
-			if($down->getId() === self::AIR or ($down instanceof Liquid)){
-				$this->level->setBlock($this, Block::get(Block::AIR), true, true);
+			if($down->getId() === self::AIR or $down instanceof Liquid or $down instanceof Fire){
+				$this->level->setBlock($this, Block::get(Block::AIR), true);
 				$fall = Entity::createEntity("FallingSand", $this->getLevel(), new CompoundTag("", [
 					"Pos" => new ListTag("Pos", [
 						new DoubleTag("", $this->x + 0.5),
@@ -60,7 +62,9 @@ abstract class Fallable extends Solid {
 					"Data" => new ByteTag("Data", $this->getDamage()),
 				]));
 
-				$fall->spawnToAll();
+				if($fall !== null){
+				    $fall->spawnToAll();
+				}
 			}
 		}
 	}

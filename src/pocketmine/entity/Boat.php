@@ -21,15 +21,15 @@
 
 namespace pocketmine\entity;
 
+use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\item\Item as ItemItem;
 use pocketmine\level\Level;
+use pocketmine\math\Vector3;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\network\mcpe\protocol\AddEntityPacket;
-use pocketmine\Player;
-use pocketmine\math\Vector3;
-use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
-use pocketmine\item\Item as ItemItem;
-use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\Player;
 
 class Boat extends Vehicle {
 	const NETWORK_ID = 90;
@@ -85,6 +85,8 @@ class Boat extends Vehicle {
 	/**
 	 * @param float             $damage
 	 * @param EntityDamageEvent $source
+	 *
+	 * @return bool|void
 	 */
 	public function attack($damage, EntityDamageEvent $source){
 		parent::attack($damage, $source);
@@ -160,7 +162,6 @@ class Boat extends Vehicle {
 	 */
 	public function getSaveId(){
 		$class = new \ReflectionClass(static::class);
-
 		return $class->getShortName();
 	}
 }

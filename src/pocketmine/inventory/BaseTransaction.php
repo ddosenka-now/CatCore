@@ -66,6 +66,41 @@ class BaseTransaction implements Transaction {
 	}
 
 	/**
+	 * @return Inventory
+	 */
+	public function getInventory(){
+		return $this->inventory;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getSlot(){
+		return $this->slot;
+	}
+
+	/**
+	 * @return Item
+	 */
+	public function getTargetItem(){
+		return clone $this->targetItem;
+	}
+	
+	/**
+	 * @return Item
+	 */
+	public function getSourceItem(){
+		return clone $this->inventory->getItem($this->slot);
+	}
+
+	/**
+	 * @param Item $item
+	 */
+	public function setTargetItem(Item $item){
+		$this->targetItem = clone $item;
+	}
+
+	/**
 	 * @return int
 	 */
 	public function getFailures(){
@@ -130,7 +165,6 @@ class BaseTransaction implements Transaction {
 			return;
 		}
 
-		$targets = [];
 		if($this->wasSuccessful){
 			$targets = $this->getInventory()->getViewers();
 			unset($targets[spl_object_hash($source)]);
@@ -141,39 +175,9 @@ class BaseTransaction implements Transaction {
 	}
 
 	/**
-	 * @return Inventory
-	 */
-	public function getInventory(){
-		return $this->inventory;
-	}
-
-	/**
-	 * @param Player $source
-	 *
-	 * @return bool
-	 *
-	 * Handles transaction execution. Returns whether transaction was successful or not.
-	 */
-
-	public function execute(Player $source) : bool{
-		if($this->getInventory()->processSlotChange($this)){ //This means that the transaction should be handled the normal way
-			$this->getInventory()->setItem($this->getSlot(), $this->getTargetItem(), false);
-		}
-
-		/* Process transaction achievements, like getting iron from a furnace */
-		foreach($this->achievements as $achievement){
-			$source->awardAchievement($achievement);
-		}
-
-		return true;
-	}
-
-	/**
 	 * Returns the change in inventory resulting from this transaction
 	 *
-	 * @return array|Item
-	 *                    "in" => items added to the inventory
-	 *                    "out" => items removed from the inventory
+	 * @return array ("in" => items added to the inventory, "out" => items removed from the inventory)
 	 * ]
 	 */
 	public function getChange(){
@@ -218,23 +222,51 @@ class BaseTransaction implements Transaction {
 	}
 
 	/**
-	 * @return Item
+	 * @param Player $source
+	 *
+	 * @return bool
+	 *
+	 * Handles transaction execution. Returns whether transaction was successful or not.
 	 */
-	public function getTargetItem(){
-		return clone $this->targetItem;
-	}
 
-	/**
-	 * @param Item $item
-	 */
-	public function setTargetItem(Item $item){
-		$this->targetItem = clone $item;
-	}
+	public function execute(Player $source) : bool{
+		if($this->getInventory()->processSlotChange($this)){ //This means that the transaction should be handled the normal way
+			if(!$source->getServer()->allowInventoryCheats and !$source->isCreative()){
+				$change = $this->getChange();
 
-	/**
-	 * @return int
-	 */
-	public function getSlot(){
-		return $this->slot;
+				if($change === null){ //No changes to make, ignore this transaction
+					return true;
+				}
+
+				/* Verify that we have the required items */
+				if($change["out"] instanceof Item){
+					if(!$this->getInventory()->slotContains($this->getSlot(), $change["out"])){
+						return false;
+					}
+				}
+				if($change["in"] instanceof Item){
+					if(!$source->getFloatingInventory()->contains($change["in"])){
+						return false;
+					}
+				}
+
+				/* All checks passed, make changes to floating inventory
+				 * This will not be reached unless all requirements are met */
+				if($change["out"] instanceof Item){
+					$source->getFloatingInventory()->addItem($change["out"]);
+				}
+				if($change["in"] instanceof Item){
+					$source->getFloatingInventory()->removeItem($change["in"]);
+				}
+			}
+			$this->getInventory()->setItem($this->getSlot(), $this->getTargetItem(), false);
+		}
+
+		/* Process transaction achievements, like getting iron from a furnace */
+		foreach($this->achievements as $achievement){
+			$source->awardAchievement($achievement);
+		}
+
+		return true;
 	}
 }

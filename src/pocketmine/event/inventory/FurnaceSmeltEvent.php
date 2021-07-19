@@ -27,7 +27,6 @@ use pocketmine\item\Item;
 use pocketmine\tile\Furnace;
 
 class FurnaceSmeltEvent extends BlockEvent implements Cancellable {
-
 	public static $handlerList = null;
 
 	private $furnace;
@@ -76,12 +75,4 @@ class FurnaceSmeltEvent extends BlockEvent implements Cancellable {
 	public function setResult(Item $result){
 		$this->result = $result;
 	}
-
-	/**
-	 * @return EventName|string
-	 */
-	public function getName(){
-		return "FurnaceSmeltEvent";
-	}
-
 }

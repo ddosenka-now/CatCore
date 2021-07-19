@@ -2,37 +2,43 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
+ *  _____            _               _____           
+ * / ____|          (_)             |  __ \          
+ *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
+ *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
+ *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
+ *                         __/ |                    
+ *                        |___/                     
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ * @author GenisysPro
+ * @link https://github.com/GenisysPro/GenisysPro
+ *
  *
 */
 
 namespace pocketmine\entity;
 
+use pocketmine\item\Item as ItemItem;
+use pocketmine\math\Vector3;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\Player;
-use pocketmine\item\Item as ItemItem;
 
-class Wither extends FlyingAnimal {
+class Wither extends Animal {
 	const NETWORK_ID = 52;
 
 	public $width = 0.72;
-	public $length = 6; //TODO: Find the good one.
-	public $height = 2;
+	public $length = 6;
+	public $height = 0;
 
-	public $dropExp = 50;
+	public $dropExp = [25, 50];
+	private $boomTicks = 0;
 
 	/**
 	 * @return string
@@ -67,14 +73,57 @@ class Wither extends FlyingAnimal {
 		parent::spawnTo($player);
 	}
 
-	//TODO: Add his spawn scenario and his death scenario
+	//TODO: 添加出生和死亡情景
 
 	/**
 	 * @return array
 	 */
 	public function getDrops(){
 		$drops = [ItemItem::get(ItemItem::NETHER_STAR, 0, 1)];
-
 		return $drops;
+	}
+	
+	public function getBombNBT() : CompoundTag{
+        return Entity::createBaseNBT($this->add(0, 2, 0), new Vector3(0, 0, 0), $this->yaw, $this->pitch);
+    }
+	
+	public function getBombRightNBT() : CompoundTag{
+        return Entity::createBaseNBT($this->add(0, 2, 0), new Vector3(0, 0, 0), $this->yaw + 90, $this->pitch);
+    }
+
+	public function getBombLeftNBT() : CompoundTag{
+        return Entity::createBaseNBT($this->add(0, 2, 0), new Vector3(0, 0, 0), $this->yaw - 90, $this->pitch);
+	}
+	
+	public function onUpdate($currentTick){
+		if($this->closed){
+			return false;
+		}
+
+		$this->timings->startTiming();
+
+		$hasUpdate = parent::onUpdate($currentTick);
+		
+		if($this->boomTicks < 40){
+			$this->boomTicks++;
+		}else{
+			$nbt = $this->getBombNBT();
+			$tnt = new WitherTNT($this->level, $nbt);
+			$tnt->spawnToAll();
+			
+			$nbtright = $this->getBombRightNBT();
+			$tntright = new WitherTNT($this->level, $nbtright);
+			$tntright->spawnToAll();
+			
+			$nbtleft = $this->getBombLeftNBT();
+			$tntleft = new WitherTNT($this->level, $nbtleft);
+			$tntleft->spawnToAll();
+			
+			$this->close();
+		}
+		
+		$this->timings->stopTiming();
+
+		return $hasUpdate;
 	}
 }

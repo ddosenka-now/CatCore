@@ -89,10 +89,10 @@ class ConsoleCommandSender implements CommandSender {
 	}
 
 	/**
-	 * @return bool
+	 * @return \pocketmine\Server
 	 */
-	public function isPlayer(){
-		return false;
+	public function getServer(){
+		return Server::getInstance();
 	}
 
 	/**
@@ -111,17 +111,10 @@ class ConsoleCommandSender implements CommandSender {
 	}
 
 	/**
-	 * @return \pocketmine\Server
-	 */
-	public function getServer(){
-		return Server::getInstance();
-	}
-
-	/**
 	 * @return string
 	 */
 	public function getName() : string{
-		return "CONSOLE";
+		return "§8[§l§6Cat§eCore§r§8] §f";
 	}
 
 	/**

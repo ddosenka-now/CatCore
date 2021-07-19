@@ -21,13 +21,13 @@
 
 namespace pocketmine\block;
 
-use pocketmine\item\Tool;
 use pocketmine\item\Item;
+use pocketmine\item\Tool;
 use pocketmine\level\sound\NoteblockSound;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 
-class Noteblock extends Solid {
+class Noteblock extends Solid implements ElectricalAppliance {
 	protected $id = self::NOTEBLOCK;
 
 	/**
@@ -68,20 +68,13 @@ class Noteblock extends Solid {
 	}
 
 	/**
-	 * @param Item        $item
-	 * @param Player|null $player
-	 *
-	 * @return bool
+	 * @return int
 	 */
-	public function onActivate(Item $item, Player $player = null){
-		$up = $this->getSide(Vector3::SIDE_UP);
-		if($up->getId() == 0){
-			$this->getLevel()->addSound(new NoteblockSound($this, $this->getInstrument(), $this->getStrength()));
-
-			return true;
-		}else{
-			return false;
-		}
+	public function getStrength(){
+		if($this->meta < 24) $this->meta++;
+		else $this->meta = 0;
+		$this->getLevel()->setBlock($this, $this);
+		return $this->meta * 1;
 	}
 
 	/**
@@ -160,19 +153,23 @@ class Noteblock extends Solid {
 			case Block::COAL_BLOCK:
 				return NoteblockSound::INSTRUMENT_BASS_DRUM;
 		}
-
 		return NoteblockSound::INSTRUMENT_PIANO;
 	}
 
 	/**
-	 * @return int
+	 * @param Item        $item
+	 * @param Player|null $player
+	 *
+	 * @return bool
 	 */
-	public function getStrength(){
-		if($this->meta < 24) $this->meta++;
-		else $this->meta = 0;
-		$this->getLevel()->setBlock($this, $this);
-
-		return $this->meta * 1;
+	public function onActivate(Item $item, Player $player = null){
+		$up = $this->getSide(Vector3::SIDE_UP);
+		if($up->getId() == 0){
+			$this->getLevel()->addSound(new NoteblockSound($this, $this->getInstrument(), $this->getStrength()));
+			return true;
+		}else{
+			return false;
+		}
 	}
 
 	/**

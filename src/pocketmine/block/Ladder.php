@@ -22,6 +22,7 @@
 namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
+use pocketmine\entity\Living;
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
 use pocketmine\level\Level;
@@ -55,6 +56,10 @@ class Ladder extends Transparent {
 		return true;
 	}
 
+	public function canClimb() : bool{
+		return true;
+	}
+
 	/**
 	 * @return bool
 	 */
@@ -69,17 +74,45 @@ class Ladder extends Transparent {
 		return 0.4;
 	}
 
-	public function canClimb() : bool{
-		return true;
-	}
-
 	/**
 	 * @param Entity $entity
 	 */
 	public function onEntityCollide(Entity $entity){
-		$entity->resetFallDistance();
-		$entity->onGround = true;
+		if($entity instanceof Living and $entity->asVector3()->floor()->distanceSquared($this) < 1){ //entity coordinates must be inside block
+			$entity->resetFallDistance();
+			$entity->onGround = true;
+		}
 	}
+
+	/**
+	 * @return AxisAlignedBB
+	 */
+	protected function recalculateBoundingBox(){
+		$f = 0.1875;
+
+		$minX = $minZ = 0;
+		$maxX = $maxZ = 1;
+
+		if($this->meta === 2){
+			$minZ = 1 - $f;
+		}elseif($this->meta === 3){
+			$maxZ = $f;
+		}elseif($this->meta === 4){
+			$minX = 1 - $f;
+		}elseif($this->meta === 5){
+			$maxX = $f;
+		}
+
+		return new AxisAlignedBB(
+			$this->x + $minX,
+			$this->y,
+			$this->z + $minZ,
+			$this->x + $maxX,
+			$this->y + 1,
+			$this->z + $maxZ
+		);
+	}
+
 
 	/**
 	 * @param Item        $item
@@ -124,16 +157,19 @@ class Ladder extends Transparent {
 			4 => 5,
 			5 => 4,
 		];
+		/*if($this->getSide(0)->getId() === self::AIR){ //Replace with common break method
+			Server::getInstance()->api->entity->drop($this, Item::get(LADDER, 0, 1));
+			$this->getLevel()->setBlock($this, new Air(), true, true, true);
+			return Level::BLOCK_UPDATE_NORMAL;
+			}*/
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			if(isset($faces[$this->meta])){
 				if($this->getSide($faces[$this->meta])->getId() === self::AIR){
 					$this->getLevel()->useBreakOn($this);
 				}
-
 				return Level::BLOCK_UPDATE_NORMAL;
 			}
 		}
-
 		return false;
 	}
 
@@ -153,53 +189,5 @@ class Ladder extends Transparent {
 		return [
 			[$this->id, 0, 1],
 		];
-	}
-
-	/**
-	 * @return null|AxisAlignedBB
-	 */
-	protected function recalculateBoundingBox(){
-
-		$f = 0.1875;
-
-		if($this->meta === 2){
-			return new AxisAlignedBB(
-				$this->x,
-				$this->y,
-				$this->z + 1 - $f,
-				$this->x + 1,
-				$this->y + 1,
-				$this->z + 1
-			);
-		}elseif($this->meta === 3){
-			return new AxisAlignedBB(
-				$this->x,
-				$this->y,
-				$this->z,
-				$this->x + 1,
-				$this->y + 1,
-				$this->z + $f
-			);
-		}elseif($this->meta === 4){
-			return new AxisAlignedBB(
-				$this->x + 1 - $f,
-				$this->y,
-				$this->z,
-				$this->x + 1,
-				$this->y + 1,
-				$this->z + 1
-			);
-		}elseif($this->meta === 5){
-			return new AxisAlignedBB(
-				$this->x,
-				$this->y,
-				$this->z,
-				$this->x + $f,
-				$this->y + 1,
-				$this->z + 1
-			);
-		}
-
-		return null;
 	}
 }

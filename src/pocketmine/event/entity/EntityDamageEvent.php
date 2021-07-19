@@ -25,17 +25,25 @@ use pocketmine\entity\Effect;
 use pocketmine\entity\Entity;
 use pocketmine\event\Cancellable;
 use pocketmine\inventory\PlayerInventory;
-use pocketmine\Player;
-use pocketmine\item\Item;
 use pocketmine\item\enchantment\Enchantment;
+use pocketmine\item\Item;
+use pocketmine\Player;
 
+/**
+ * Called when an entity takes damage.
+ */
 class EntityDamageEvent extends EntityEvent implements Cancellable {
+	public static $handlerList = null;
+
 	const MODIFIER_BASE = 0;
 	const MODIFIER_RESISTANCE = 1;
 	const MODIFIER_ARMOR = 2;
 	const MODIFIER_PROTECTION = 3;
 	const MODIFIER_STRENGTH = 4;
 	const MODIFIER_WEAKNESS = 5;
+	const MODIFIER_CRITICAL = 7;
+	const MODIFIER_TOTEM = 8;
+
 	const CAUSE_CONTACT = 0;
 	const CAUSE_ENTITY_ATTACK = 1;
 	const CAUSE_PROJECTILE = 2;
@@ -53,7 +61,7 @@ class EntityDamageEvent extends EntityEvent implements Cancellable {
 	const CAUSE_CUSTOM = 14;
 	const CAUSE_STARVATION = 15;
 	const CAUSE_LIGHTNING = 16;
-	public static $handlerList = null;
+
 	private $cause;
 	private $EPF = 0;
 	private $fireProtectL = 0;
@@ -68,13 +76,11 @@ class EntityDamageEvent extends EntityEvent implements Cancellable {
 
 
 	/**
-	 * @param Entity    $entity
-	 * @param int       $cause
-	 * @param int|int[] $damage
-	 *
-	 * @throws \Exception
+	 * @param Entity        $entity
+	 * @param int           $cause
+	 * @param float|float[] $damage
 	 */
-	public function __construct(Entity $entity, $cause, $damage){
+	public function __construct(Entity $entity, int $cause, $damage){
 		$this->entity = $entity;
 		$this->cause = $cause;
 		if(is_array($damage)){
@@ -94,7 +100,7 @@ class EntityDamageEvent extends EntityEvent implements Cancellable {
 		//For DAMAGE_RESISTANCE
 		if($cause !== self::CAUSE_VOID and $cause !== self::CAUSE_SUICIDE){
 			if($entity->hasEffect(Effect::DAMAGE_RESISTANCE)){
-				$RES_level = 1 - 0.20 * ($entity->getEffect(Effect::DAMAGE_RESISTANCE)->getAmplifier() + 1);
+				$RES_level = 1 - 0.20 * ($entity->getEffect(Effect::DAMAGE_RESISTANCE)->getEffectLevel());
 				if($RES_level < 0){
 					$RES_level = 0;
 				}
@@ -182,57 +188,42 @@ class EntityDamageEvent extends EntityEvent implements Cancellable {
 	}
 
 	/**
-	 * @param float $damage
-	 * @param int   $type
-	 *
-	 * Notice:If you want to add/reduce the damage without reducing by Armor or effect. set a new Damage using setDamage
-	 * Notice:If you want to add/reduce the damage within reducing by Armor of effect. Plz change the MODIFIER_BASE
-	 * Notice:If you want to add/reduce the damage by multiplying. Plz use this function.
-	 */
-	public function setRateDamage($damage, $type = self::MODIFIER_BASE){
-		$this->rateModifiers[$type] = $damage;
-	}
-
-	/**
 	 * @return int
 	 */
-	public function getCause(){
+	public function getCause() : int{
 		return $this->cause;
 	}
 
 	/**
 	 * @param int $type
 	 *
-	 * @return int
+	 * @return float
 	 */
-	public function getOriginalDamage($type = self::MODIFIER_BASE){
+	public function getOriginalDamage(int $type = self::MODIFIER_BASE) : float{
 		if(isset($this->originals[$type])){
 			return $this->originals[$type];
 		}
-
-		return 0;
+		return 0.0;
 	}
 
 	/**
 	 * @param int $type
 	 *
-	 * @return int
+	 * @return float
 	 */
-	public function getDamage($type = self::MODIFIER_BASE){
+	public function getDamage(int $type = self::MODIFIER_BASE) : float{
 		if(isset($this->modifiers[$type])){
 			return $this->modifiers[$type];
 		}
 
-		return 0;
+		return 0.0;
 	}
 
 	/**
 	 * @param float $damage
 	 * @param int   $type
-	 *
-	 * @throws \UnexpectedValueException
 	 */
-	public function setDamage($damage, $type = self::MODIFIER_BASE){
+	public function setDamage(float $damage, int $type = self::MODIFIER_BASE){
 		$this->modifiers[$type] = $damage;
 	}
 
@@ -245,8 +236,19 @@ class EntityDamageEvent extends EntityEvent implements Cancellable {
 		if(isset($this->rateModifiers[$type])){
 			return $this->rateModifiers[$type];
 		}
-
 		return 1;
+	}
+
+	/**
+	 * @param float $damage
+	 * @param int   $type
+	 *
+	 * Notice:If you want to add/reduce the damage without reducing by Armor or effect. set a new Damage using setDamage
+	 * Notice:If you want to add/reduce the damage within reducing by Armor of effect. Plz change the MODIFIER_BASE
+	 * Notice:If you want to add/reduce the damage by multiplying. Plz use this function.
+	 */
+	public function setRateDamage($damage, $type = self::MODIFIER_BASE){
+		$this->rateModifiers[$type] = $damage;
 	}
 
 	/**
@@ -254,12 +256,12 @@ class EntityDamageEvent extends EntityEvent implements Cancellable {
 	 *
 	 * @return bool
 	 */
-	public function isApplicable($type){
+	public function isApplicable(int $type){
 		return isset($this->modifiers[$type]);
 	}
 
 	/**
-	 * @return int
+	 * @return float
 	 */
 	public function getFinalDamage(){
 		$damage = $this->modifiers[self::MODIFIER_BASE];
@@ -271,12 +273,11 @@ class EntityDamageEvent extends EntityEvent implements Cancellable {
 				$damage += $d;
 			}
 		}
-
 		return $damage;
 	}
 
 	/**
-	 * @return array|Item
+	 * @return Item $usedArmors
 	 * notice: $usedArmors $index->$cost
 	 * $index: the $index of ArmorInventory
 	 * $cost:  the num of durability cost
@@ -305,10 +306,8 @@ class EntityDamageEvent extends EntityEvent implements Cancellable {
 					}
 				}
 			}
-
 			return true;
 		}
-
 		return false;
 	}
 
@@ -317,7 +316,8 @@ class EntityDamageEvent extends EntityEvent implements Cancellable {
 			$this->thornsArmor = array_rand($this->thornsLevel);
 			$thornsL = $this->thornsLevel[$this->thornsArmor];
 			if(mt_rand(1, 100) < $thornsL * 15){
-				$this->thornsDamage = mt_rand(1, 4);
+				//$this->thornsDamage = mt_rand(1, 4); 
+				$this->thornsDamage = 0; //Delete When #321 Is Fixed And Add In The Normal Damage
 			}
 		}
 	}
@@ -337,16 +337,7 @@ class EntityDamageEvent extends EntityEvent implements Cancellable {
 			return false;
 		}else{
 			$this->usedArmors[$this->thornsArmor] = 3;
-
 			return true;
 		}
 	}
-
-	/**
-	 * @return EventName|string
-	 */
-	public function getName(){
-		return "EntityDamageEvent";
-	}
-
 }

@@ -23,7 +23,6 @@ namespace pocketmine\entity;
 
 
 use pocketmine\event\entity\EntityDamageEvent;
-
 use pocketmine\event\entity\ExplosionPrimeEvent;
 use pocketmine\level\Explosion;
 use pocketmine\level\Level;
@@ -38,11 +37,16 @@ class PrimedTNT extends Entity implements Explosive {
 	public $width = 0.98;
 	public $length = 0.98;
 	public $height = 0.98;
-	public $canCollide = false;
+
 	protected $baseOffset = 0.49;
+
 	protected $gravity = 0.04;
 	protected $drag = 0.02;
+
 	protected $fuse;
+
+	public $canCollide = false;
+
 	private $dropItem = true;
 
 	/**
@@ -61,12 +65,28 @@ class PrimedTNT extends Entity implements Explosive {
 	/**
 	 * @param float             $damage
 	 * @param EntityDamageEvent $source
+	 *
+	 * @return bool|void
 	 */
 	public function attack($damage, EntityDamageEvent $source){
 		if($source->getCause() === EntityDamageEvent::CAUSE_VOID){
 			parent::attack($damage, $source);
 		}
 	}
+
+	protected function initEntity(){
+		parent::initEntity();
+
+		if(isset($this->namedtag->Fuse)){
+			$this->fuse = $this->namedtag["Fuse"];
+		}else{
+			$this->fuse = 80;
+		}
+
+		$this->setDataFlag(self::DATA_FLAGS, self::DATA_FLAG_IGNITED, true);
+		$this->setDataProperty(self::DATA_FUSE_LENGTH, self::DATA_TYPE_INT, $this->fuse);
+	}
+
 
 	/**
 	 * @param Entity $entity
@@ -88,7 +108,6 @@ class PrimedTNT extends Entity implements Explosive {
 	 * @return bool
 	 */
 	public function onUpdate($currentTick){
-
 		if($this->closed){
 			return false;
 		}
@@ -170,18 +189,5 @@ class PrimedTNT extends Entity implements Explosive {
 		$player->dataPacket($pk);
 
 		parent::spawnTo($player);
-	}
-
-	protected function initEntity(){
-		parent::initEntity();
-
-		if(isset($this->namedtag->Fuse)){
-			$this->fuse = $this->namedtag["Fuse"];
-		}else{
-			$this->fuse = 80;
-		}
-
-		$this->setDataFlag(self::DATA_FLAGS, self::DATA_FLAG_IGNITED, true);
-		$this->setDataProperty(self::DATA_FUSE_LENGTH, self::DATA_TYPE_INT, $this->fuse);
 	}
 }

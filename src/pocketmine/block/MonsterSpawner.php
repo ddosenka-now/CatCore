@@ -26,11 +26,11 @@ use pocketmine\item\Tool;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
-use pocketmine\tile\Tile;
-use pocketmine\tile\MobSpawner;
 use pocketmine\Player;
+use pocketmine\tile\MobSpawner;
+use pocketmine\tile\Tile;
 
-class MonsterSpawner extends Solid {
+class MonsterSpawner extends Transparent{
 
 	protected $id = self::MONSTER_SPAWNER;
 
@@ -86,11 +86,9 @@ class MonsterSpawner extends Solid {
 					//$this->getLevel()->setBlock($this, $this, true, false);
 					$tile->setEntityId($this->meta);
 				}
-
 				return true;
 			}
 		}
-
 		return false;
 	}
 
@@ -124,7 +122,6 @@ class MonsterSpawner extends Solid {
 		}
 
 		Tile::createTile(Tile::MOB_SPAWNER, $this->getLevel(), $nbt);
-
 		return true;
 	}
 

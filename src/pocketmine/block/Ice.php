@@ -21,9 +21,9 @@
 
 namespace pocketmine\block;
 
+use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
-use pocketmine\item\enchantment\Enchantment;
 
 class Ice extends Transparent {
 
@@ -31,8 +31,6 @@ class Ice extends Transparent {
 
 	/**
 	 * Ice constructor.
-	 *
-	 * @param int $meta
 	 */
 	public function __construct($meta = 0){
 		$this->meta = $meta;
@@ -68,7 +66,6 @@ class Ice extends Transparent {
 		if($item->getEnchantmentLevel(Enchantment::TYPE_MINING_SILK_TOUCH) === 0){
 			$this->getLevel()->setBlock($this, new Water(), true);
 		}
-
 		return true;
 	}
 

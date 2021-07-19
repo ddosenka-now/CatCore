@@ -48,16 +48,16 @@ class CraftingInventory extends BaseInventory {
 	}
 
 	/**
-	 * @return mixed
-	 */
-	public function getSize(){
-		return $this->getResultInventory()->getSize() + parent::getSize();
-	}
-
-	/**
 	 * @return Inventory
 	 */
 	public function getResultInventory(){
 		return $this->resultInventory;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getSize(){
+		return $this->getResultInventory()->getSize() + parent::getSize();
 	}
 }

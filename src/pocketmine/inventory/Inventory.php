@@ -73,6 +73,7 @@ interface Inventory {
 	 *
 	 * @return Item[]
 	 * @internal param Item ...$item
+	 *
 	 */
 	public function addItem(...$slots);
 
@@ -93,18 +94,22 @@ interface Inventory {
 	 *
 	 * @return Item[]
 	 * @internal param Item ...$item
+	 *
 	 */
 	public function removeItem(...$slots);
 
 	/**
+	 * @param bool $includeEmpty
+	 *
 	 * @return Item[]
 	 */
-	public function getContents();
+	public function getContents(bool $includeEmpty = false) : array;
 
 	/**
 	 * @param Item[] $items
+	 * @param bool   $send
 	 */
-	public function setContents(array $items);
+	public function setContents(array $items, bool $send = true);
 
 	/**
 	 * @param Player|Player[] $target
@@ -153,6 +158,15 @@ interface Inventory {
 	 * @return int
 	 */
 	public function firstEmpty();
+
+	/**
+	 * Returns whether the given slot is empty.
+	 *
+	 * @param int $index
+	 *
+	 * @return bool
+	 */
+	public function isSlotEmpty(int $index) : bool;
 
 	/**
 	 * Will remove all the Items that has the same id and metadata (if not null)

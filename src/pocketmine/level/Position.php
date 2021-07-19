@@ -2,11 +2,11 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
+ *  ____            _        _   __  __ _                  __  __ ____
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
  * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
+ * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -15,7 +15,7 @@
  *
  * @author PocketMine Team
  * @link http://www.pocketmine.net/
- * 
+ *
  *
 */
 
@@ -23,6 +23,7 @@ namespace pocketmine\level;
 
 use pocketmine\math\Vector3;
 use pocketmine\utils\MainLogger;
+
 
 class Position extends Vector3 {
 
@@ -36,18 +37,28 @@ class Position extends Vector3 {
 	 * @param Level $level
 	 */
 	public function __construct($x = 0, $y = 0, $z = 0, Level $level = null){
-		$this->level = $level;
 		parent::__construct($x, $y, $z);
+		$this->setLevel($level);
 	}
 
-    /**
-     * Return a Position instance
-     *
-     * @return Position
-     */
-    public function asPosition(): Position{
-	    return new Position($this->x, $this->y, $this->z, $this->level);
-    }
+	/**
+	 * @param Vector3    $pos
+	 * @param Level|null $level
+	 *
+	 * @return Position
+	 */
+	public static function fromObject(Vector3 $pos, Level $level = null){
+		return new Position($pos->x, $pos->y, $pos->z, $level);
+	}
+
+	/**
+	 * Return a Position instance
+	 * 
+	 * @return Position
+	 */
+	public function asPosition() : Position{
+		return new Position($this->x, $this->y, $this->z, $this->level);
+	}
 
 	/**
 	 * @param int|Vector3 $x
@@ -62,33 +73,6 @@ class Position extends Vector3 {
 		}else{
 			return new Position($this->x + $x, $this->y + $y, $this->z + $z, $this->level);
 		}
-	}
-
-	/**
-	 * Returns a side Vector
-	 *
-	 * @param int $side
-	 * @param int $step
-	 *
-	 * @return Position
-	 *
-	 * @throws LevelException
-	 */
-	public function getSide($side, $step = 1){
-		if(!$this->isValid()){
-			throw new LevelException("Undefined Level reference");
-		}
-
-		return Position::fromObject(parent::getSide($side, $step), $this->level);
-	}
-
-	/**
-	 * Checks if this object has a valid reference to a loaded Level
-	 *
-	 * @return bool
-	 */
-	public function isValid(){
-		return $this->getLevel() instanceof Level;
 	}
 
 	/**
@@ -118,18 +102,36 @@ class Position extends Vector3 {
 		}
 
 		$this->level = $level;
-
 		return $this;
 	}
 
 	/**
-	 * @param Vector3    $pos
-	 * @param Level|null $level
+	 * Checks if this object has a valid reference to a loaded Level
+	 */
+	public function isValid() : bool{
+		if($this->level !== null and $this->level->isClosed()){
+			$this->level = null;
+
+			return false;
+		}
+
+		return $this->level !== null;
+	}
+
+	/**
+	 * Returns a side Vector
+	 *
+	 * @param int $side
+	 * @param int $step
 	 *
 	 * @return Position
+	 *
+	 * @throws LevelException
 	 */
-	public static function fromObject(Vector3 $pos, Level $level = null){
-		return new Position($pos->x, $pos->y, $pos->z, $level);
+	public function getSide($side, $step = 1){
+		assert($this->isValid());
+
+		return Position::fromObject(parent::getSide($side, $step), $this->level);
 	}
 
 	/**
@@ -150,7 +152,6 @@ class Position extends Vector3 {
 		$this->x = $x;
 		$this->y = $y;
 		$this->z = $z;
-
 		return $this;
 	}
 
@@ -167,8 +168,13 @@ class Position extends Vector3 {
 			$this->level = $pos->level;
 		}
 		parent::fromObjectAdd($pos, $x, $y, $z);
-
 		return $this;
 	}
 
+	public function equals(Vector3 $v) : bool{
+		if($v instanceof Position){
+			return parent::equals($v) and $v->getLevel() === $this->getLevel();
+		}
+		return parent::equals($v);
+	}
 }

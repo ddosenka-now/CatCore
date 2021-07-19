@@ -28,7 +28,7 @@ use pocketmine\nbt\tag\ListTag as TagEnum;
 
 class ListTag extends NamedTag implements \ArrayAccess, \Countable {
 
-	private $tagType;
+	private $tagType = NBT::TAG_End;
 
 	/**
 	 * ListTag constructor.
@@ -144,22 +144,24 @@ class ListTag extends NamedTag implements \ArrayAccess, \Countable {
 	}
 
 	/**
-	 * @return mixed
+	 * @param $type
 	 */
-	public function getTagType(){
-		return $this->tagType;
+	public function setTagType(int $type){
+		$this->tagType = $type;
 	}
 
 	/**
-	 * @param $type
+	 * @return mixed
 	 */
-	public function setTagType($type){
-		$this->tagType = $type;
+	public function getTagType() : int{
+		return $this->tagType;
 	}
 
 	/**
 	 * @param NBT  $nbt
 	 * @param bool $network
+	 *
+	 * @return mixed|void
 	 */
 	public function read(NBT $nbt, bool $network = false){
 		$this->value = [];
@@ -233,11 +235,11 @@ class ListTag extends NamedTag implements \ArrayAccess, \Countable {
 	 * @return bool
 	 */
 	public function write(NBT $nbt, bool $network = false){
-		if(!isset($this->tagType)){
-			$id = null;
+		if($this->tagType === NBT::TAG_End){ //previously empty list, try detecting type from tag children
+			$id = NBT::TAG_End;
 			foreach($this as $tag){
-				if($tag instanceof Tag){
-					if(!isset($id)){
+				if($tag instanceof Tag and !($tag instanceof EndTag)){
+					if($id === NBT::TAG_End){
 						$id = $tag->getType();
 					}elseif($id !== $tag->getType()){
 						return false;
@@ -260,6 +262,8 @@ class ListTag extends NamedTag implements \ArrayAccess, \Countable {
 		foreach($tags as $tag){
 			$tag->write($nbt, $network);
 		}
+
+		return true;
 	}
 
 	/**
@@ -272,7 +276,6 @@ class ListTag extends NamedTag implements \ArrayAccess, \Countable {
 				$str .= get_class($tag) . ":" . $tag->__toString() . "\n";
 			}
 		}
-
 		return $str . "}";
 	}
 }

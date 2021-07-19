@@ -41,6 +41,8 @@ abstract class Timings {
 	/** @var TimingsHandler */
 	public static $garbageCollectorTimer;
 	/** @var TimingsHandler */
+	public static $titleTickTimer;
+	/** @var TimingsHandler */
 	public static $playerListTimer;
 	/** @var TimingsHandler */
 	public static $playerNetworkTimer;
@@ -62,6 +64,8 @@ abstract class Timings {
 	public static $timeUpdateTimer;
 	/** @var TimingsHandler */
 	public static $serverCommandTimer;
+	/** @var TimingsHandler */
+	public static $worldLoadTimer;
 	/** @var TimingsHandler */
 	public static $worldSaveTimer;
 	/** @var TimingsHandler */
@@ -128,6 +132,7 @@ abstract class Timings {
 		self::$serverTickTimer = new TimingsHandler("** Full Server Tick", self::$fullTickTimer);
 		self::$memoryManagerTimer = new TimingsHandler("Memory Manager");
 		self::$garbageCollectorTimer = new TimingsHandler("Garbage Collector", self::$memoryManagerTimer);
+		self::$titleTickTimer = new TimingsHandler("Console Title Tick");
 		self::$playerListTimer = new TimingsHandler("Player List");
 		self::$playerNetworkTimer = new TimingsHandler("Player Network Send");
 		self::$playerNetworkReceiveTimer = new TimingsHandler("Player Network Receive");
@@ -139,6 +144,7 @@ abstract class Timings {
 		self::$chunkIOTickTimer = new TimingsHandler("ChunkIOTick");
 		self::$timeUpdateTimer = new TimingsHandler("Time Update");
 		self::$serverCommandTimer = new TimingsHandler("Server Command");
+		self::$worldLoadTimer = new TimingsHandler("World Load");
 		self::$worldSaveTimer = new TimingsHandler("World Save");
 		self::$generationTimer = new TimingsHandler("World Generation");
 		self::$populationTimer = new TimingsHandler("World Population");

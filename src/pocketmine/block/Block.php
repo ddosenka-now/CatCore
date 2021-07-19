@@ -2,27 +2,29 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
+ *  _____            _               _____           
+ * / ____|          (_)             |  __ \          
+ *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
+ *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
+ *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
+ *                         __/ |                    
+ *                        |___/                     
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ * @author GenisysPro
+ * @link https://github.com/GenisysPro/GenisysPro
+ *
  *
 */
 
 /**
  * All Block classes are in here
  */
-
 namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
@@ -39,14 +41,13 @@ use pocketmine\metadata\MetadataValue;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 
-class Block extends Position implements BlockIds, Metadatable {
+class Block extends Position implements BlockIds, Metadatable{	
 
 	/** @var \SplFixedArray */
 	public static $list = null;
 	/** @var \SplFixedArray */
 	public static $fullList = null;
-    /** @var \SplFixedArray */
-    public static $diffusesSkyLight = null;
+
 	/** @var \SplFixedArray */
 	public static $light = null;
 	/** @var \SplFixedArray */
@@ -57,19 +58,17 @@ class Block extends Position implements BlockIds, Metadatable {
 	public static $hardness = null;
 	/** @var \SplFixedArray */
 	public static $transparent = null;
-	/** @var AxisAlignedBB */
-	public $boundingBox = null;
+    /** @var \SplFixedArray */
+    public static $diffusesSkyLight = null;
+
 	protected $id;
 	protected $meta = 0;
 
-	/**
-	 * @param int $id
-	 * @param int $meta
-	 */
-	public function __construct($id, $meta = 0){
-		$this->id = (int) $id;
-		$this->meta = (int) $meta;
-	}
+	/** @var AxisAlignedBB */
+	public $boundingBox = null;
+
+	/** @var AxisAlignedBB[]|null */
+	protected $collisionBoxes = null;
 
 	public static function init(){
 		if(self::$list === null){
@@ -177,7 +176,7 @@ class Block extends Position implements BlockIds, Metadatable {
 			self::$list[self::IRON_TRAPDOOR] = IronTrapdoor::class;
 
 			self::$list[self::STONE_BRICKS] = StoneBricks::class;
-
+			
 			self::$list[self::BROWN_MUSHROOM_BLOCK] = BrownMushroomBlock::class;
 			self::$list[self::RED_MUSHROOM_BLOCK] = RedMushroomBlock::class;
 
@@ -201,31 +200,12 @@ class Block extends Position implements BlockIds, Metadatable {
 			self::$list[self::ENCHANTING_TABLE] = EnchantingTable::class;
 
 			self::$list[self::BREWING_STAND_BLOCK] = BrewingStand::class;
-			self::$list[self::END_PORTAL_FRAME] = EndPortalFrame::class;
 			self::$list[self::END_PORTAL] = EndPortal::class;
+			self::$list[self::END_PORTAL_FRAME] = EndPortalFrame::class;
 			self::$list[self::END_STONE] = EndStone::class;
 
 			self::$list[self::END_STONE_BRICKS] = EndStoneBricks::class;
 			self::$list[self::END_ROD] = EndRod::class;
-
-            self::$list[self::BLACK_GLAZED_TERRACOTTA] = BlackGlazedTerracotta::class;
-            self::$list[self::BLUE_GLAZED_TERRACOTTA] = BlueGlazedTerracotta::class;
-            self::$list[self::BROWN_GLAZED_TERRACOTTA] = BrownGlazedTerracotta::class;
-            self::$list[self::CYAN_GLAZED_TERRACOTTA] = CyanGlazedTerracotta::class;
-            self::$list[self::GRAY_GLAZED_TERRACOTTA] = GrayGlazedTerracotta::class;
-            self::$list[self::GREEN_GLAZED_TERRACOTTA] = GreenGlazedTerracotta::class;
-            self::$list[self::LIGHT_BLUE_GLAZED_TERRACOTTA] = LightBlueGlazedTerracotta::class;
-            self::$list[self::LIME_GLAZED_TERRACOTTA] = LimeGlazedTerracotta::class;
-            self::$list[self::MAGENTA_GLAZED_TERRACOTTA] = MagentaGlazedTerracotta::class;
-            self::$list[self::ORANGE_GLAZED_TERRACOTTA] = OrangeGlazedTerracotta::class;
-            self::$list[self::PINK_GLAZED_TERRACOTTA] = PinkGlazedTerracotta::class;
-            self::$list[self::PURPLE_GLAZED_TERRACOTTA] = PurpleGlazedTerracotta::class;
-            self::$list[self::RED_GLAZED_TERRACOTTA] = RedGlazedTerracotta::class;
-            self::$list[self::SILVER_GLAZED_TERRACOTTA] = SilverGlazedTerracotta::class;
-            self::$list[self::WHITE_GLAZED_TERRACOTTA] = WhiteGlazedTerracotta::class;
-            self::$list[self::YELLOW_GLAZED_TERRACOTTA] = YellowGlazedTerracotta::class;
-            self::$list[self::CONCRETE] = Concrete::class;
-            self::$list[self::CONCRETE_POWDER] = ConcretePowder::class;
 
 			self::$list[self::PURPUR] = Purpur::class;
 			self::$list[self::PURPUR_STAIRS] = PurpurStairs::class;
@@ -250,6 +230,8 @@ class Block extends Position implements BlockIds, Metadatable {
 
 			self::$list[self::TRAPPED_CHEST] = TrappedChest::class;
 			self::$list[self::REDSTONE_BLOCK] = Redstone::class;
+
+			self::$list[self::SHULKER_BOX] = ShulkerBox::class;
 
 			self::$list[self::QUARTZ_BLOCK] = Quartz::class;
 			self::$list[self::QUARTZ_STAIRS] = QuartzStairs::class;
@@ -286,7 +268,26 @@ class Block extends Position implements BlockIds, Metadatable {
 			self::$list[self::STONECUTTER] = Stonecutter::class;
 			self::$list[self::GLOWING_OBSIDIAN] = GlowingObsidian::class;
 			self::$list[self::NETHER_REACTOR] = NetherReactor::class;
-
+			self::$list[self::CONCRETE] = Concrete::class;
+			self::$list[self::CONCRETE_POWDER] = ConcretePowder::class;
+			
+			self::$list[self::BLACK_GLAZED_TERRACOTTA] = BlackGlazedTerracotta::class;
+			self::$list[self::BLUE_GLAZED_TERRACOTTA] = BlueGlazedTerracotta::class;
+			self::$list[self::BROWN_GLAZED_TERRACOTTA] = BrownGlazedTerracotta::class;
+			self::$list[self::CYAN_GLAZED_TERRACOTTA] = CyanGlazedTerracotta::class;
+			self::$list[self::GRAY_GLAZED_TERRACOTTA] = GrayGlazedTerracotta::class;
+			self::$list[self::GREEN_GLAZED_TERRACOTTA] = GreenGlazedTerracotta::class;
+			self::$list[self::LIGHT_BLUE_GLAZED_TERRACOTTA] = LightBlueGlazedTerracotta::class;
+			self::$list[self::LIME_GLAZED_TERRACOTTA] = LimeGlazedTerracotta::class;
+			self::$list[self::MAGENTA_GLAZED_TERRACOTTA] = MagentaGlazedTerracotta::class;
+			self::$list[self::ORANGE_GLAZED_TERRACOTTA] = OrangeGlazedTerracotta::class;
+			self::$list[self::PINK_GLAZED_TERRACOTTA] = PinkGlazedTerracotta::class;
+			self::$list[self::PURPLE_GLAZED_TERRACOTTA] = PurpleGlazedTerracotta::class;
+			self::$list[self::RED_GLAZED_TERRACOTTA] = RedGlazedTerracotta::class;
+			self::$list[self::SILVER_GLAZED_TERRACOTTA] = SilverGlazedTerracotta::class;
+			self::$list[self::WHITE_GLAZED_TERRACOTTA] = WhiteGlazedTerracotta::class;
+			self::$list[self::YELLOW_GLAZED_TERRACOTTA] = YellowGlazedTerracotta::class;
+			
 			self::$list[self::NETHER_BRICK_FENCE] = NetherBrickFence::class;
 			self::$list[self::POWERED_RAIL] = PoweredRail::class;
 			self::$list[self::RAIL] = Rail::class;
@@ -295,6 +296,9 @@ class Block extends Position implements BlockIds, Metadatable {
 			self::$list[self::STONE_PRESSURE_PLATE] = StonePressurePlate::class;
 			self::$list[self::LIGHT_WEIGHTED_PRESSURE_PLATE] = LightWeightedPressurePlate::class;
 			self::$list[self::HEAVY_WEIGHTED_PRESSURE_PLATE] = HeavyWeightedPressurePlate::class;
+			self::$list[self::REDSTONE_WIRE] = RedstoneWire::class;
+			self::$list[self::ACTIVE_REDSTONE_LAMP] = ActiveRedstoneLamp::class;
+			self::$list[self::INACTIVE_REDSTONE_LAMP] = InactiveRedstoneLamp::class;
 			self::$list[self::LIT_REDSTONE_LAMP] = LitRedstoneLamp::class;
 			self::$list[self::REDSTONE_LAMP] = RedstoneLamp::class;
 			self::$list[self::REDSTONE_TORCH] = RedstoneTorch::class;
@@ -313,6 +317,11 @@ class Block extends Position implements BlockIds, Metadatable {
 			self::$list[self::TRIPWIRE_HOOK] = TripwireHook::class;
 			self::$list[self::ITEM_FRAME_BLOCK] = ItemFrame::class;
 			self::$list[self::DISPENSER] = Dispenser::class;
+
+			self::$list[self::PISTON] = Piston::class;
+			self::$list[self::STICKY_PISTON] = StickyPiston::class;
+			self::$list[self::PISTON_HEAD] = PistonHead::class;
+
 			self::$list[self::DROPPER] = Dropper::class;
 			self::$list[self::POWERED_REPEATER_BLOCK] = PoweredRepeater::class;
 			self::$list[self::UNPOWERED_REPEATER_BLOCK] = UnpoweredRepeater::class;
@@ -320,6 +329,7 @@ class Block extends Position implements BlockIds, Metadatable {
 			self::$list[self::INVISIBLE_BEDROCK] = InvisibleBedrock::class;
 			self::$list[self::HOPPER_BLOCK] = Hopper::class;
 			self::$list[self::DRAGON_EGG] = DragonEgg::class;
+			self::$list[self::COMMAND_BLOCK] = CommandBlock::class;
 
 			foreach(self::$list as $id => $class){
 				if($class !== null){
@@ -342,6 +352,8 @@ class Block extends Position implements BlockIds, Metadatable {
 							}else{
 								self::$lightFilter[$id] = 1;
 							}
+						}elseif($block instanceof SolidLight){
+							self::$lightFilter[$id] = 1;
 						}else{
 							self::$lightFilter[$id] = 15;
 						}
@@ -351,39 +363,57 @@ class Block extends Position implements BlockIds, Metadatable {
 				}else{
 					self::$lightFilter[$id] = 1;
 					for($data = 0; $data < 16; ++$data){
-						self::$fullList[($id << 4) | $data] = new Block($id, $data);
+						self::$fullList[($id << 4) | $data] = new UnknownBlock($id, $data);
 					}
 				}
 			}
 		}
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function isSolid(){
-		return true;
+	public static function isInit() : bool{
+		return self::$fullList !== null;
 	}
 
 	/**
-	 * @return bool
+	 * @param int      $id
+	 * @param int      $meta
+	 * @param Position $pos
+	 *
+	 * @return Block
 	 */
-	public function isTransparent(){
-		return false;
+	public static function get(int $id, int $meta = 0, Position $pos = null){
+		if($id > 0xff){
+			trigger_error("BlockID cannot be higher than 255, defaulting to 0", E_USER_NOTICE);
+			$id = 0;
+		}
+		
+		try{
+			if(self::$fullList !== null){
+			    $block = clone self::$fullList[($id << 4) | $meta];
+			}else{
+				$block = new UnknownBlock($id, $meta);
+			}
+		}catch(\RuntimeException $e){
+			$block = new UnknownBlock($id, $meta);
+		}
+
+		if($pos !== null){
+			$block->x = $pos->getFloorX();
+			$block->y = $pos->getFloorY();
+			$block->z = $pos->getFloorZ();
+			$block->level = $pos->level;
+		}
+
+		return $block;
 	}
 
 	/**
-	 * @return int
+	 * @param int $id
+	 * @param int $meta
 	 */
-	public function getHardness(){
-		return 10;
-	}
-
-	/**
-	 * @return int 0-15
-	 */
-	public function getLightLevel(){
-		return 0;
+	public function __construct($id, $meta = 0){
+		$this->id = (int) $id;
+		$this->meta = (int) $meta;
 	}
 
 	/**
@@ -413,13 +443,6 @@ class Block extends Position implements BlockIds, Metadatable {
 	 */
 	public function isBreakable(Item $item){
 		return true;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function tickRate() : int{
-		return 10;
 	}
 
 	/**
@@ -459,54 +482,15 @@ class Block extends Position implements BlockIds, Metadatable {
 	/**
 	 * @return int
 	 */
+	public function getHardness(){
+		return 10;
+	}
+
+	/**
+	 * @return int
+	 */
 	public function getResistance(){
 		return $this->getHardness() * 5;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getBurnAbility() : int{
-		return 0;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isTopFacingSurfaceSolid(){
-		if($this->isSolid()){
-			return true;
-		}else{
-			if($this instanceof Stair and ($this->getDamage() & 4) == 4){
-				return true;
-			}elseif($this instanceof Slab and ($this->getDamage() & 8) == 8){
-				return true;
-			}elseif($this instanceof SnowLayer and ($this->getDamage() & 7) == 7){
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * @return int
-	 */
-	final public function getDamage(){
-		return $this->meta;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function canNeighborBurn(){
-		for($face = 0; $face < 5; $face++){
-			if($this->getSide($face)->getBurnChance() > 0){
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/**
@@ -517,52 +501,41 @@ class Block extends Position implements BlockIds, Metadatable {
 	}
 
 	/**
-	 * Returns the Block on the side $side, works like Vector3::side()
-	 *
-	 * @param int $side
-	 * @param int $step
-	 *
-	 * @return Block
+	 * @return int
 	 */
-	public function getSide($side, $step = 1){
-		if($this->isValid()){
-			return $this->getLevel()->getBlock(Vector3::getSide($side, $step));
-		}
+	public function getBurnAbility() : int{
+		return 0;
+	}
 
-		return Block::get(Item::AIR, 0, Position::fromObject(Vector3::getSide($side, $step)));
+	public function isTopFacingSurfaceSolid(){
+		if($this->isSolid()){
+			return true;
+		}else{
+			if($this instanceof Stair and ($this->getDamage() &4) == 4){
+				return true;
+			}elseif($this instanceof Slab and ($this->getDamage() & 8) == 8){
+				return true;
+			}elseif($this instanceof SnowLayer and ($this->getDamage() & 7) == 7){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public function canNeighborBurn(){
+		for($face = 0; $face < 5; $face++){
+			if($this->getSide($face)->getBurnChance() > 0){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
-	 * @param int      $id
-	 * @param int      $meta
-	 * @param Position $pos
-	 *
-	 * @return Block
+	 * @return int
 	 */
-	public static function get($id, $meta = 0, Position $pos = null){
-		if($id > 0xff){
-			trigger_error("BlockID cannot be higher than 255, defaulting to 0", E_USER_NOTICE);
-			$id = 0;
-		}
-		try{
-			$block = self::$list[$id];
-			if($block !== null){
-				$block = new $block($meta);
-			}else{
-				$block = new Block($id, $meta);
-			}
-		}catch(\RuntimeException $e){
-			$block = new Block($id, $meta);
-		}
-
-		if($pos !== null){
-			$block->x = $pos->x;
-			$block->y = $pos->y;
-			$block->z = $pos->z;
-			$block->level = $pos->level;
-		}
-
-		return $block;
+	public function getToolType(){
+		return Tool::TYPE_NONE;
 	}
 
 	/**
@@ -573,10 +546,10 @@ class Block extends Position implements BlockIds, Metadatable {
 	}
 
 	/**
-	 * @return bool
+	 * @return int 0-15
 	 */
-	public function isPlaceable(){
-		return $this->canBePlaced();
+	public function getLightLevel(){
+		return 0;
 	}
 
 	/**
@@ -588,6 +561,10 @@ class Block extends Position implements BlockIds, Metadatable {
 		return true;
 	}
 
+	public function isPlaceable(){
+		return $this->canBePlaced();
+	}
+
 	/**
 	 * AKA: Block->canBeReplaced()
 	 *
@@ -595,6 +572,21 @@ class Block extends Position implements BlockIds, Metadatable {
 	 */
 	public function canBeReplaced(){
 		return false;
+	}
+
+	public function canBePlacedAt(Block $blockReplace, Vector3 $clickVector, int $face, bool $isClickedBlock) : bool{
+		return $blockReplace->canBeReplaced();
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isTransparent(){
+		return false;
+	}
+
+	public function isSolid(){
+		return true;
 	}
 
 	/**
@@ -615,49 +607,53 @@ class Block extends Position implements BlockIds, Metadatable {
 		return false;
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function activate(){
 		return false;
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function deactivate(){
 		return false;
 	}
 
-	/**
-	 * @param Block|null $from
-	 *
-	 * @return bool
-	 */
 	public function isActivated(Block $from = null){
 		return false;
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function hasEntityCollision(){
 		return false;
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function canPassThrough(){
 		return false;
 	}
 
+	public function canClimb() : bool{
+		return false;
+	}
+
 	/**
-	 * @param Entity  $entity
-	 * @param Vector3 $vector
+	 * @return string
 	 */
+	public function getName(){
+		return "Unknown";
+	}
+
+	/**
+	 * @return int
+	 */
+	final public function getId(){
+		return $this->id;
+	}
+
 	public function addVelocityToEntity(Entity $entity, Vector3 $vector){
 
+	}
+
+	/**
+	 * @return int
+	 */
+	final public function getDamage(){
+		return $this->meta;
 	}
 
 	/**
@@ -665,6 +661,27 @@ class Block extends Position implements BlockIds, Metadatable {
 	 */
 	final public function setDamage($meta){
 		$this->meta = $meta & 0x0f;
+	}
+
+	/**
+	 * Bitmask to use to remove superfluous information from block meta when getting its item form or name.
+	 * This defaults to -1 (don't remove any data). Used to remove rotation data and bitflags from block drops.
+	 *
+	 * If your block should not have any meta value when it's dropped as an item, override this to return 0 in
+	 * descendent classes.
+	 *
+	 * @return int
+	 */
+	public function getVariantBitmask() : int{
+		return -1;
+	}
+
+	/**
+	 * Returns the block meta, stripped of non-variant flags.
+	 * @return int
+	 */
+	public function getVariant() : int{
+		return $this->meta & $this->getVariantBitmask();
 	}
 
 	/**
@@ -692,16 +709,9 @@ class Block extends Position implements BlockIds, Metadatable {
 			return [];
 		}else{
 			return [
-				[$this->getId(), $this->getDamage(), 1],
+				[$this->getId(), $this->getVariant(), 1]
 			];
 		}
-	}
-
-	/**
-	 * @return int
-	 */
-	final public function getId(){
-		return $this->id;
 	}
 
 	/**
@@ -744,26 +754,59 @@ class Block extends Position implements BlockIds, Metadatable {
 		}
 
 		if($item->isSword()){
-			$base *= 0.5;
+			$base /= 1.5;
 		}
 
 		return $base;
 	}
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return bool
-	 */
 	public function canBeBrokenWith(Item $item){
 		return $this->getHardness() !== -1;
 	}
 
 	/**
-	 * @return int
+	 * Returns the Block on the side $side, works like Vector3::side()
+	 *
+	 * @param int $side
+	 * @param int $step
+	 *
+	 * @return Block
 	 */
-	public function getToolType(){
-		return Tool::TYPE_NONE;
+	public function getSide($side, $step = 1){
+		if($this->isValid()){
+			return $this->getLevel()->getBlock(Vector3::getSide($side, $step));
+		}
+
+		return Block::get(Item::AIR, 0, Position::fromObject(Vector3::getSide($side, $step)));
+	}
+
+	/**
+	 * Returns the 4 blocks on the horizontal axes around the block (north, south, east, west)
+	 *
+	 * @return Block[]
+	 */
+	public function getHorizontalSides() : array{
+		return [
+			$this->getSide(Vector3::SIDE_NORTH),
+			$this->getSide(Vector3::SIDE_SOUTH),
+			$this->getSide(Vector3::SIDE_WEST),
+			$this->getSide(Vector3::SIDE_EAST)
+		];
+	}
+
+	/**
+	 * Returns the six blocks around this block.
+	 *
+	 * @return Block[]
+	 */
+	public function getAllSides() : array{
+		return array_merge(
+			[
+				$this->getSide(Vector3::SIDE_DOWN),
+				$this->getSide(Vector3::SIDE_UP)
+			],
+			$this->getHorizontalSides()
+		);
 	}
 
 	/**
@@ -771,17 +814,6 @@ class Block extends Position implements BlockIds, Metadatable {
 	 */
 	public function __toString(){
 		return "Block[" . $this->getName() . "] (" . $this->getId() . ":" . $this->getDamage() . ")";
-	}
-
-	public function canClimb() : bool{
-		return false;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getName(){
-		return "Unknown";
 	}
 
 	/**
@@ -792,9 +824,42 @@ class Block extends Position implements BlockIds, Metadatable {
 	 * @return bool
 	 */
 	public function collidesWithBB(AxisAlignedBB $bb){
-		$bb2 = $this->getBoundingBox();
+		foreach($this->getCollisionBoxes() as $bb2){
+			if($bb->intersectsWith($bb2)){
+				return true;
+			}
+		}
 
-		return $bb2 !== null and $bb->intersectsWith($bb2);
+		return false;
+	}
+
+	/**
+	 * @param Entity $entity
+	 */
+	public function onEntityCollide(Entity $entity){
+
+	}
+
+	/**
+	 * @return AxisAlignedBB[]
+	 */
+	public function getCollisionBoxes() : array{
+		if($this->collisionBoxes === null){
+			$this->collisionBoxes = $this->recalculateCollisionBoxes();
+		}
+
+		return $this->collisionBoxes;
+	}
+
+	/**
+	 * @return AxisAlignedBB[]
+	 */
+	protected function recalculateCollisionBoxes() : array{
+		if(($bb = $this->recalculateBoundingBox()) !== null){
+			return [$bb];
+		}
+
+		return [];
 	}
 
 	/**
@@ -804,7 +869,6 @@ class Block extends Position implements BlockIds, Metadatable {
 		if($this->boundingBox === null){
 			$this->boundingBox = $this->recalculateBoundingBox();
 		}
-
 		return $this->boundingBox;
 	}
 
@@ -823,10 +887,12 @@ class Block extends Position implements BlockIds, Metadatable {
 	}
 
 	/**
-	 * @param Entity $entity
+	 * Clears any cached precomputed objects, such as bounding boxes. This is called on block neighbour update and when
+	 * the block is set into the world to remove any outdated precomputed things such as AABBs and force recalculation.
 	 */
-	public function onEntityCollide(Entity $entity){
-
+	public function clearCaches() : void{
+		$this->boundingBox = null;
+		$this->collisionBoxes = null;
 	}
 
 	/**
@@ -836,102 +902,38 @@ class Block extends Position implements BlockIds, Metadatable {
 	 * @return MovingObjectPosition
 	 */
 	public function calculateIntercept(Vector3 $pos1, Vector3 $pos2){
-		$bb = $this->getBoundingBox();
-		if($bb === null){
+		$bbs = $this->getCollisionBoxes();
+		if(count($bbs) === 0){
 			return null;
 		}
 
-		$v1 = $pos1->getIntermediateWithXValue($pos2, $bb->minX);
-		$v2 = $pos1->getIntermediateWithXValue($pos2, $bb->maxX);
-		$v3 = $pos1->getIntermediateWithYValue($pos2, $bb->minY);
-		$v4 = $pos1->getIntermediateWithYValue($pos2, $bb->maxY);
-		$v5 = $pos1->getIntermediateWithZValue($pos2, $bb->minZ);
-		$v6 = $pos1->getIntermediateWithZValue($pos2, $bb->maxZ);
+		/** @var RayTraceResult|null $currentHit */
+		$currentHit = null;
+		/** @var int|float $currentDistance */
+		$currentDistance = PHP_INT_MAX;
 
-		if($v1 !== null and !$bb->isVectorInYZ($v1)){
-			$v1 = null;
+		foreach($bbs as $bb){
+			$nextHit = $bb->calculateIntercept($pos1, $pos2);
+			if($nextHit === null){
+				continue;
+			}
+
+			$nextDistance = $nextHit->hitVector->distanceSquared($pos1);
+			if($nextDistance < $currentDistance){
+				$currentHit = $nextHit;
+				$currentDistance = $nextDistance;
+			}
 		}
 
-		if($v2 !== null and !$bb->isVectorInYZ($v2)){
-			$v2 = null;
-		}
-
-		if($v3 !== null and !$bb->isVectorInXZ($v3)){
-			$v3 = null;
-		}
-
-		if($v4 !== null and !$bb->isVectorInXZ($v4)){
-			$v4 = null;
-		}
-
-		if($v5 !== null and !$bb->isVectorInXY($v5)){
-			$v5 = null;
-		}
-
-		if($v6 !== null and !$bb->isVectorInXY($v6)){
-			$v6 = null;
-		}
-
-		$vector = $v1;
-
-		if($v2 !== null and ($vector === null or $pos1->distanceSquared($v2) < $pos1->distanceSquared($vector))){
-			$vector = $v2;
-		}
-
-		if($v3 !== null and ($vector === null or $pos1->distanceSquared($v3) < $pos1->distanceSquared($vector))){
-			$vector = $v3;
-		}
-
-		if($v4 !== null and ($vector === null or $pos1->distanceSquared($v4) < $pos1->distanceSquared($vector))){
-			$vector = $v4;
-		}
-
-		if($v5 !== null and ($vector === null or $pos1->distanceSquared($v5) < $pos1->distanceSquared($vector))){
-			$vector = $v5;
-		}
-
-		if($v6 !== null and ($vector === null or $pos1->distanceSquared($v6) < $pos1->distanceSquared($vector))){
-			$vector = $v6;
-		}
-
-		if($vector === null){
-			return null;
-		}
-
-		$f = -1;
-
-		if($vector === $v1){
-			$f = 4;
-		}elseif($vector === $v2){
-			$f = 5;
-		}elseif($vector === $v3){
-			$f = 0;
-		}elseif($vector === $v4){
-			$f = 1;
-		}elseif($vector === $v5){
-			$f = 2;
-		}elseif($vector === $v6){
-			$f = 3;
-		}
-
-		return MovingObjectPosition::fromBlock($this->x, $this->y, $this->z, $f, $vector->add($this->x, $this->y, $this->z));
+		return $currentHit;
 	}
 
-	/**
-	 * @param string        $metadataKey
-	 * @param MetadataValue $metadataValue
-	 */
 	public function setMetadata($metadataKey, MetadataValue $metadataValue){
 		if($this->getLevel() instanceof Level){
 			$this->getLevel()->getBlockMetadata()->setMetadata($this, $metadataKey, $metadataValue);
 		}
 	}
 
-	/**
-	 * @param string $metadataKey
-	 *
-	 * @return null|MetadataValue[]|\WeakMap
-	 */
 	public function getMetadata($metadataKey){
 		if($this->getLevel() instanceof Level){
 			return $this->getLevel()->getBlockMetadata()->getMetadata($this, $metadataKey);
@@ -940,19 +942,12 @@ class Block extends Position implements BlockIds, Metadatable {
 		return null;
 	}
 
-	/**
-	 * @param string $metadataKey
-	 */
 	public function hasMetadata($metadataKey){
 		if($this->getLevel() instanceof Level){
 			$this->getLevel()->getBlockMetadata()->hasMetadata($this, $metadataKey);
 		}
 	}
 
-	/**
-	 * @param string $metadataKey
-	 * @param Plugin $plugin
-	 */
 	public function removeMetadata($metadataKey, Plugin $plugin){
 		if($this->getLevel() instanceof Level){
 			$this->getLevel()->getBlockMetadata()->removeMetadata($this, $metadataKey, $plugin);

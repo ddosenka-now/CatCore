@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\level\format\io;
 
+use pocketmine\event\LevelTimings;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\generator\Generator;
 use pocketmine\level\Level;
@@ -35,23 +36,15 @@ use pocketmine\nbt\tag\LongTag;
 use pocketmine\nbt\tag\StringTag;
 
 abstract class BaseLevelProvider implements LevelProvider {
-	/** @var Level */
-	protected $level;
+
 	/** @var string */
 	protected $path;
 	/** @var CompoundTag */
 	protected $levelData;
-	/** @var bool */
-	protected $asyncChunkRequest = false;
+    /** @var LevelTimings|null */
+    protected $timings;
 
-	/**
-	 * BaseLevelProvider constructor.
-	 *
-	 * @param Level  $level
-	 * @param string $path
-	 */
-	public function __construct(Level $level, string $path){
-		$this->level = $level;
+    public function __construct(string $path, LevelTimings $timings = null){
 		$this->path = $path;
 		if(!file_exists($this->path)){
 			mkdir($this->path, 0777, true);
@@ -72,21 +65,14 @@ abstract class BaseLevelProvider implements LevelProvider {
 		if(!isset($this->levelData->generatorOptions)){
 			$this->levelData->generatorOptions = new StringTag("generatorOptions", "");
 		}
-		$this->asyncChunkRequest = (bool) $this->level->getServer()->getProperty("chunk-sending.async-chunk-request", false);
-	}
+        $this->timings = $timings;
+    }
 
 	/**
 	 * @return string
 	 */
 	public function getPath() : string{
 		return $this->path;
-	}
-
-	/**
-	 * @return \pocketmine\Server
-	 */
-	public function getServer(){
-		return $this->level->getServer();
 	}
 
 	/**
@@ -131,13 +117,10 @@ abstract class BaseLevelProvider implements LevelProvider {
 		return new Vector3((float) $this->levelData["SpawnX"], (float) $this->levelData["SpawnY"], (float) $this->levelData["SpawnZ"]);
 	}
 
-	/**
-	 * @param Vector3 $pos
-	 */
 	public function setSpawn(Vector3 $pos){
-		$this->levelData->SpawnX = new IntTag("SpawnX", (int) $pos->x);
-		$this->levelData->SpawnY = new IntTag("SpawnY", (int) $pos->y);
-		$this->levelData->SpawnZ = new IntTag("SpawnZ", (int) $pos->z);
+		$this->levelData->SpawnX = new IntTag("SpawnX", $pos->getFloorX());
+		$this->levelData->SpawnY = new IntTag("SpawnY", $pos->getFloorY());
+		$this->levelData->SpawnZ = new IntTag("SpawnZ", $pos->getFloorZ());
 	}
 
 	public function doGarbageCollection(){
@@ -160,32 +143,32 @@ abstract class BaseLevelProvider implements LevelProvider {
 		file_put_contents($this->getPath() . "level.dat", $buffer);
 	}
 
-	/**
-	 * @param int $x
-	 * @param int $z
-	 *
-	 * @return null|ChunkRequestTask
-	 */
-	public function requestChunkTask(int $x, int $z){
-		$chunk = $this->getChunk($x, $z, false);
-		if(!($chunk instanceof Chunk)){
-			throw new ChunkException("Invalid Chunk sent");
+	public function loadChunk(int $chunkX, int $chunkZ, bool $create = false) : ?Chunk{
+		$chunk = $this->readChunk($chunkX, $chunkZ);
+		if($chunk === null and $create){
+			$chunk = new Chunk($chunkX, $chunkZ);
 		}
 
-		if($this->asyncChunkRequest){
-			return new ChunkRequestTask($this->level, $chunk);
+		return $chunk;
+	}
+
+	public function saveChunk(Chunk $chunk) : void{
+		if(!$chunk->isGenerated()){
+			throw new \InvalidStateException("Cannot save un-generated chunk");
 		}
-
-		//non-async, call the callback directly with serialized data
-		$this->getLevel()->chunkRequestCallback($x, $z, $chunk->networkSerialize());
-
-		return null;
+		$this->writeChunk($chunk);
 	}
 
-	/**
-	 * @return Level
-	 */
-	public function getLevel(){
-		return $this->level;
+	public function isChunkPopulated(int $chunkX, int $chunkZ) : bool{
+		$chunk = $this->getChunk($chunkX, $chunkZ);
+		if($chunk !== null){
+			return $chunk->isPopulated();
+		}else{
+			return false;
+		}
 	}
+
+	abstract protected function readChunk(int $chunkX, int $chunkZ) : ?Chunk;
+
+	abstract protected function writeChunk(Chunk $chunk) : void;
 }

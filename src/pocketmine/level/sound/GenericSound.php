@@ -26,9 +26,6 @@ use pocketmine\network\mcpe\protocol\LevelEventPacket;
 
 class GenericSound extends Sound {
 
-	protected $pitch = 0;
-	protected $id;
-
 	/**
 	 * GenericSound constructor.
 	 *
@@ -41,6 +38,9 @@ class GenericSound extends Sound {
 		$this->id = (int) $id;
 		$this->pitch = (float) $pitch * 1000;
 	}
+
+	protected $pitch = 0;
+	protected $id;
 
 	/**
 	 * @return float

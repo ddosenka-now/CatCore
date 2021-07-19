@@ -1,25 +1,22 @@
 <?php
 
-/*██████████████████████████████████████████████████████████████████████████████████████████████████████████████
-/*█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒███▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▄▄▒▒███▒▒▄▄▄▄▄▄▄▄▄▄▒▒█
-/*█▒▒▄▄▒▒▒▒▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▄▄▒▒█▒▒▒▒▒▒▄▄▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▄▄▒▒█▒▒▄▄▒▒▒▒▒▒▒▒▄▄▒▒███▒▒▄▄▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▒▒████▒▒▄▄▒▒███▒▒▄▄▒▒█████████
-/*█▒▒▄▄▒▒█████████▒▒▄▄▒▒▒▒▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▒▒▒▒▒▒▒▒▄▄▒▒███▒▒▄▄▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▒▒█████████▒▒▄▄▄▄▄▄▄▄▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▄▄▒▒███▒▒▄▄▄▄▄▄▄▄▄▄▒▒█
-/*█▒▒▄▄▒▒█████████▒▒▄▄▒▒▒▒▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▒▒▒▒▒▒▄▄▒▒▒▒███▒▒▄▄▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████████
-/*█▒▒▄▄▒▒▒▒▒▒▒▒▒▒█▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒▒▒▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▄▄▒▒█▒▒▄▄▒▒██▒▒▄▄▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▒▒██▒▒▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█
-/*█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒██▒▒▒▒▒▒█████▒▒▒▒▒▒█████▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒██▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
-/*██████████████████████████████████████████████████████████████████████████████████████████████████████████████
 /*
-/* × ████████████████████████ ×
-/*    █       © Free Software, ® https://vk.com/dixsin        █
-/*    █ Этот софт не приватный, но Харнэс может       █
-/*    █ дать по ебалу за его распространение! Не        █
-/*    █  пытайтесь скрыть то, что вы слили мой софт █
-/* × ████████████████████████ ×
+ *
+ *  ____            _        _   __  __ _                  __  __ ____
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
+ * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
+ * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * @author PocketMine Team
+ * @link http://www.pocketmine.net/
+ *
+ *
 */
 
 namespace pocketmine\command\defaults;
@@ -61,7 +58,7 @@ class StatusCommand extends VanillaCommand {
 		$mUsage = Utils::getMemoryUsage(true);
 
 		$server = $sender->getServer();
-		$sender->sendMessage(TextFormat::GREEN . "---- " . TextFormat::WHITE . "%pocketmine.command.status.title" . TextFormat::GREEN . " ----");
+		$sender->sendMessage("§e§l[§6Cat§fCore§e] §7- §e§lСтатус §fсервера");
 
 		$time = (int) (microtime(true) - \pocketmine\START_TIME);
 
@@ -83,54 +80,22 @@ class StatusCommand extends VanillaCommand {
 		$uptime = ($minutes !== null ?
 				($hours !== null ?
 					($days !== null ?
-						"$days days "
-					: "") . "$hours hours "
-					: "") . "$minutes minutes "
-			: "") . "$seconds seconds";
+						"$days дней "
+					: "") . "$hours часов(-а) "
+					: "") . "$minutes минут(-ы) "
+			: "") . "$seconds секунд(-ы)";
 
-		$sender->sendMessage(TextFormat::WHITE . "%pocketmine.command.status.uptime " . TextFormat::RED . $uptime);
+		$sender->sendMessage("§e§l[§6Cat§fCore§e] §7- §e§lСколько §6живет: §f". $uptime ."");
 
 		$tpsColor = TextFormat::GREEN;
 		if($server->getTicksPerSecond() < 17){
-			$tpsColor = TextFormat::WHITE;
+			$tpsColor = TextFormat::GOLD;
 		}elseif($server->getTicksPerSecond() < 12){
-			$tpsColor = TextFormat::GREEN;
+			$tpsColor = TextFormat::RED;
 		}
 
-		$sender->sendMessage(TextFormat::GREEN . "%pocketmine.command.status.CurrentTPS " . $tpsColor . $server->getTicksPerSecond() . " (" . $server->getTickUsage() . "%)");
-		$sender->sendMessage(TextFormat::WHITE . "%pocketmine.command.status.AverageTPS " . $tpsColor . $server->getTicksPerSecondAverage() . " (" . $server->getTickUsageAverage() . "%)");
-
-		$onlineCount = 0;
-		foreach($sender->getServer()->getOnlinePlayers() as $player){
-			if($player->isOnline() and (!($sender instanceof Player) or $sender->canSee($player))){
-				++$onlineCount;
-			}
-		}
-
-		$sender->sendMessage(TextFormat::GREEN . "%pocketmine.command.status.player" . TextFormat::WHITE . " " . $onlineCount . "/" . $sender->getServer()->getMaxPlayers());
-		$sender->sendMessage(TextFormat::GREEN . "%pocketmine.command.status.Networkupload " . TextFormat::WHITE . \round($server->getNetwork()->getUpload() / 1024, 2) . " kB/s");
-		$sender->sendMessage(TextFormat::GREEN . "%pocketmine.command.status.Networkdownload " . TextFormat::WHITE . \round($server->getNetwork()->getDownload() / 1024, 2) . " kB/s");
-		$sender->sendMessage(TextFormat::GREEN . "%pocketmine.command.status.Threadcount " . TextFormat::WHITE . Utils::getThreadCount());
-		$sender->sendMessage(TextFormat::GREEN . "%pocketmine.command.status.Mainmemory " . TextFormat::WHITE . number_format(round(($mUsage[0] / 1024) / 1024, 2), 2) . " MB.");
-		$sender->sendMessage(TextFormat::GREEN . "%pocketmine.command.status.Totalmemory " . TextFormat::WHITE . number_format(round(($mUsage[1] / 1024) / 1024, 2), 2) . " MB.");
-		$sender->sendMessage(TextFormat::GREEN . "%pocketmine.command.status.Totalvirtualmemory " . TextFormat::WHITE . number_format(round(($mUsage[2] / 1024) / 1024, 2), 2) . " MB.");
-		$sender->sendMessage(TextFormat::GREEN . "%pocketmine.command.status.Heapmemory " . TextFormat::WHITE . number_format(round(($rUsage[0] / 1024) / 1024, 2), 2) . " MB.");
-
-		if($server->getProperty("memory.global-limit") > 0){
-			$sender->sendMessage(TextFormat::GREEN . "%pocketmine.command.status.Maxmemorymanager " . TextFormat::WHITE . number_format(round($server->getProperty("memory.global-limit"), 2), 2) . " MB.");
-		}
-
-		foreach($server->getLevels() as $level){
-			$levelName = $level->getFolderName() !== $level->getName() ? " (" . $level->getName() . ")" : "";
-			$timeColor = $level->getTickRateTime() > 40 ? TextFormat::WHITE : TextFormat::GREEN;
-			$sender->sendMessage(TextFormat::GREEN . "Мир \"{$level->getFolderName()}\"$levelName: " .
-				TextFormat::WHITE . number_format(count($level->getChunks())) . TextFormat::GREEN . " %pocketmine.command.status.chunks " .
-				TextFormat::WHITE . number_format(count($level->getEntities())) . TextFormat::GREEN . " %pocketmine.command.status.entities " .
-				TextFormat::WHITE . number_format(count($level->getTiles())) . TextFormat::GREEN . " %pocketmine.command.status.tiles " .
-				"%pocketmine.command.status.Time " . round($level->getTickRateTime(), 2) . "ms"
-			);
-		}
-
-		return true;
+		$sender->sendMessage("§e§l[§6Cat§fCore§e] §7- §6§lTPS §eСервера §e" . $server->getTicksPerSecond() . " (§6" . $server->getTickUsage() . "%§f)");
+		$sender->sendMessage("§e§l[§6Cat§fCore§e] §7- §6§lСредний §eTPS сервера: §f" . $server->getTicksPerSecondAverage() . " §e(§6" . $server->getTickUsageAverage() . "%§e)");
+		
 	}
 }

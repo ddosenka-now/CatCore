@@ -1,25 +1,44 @@
 <?php
 
+/*
+ *
+ *  ____            _        _   __  __ _                  __  __ ____
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
+ * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
+ * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * @author PocketMine Team
+ * @link http://www.pocketmine.net/
+ *
+ *
+*/
+
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\level\Level;
-use pocketmine\math\Vector3;
-use pocketmine\Player;
-use pocketmine\tile\Tile;
 use pocketmine\math\AxisAlignedBB;
-use pocketmine\nbt\tag\StringTag;
+use pocketmine\math\Vector3;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ShortTag;
-use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\StringTag;
+use pocketmine\Player;
 use pocketmine\tile\FlowerPot as TileFlowerPot;
+use pocketmine\tile\Tile;
 
 class FlowerPot extends Flowable {
 
 	const STATE_EMPTY = 0;
 	const STATE_FULL = 1;
 
-	protected $id = Block::FLOWER_POT_BLOCK;
+	protected $id = self::FLOWER_POT_BLOCK;
 
 	/**
 	 * FlowerPot constructor.
@@ -31,6 +50,13 @@ class FlowerPot extends Flowable {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getName() : string{
+		return "Flower Pot Block";
+	}
+
+	/**
 	 * @return bool
 	 */
 	public function canBeActivated() : bool{
@@ -38,10 +64,17 @@ class FlowerPot extends Flowable {
 	}
 
 	/**
-	 * @return string
+	 * @return AxisAlignedBB
 	 */
-	public function getName() : string{
-		return "Flower Pot Block";
+	protected function recalculateBoundingBox(){
+		return new AxisAlignedBB(
+			$this->x + 0.3125,
+			$this->y,
+			$this->z + 0.3125,
+			$this->x + 0.6875,
+			$this->y + 0.375,
+			$this->z + 0.6875
+		);
 	}
 
 	/**
@@ -79,7 +112,6 @@ class FlowerPot extends Flowable {
 		}
 
 		Tile::createTile(Tile::FLOWER_POT, $this->getLevel(), $nbt);
-
 		return true;
 	}
 
@@ -117,14 +149,7 @@ class FlowerPot extends Flowable {
 
 		$this->setDamage(self::STATE_FULL); //specific damage value is unnecessary, it just needs to be non-zero to show an item.
 		$this->getLevel()->setBlock($this, $this, true, false);
-		$pot->setItem($item);
-
-		if($player instanceof Player){
-			if($player->isSurvival()){
-				$item->setCount($item->getCount() - 1);
-				$player->getInventory()->setItemInHand($item->getCount() > 0 ? $item : Item::get(Item::AIR));
-			}
-		}
+		$pot->setItem($item->pop());
 
 		return true;
 	}
@@ -142,21 +167,7 @@ class FlowerPot extends Flowable {
 				$items[] = [$item->getId(), $item->getDamage(), 1];
 			}
 		}
-
 		return $items;
 	}
 
-	/**
-	 * @return AxisAlignedBB
-	 */
-	protected function recalculateBoundingBox(){
-		return new AxisAlignedBB(
-			$this->x + 0.3125,
-			$this->y,
-			$this->z + 0.3125,
-			$this->x + 0.6875,
-			$this->y + 0.375,
-			$this->z + 0.6875
-		);
-	}
 }

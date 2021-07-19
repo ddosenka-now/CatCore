@@ -25,17 +25,26 @@ namespace pocketmine\network\mcpe\protocol;
 
 
 class DisconnectPacket extends DataPacket {
-
 	const NETWORK_ID = ProtocolInfo::DISCONNECT_PACKET;
 
+    /** @var bool */
 	public $hideDisconnectionScreen = false;
-	public $message;
+	/** @var string */
+	public $message = "";
 
+	/**
+	 *
+	 */
 	public function decode(){
 		$this->hideDisconnectionScreen = $this->getBool();
-		$this->message = $this->getString();
+		if(!$this->hideDisconnectionScreen){
+			$this->message = $this->getString();
+		}
 	}
 
+	/**
+	 *
+	 */
 	public function encode(){
 		$this->reset();
 		$this->putBool($this->hideDisconnectionScreen);

@@ -42,13 +42,6 @@ class PMAnvil extends Anvil {
 	const REGION_FILE_EXTENSION = "mcapm";
 
 	/**
-	 * @return string
-	 */
-	public static function getProviderName() : string{
-		return "pmanvil";
-	}
-
-	/**
 	 * @param Chunk $chunk
 	 *
 	 * @return string
@@ -157,12 +150,21 @@ class PMAnvil extends Anvil {
 			$result->setLightPopulated(isset($chunk->LightPopulated) ? ((bool) $chunk->LightPopulated->getValue()) : false);
 			$result->setPopulated(isset($chunk->TerrainPopulated) ? ((bool) $chunk->TerrainPopulated->getValue()) : false);
 			$result->setGenerated(true);
-
 			return $result;
 		}catch(\Throwable $e){
 			MainLogger::getLogger()->logException($e);
-
 			return null;
 		}
+	}
+
+	/**
+	 * @return string
+	 */
+	public static function getProviderName() : string{
+		return "pmanvil";
+	}
+
+	public static function getPcWorldFormatVersion() : int{
+		return -1; //Not a PC format, only PocketMine-MP
 	}
 }

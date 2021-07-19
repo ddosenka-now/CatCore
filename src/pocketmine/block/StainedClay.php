@@ -22,10 +22,11 @@
 namespace pocketmine\block;
 
 
-use pocketmine\block\utils\ColorBlockMetaHelper;
 use pocketmine\item\Tool;
 
 class StainedClay extends Solid {
+
+	protected $id = self::STAINED_CLAY;
 
 	const CLAY_WHITE = 0;
 	const CLAY_ORANGE = 1;
@@ -43,7 +44,6 @@ class StainedClay extends Solid {
 	const CLAY_GREEN = 13;
 	const CLAY_RED = 14;
 	const CLAY_BLACK = 15;
-	protected $id = self::STAINED_CLAY;
 
 	/**
 	 * StainedClay constructor.
@@ -72,7 +72,25 @@ class StainedClay extends Solid {
 	 * @return string
 	 */
 	public function getName() : string{
-        return ColorBlockMetaHelper::getColorFromMeta($this->meta) . " Stained Clay";
+		static $names = [
+			0 => "White Stained Clay",
+			1 => "Orange Stained Clay",
+			2 => "Magenta Stained Clay",
+			3 => "Light Blue Stained Clay",
+			4 => "Yellow Stained Clay",
+			5 => "Lime Stained Clay",
+			6 => "Pink Stained Clay",
+			7 => "Gray Stained Clay",
+			8 => "Light Gray Stained Clay",
+			9 => "Cyan Stained Clay",
+			10 => "Purple Stained Clay",
+			11 => "Blue Stained Clay",
+			12 => "Brown Stained Clay",
+			13 => "Green Stained Clay",
+			14 => "Red Stained Clay",
+			15 => "Black Stained Clay",
+		];
+		return $names[$this->meta & 0x0f];
 	}
 
 }

@@ -27,13 +27,14 @@ use pocketmine\Player;
 
 class DoublePlant extends Flowable {
 
+	protected $id = self::DOUBLE_PLANT;
+
 	const SUNFLOWER = 0;
 	const LILAC = 1;
 	const DOUBLE_TALLGRASS = 2;
 	const LARGE_FERN = 3;
 	const ROSE_BUSH = 4;
 	const PEONY = 5;
-	protected $id = self::DOUBLE_PLANT;
 
 	/**
 	 * DoublePlant constructor.
@@ -63,7 +64,6 @@ class DoublePlant extends Flowable {
 			4 => "Rose Bush",
 			5 => "Peony"
 		];
-
 		return $names[$this->meta & 0x07];
 	}
 
@@ -75,7 +75,7 @@ class DoublePlant extends Flowable {
 	public function onUpdate($type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			if($this->getSide(0)->isTransparent() === true && !$this->getSide(0) instanceof DoublePlant){ //Replace with common break method
-				$this->getLevel()->setBlock($this, new Air(), true, true);
+				$this->getLevel()->setBlock($this, new Air(), false, false);
 
 				return Level::BLOCK_UPDATE_NORMAL;
 			}
@@ -102,15 +102,15 @@ class DoublePlant extends Flowable {
 		if($down->getId() === self::GRASS or $down->getId() === self::DIRT){
 			$this->getLevel()->setBlock($block, $this, true);
 			$this->getLevel()->setBlock($up, Block::get($this->id, $this->meta ^ 0x08), true);
-
 			return true;
 		}
-
 		return false;
 	}
 
 	/**
 	 * @param Item $item
+	 *
+	 * @return mixed|void
 	 */
 	public function onBreak(Item $item){
 		$up = $this->getSide(1);

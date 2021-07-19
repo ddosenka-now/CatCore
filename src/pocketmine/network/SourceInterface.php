@@ -43,7 +43,7 @@ interface SourceInterface {
 	 *
 	 * @return int
 	 */
-	public function putPacket(Player $player, DataPacket $packet, $needACK = false, $immediate = true);
+	public function putPacket(Player $player, DataPacket $packet, bool $needACK = false, bool $immediate = true);
 
 	/**
 	 * Terminates the connection
@@ -57,12 +57,12 @@ interface SourceInterface {
 	/**
 	 * @param string $name
 	 */
-	public function setName($name);
+	public function setName(string $name);
 
 	/**
-	 * @return bool
+	 * Called every tick to process events on the interface.
 	 */
-	public function process();
+	public function process() : void;
 
 	public function shutdown();
 

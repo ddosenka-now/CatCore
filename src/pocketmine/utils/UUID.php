@@ -23,8 +23,8 @@ namespace pocketmine\utils;
 
 class UUID {
 
-	private $parts = [0, 0, 0, 0];
-	private $version = null;
+	private $parts;
+	private $version;
 
 	/**
 	 * UUID constructor.
@@ -45,6 +45,22 @@ class UUID {
 	}
 
 	/**
+	 * @return int|null
+	 */
+	public function getVersion(){
+		return $this->version;
+	}
+
+	/**
+	 * @param UUID $uuid
+	 *
+	 * @return bool
+	 */
+	public function equals(UUID $uuid){
+		return $uuid->parts === $this->parts;
+	}
+
+	/**
 	 * Creates an UUID from an hexadecimal representation
 	 *
 	 * @param string $uuid
@@ -53,7 +69,12 @@ class UUID {
 	 * @return UUID
 	 */
 	public static function fromString($uuid, $version = null){
-		return self::fromBinary(hex2bin(str_replace("-", "", trim($uuid))), $version);
+		//TODO: should we be stricter about the notation (8-4-4-4-12)?
+		$binary = @hex2bin(str_replace("-", "", trim($uuid)));
+		if($binary === false){
+			throw new \InvalidArgumentException("Invalid hex string UUID representation");
+		}
+		return self::fromBinary($binary, $version);
 	}
 
 	/**
@@ -73,13 +94,6 @@ class UUID {
 	}
 
 	/**
-	 * @return UUID
-	 */
-	public static function fromRandom(){
-		return self::fromData(Binary::writeInt(time()), Binary::writeShort(getmypid()), Binary::writeShort(getmyuid()), Binary::writeInt(mt_rand(-0x7fffffff, 0x7fffffff)), Binary::writeInt(mt_rand(-0x7fffffff, 0x7fffffff)));
-	}
-
-	/**
 	 * Creates an UUIDv3 from binary data or list of binary data
 	 *
 	 * @param array|string ...$data
@@ -93,19 +107,27 @@ class UUID {
 	}
 
 	/**
-	 * @return int|null
+	 * @return UUID
 	 */
-	public function getVersion(){
-		return $this->version;
+	public static function fromRandom(){
+		return self::fromData(Binary::writeInt(time()), Binary::writeShort(getmypid()), Binary::writeShort(getmyuid()), Binary::writeInt(mt_rand(-0x7fffffff, 0x7fffffff)), Binary::writeInt(mt_rand(-0x7fffffff, 0x7fffffff)));
 	}
 
 	/**
-	 * @param UUID $uuid
-	 *
-	 * @return bool
+	 * @return string
 	 */
-	public function equals(UUID $uuid){
-		return $uuid->parts[0] === $this->parts[0] and $uuid->parts[1] === $this->parts[1] and $uuid->parts[2] === $this->parts[2] and $uuid->parts[3] === $this->parts[3];
+	public function toBinary(){
+		return Binary::writeInt($this->parts[0]) . Binary::writeInt($this->parts[1]) . Binary::writeInt($this->parts[2]) . Binary::writeInt($this->parts[3]);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function toString(){
+		$hex = bin2hex(self::toBinary());
+
+		//xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx 8-4-4-12
+		return substr($hex, 0, 8) . "-" . substr($hex, 8, 4) . "-" . substr($hex, 12, 4) . "-" . substr($hex, 16, 4) . "-" . substr($hex, 20, 12);
 	}
 
 	/**
@@ -116,11 +138,9 @@ class UUID {
 	}
 
 	/**
-	 * @param int $partNumber
-	 *
-	 * @return mixed
+	 * @throws \InvalidArgumentException
 	 */
-	public function getPart(int $partNumber){
+	public function getPart(int $partNumber) : int{
 		if($partNumber < 0 or $partNumber > 3){
 			throw new \InvalidArgumentException("Invalid UUID part index $partNumber");
 		}
@@ -128,30 +148,9 @@ class UUID {
 	}
 
 	/**
-	 * @return array
+	 * @return int[]
 	 */
 	public function getParts() : array{
 		return $this->parts;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function toString(){
-		$hex = bin2hex(self::toBinary());
-
-		//xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx 8-4-4-12
-		if($this->version !== null){
-			return substr($hex, 0, 8) . "-" . substr($hex, 8, 4) . "-" . hexdec($this->version) . substr($hex, 13, 3) . "-8" . substr($hex, 17, 3) . "-" . substr($hex, 20, 12);
-		}
-
-		return substr($hex, 0, 8) . "-" . substr($hex, 8, 4) . "-" . substr($hex, 12, 4) . "-" . substr($hex, 16, 4) . "-" . substr($hex, 20, 12);
-	}
-
-	/**
-	 * @return string
-	 */
-	public function toBinary(){
-		return Binary::writeInt($this->parts[0]) . Binary::writeInt($this->parts[1]) . Binary::writeInt($this->parts[2]) . Binary::writeInt($this->parts[3]);
 	}
 }

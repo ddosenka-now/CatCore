@@ -55,12 +55,4 @@ abstract class InventoryEvent extends Event {
 	public function getViewers(){
 		return $this->inventory->getViewers();
 	}
-
-	/**
-	 * @return EventName|string
-	 */
-	public function getName(){
-		return "InventoryEvent";
-	}
-
 }

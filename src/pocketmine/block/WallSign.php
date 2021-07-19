@@ -51,11 +51,9 @@ class WallSign extends SignPost {
 				if($this->getSide($faces[$this->meta])->getId() === self::AIR){
 					$this->getLevel()->useBreakOn($this);
 				}
-
 				return Level::BLOCK_UPDATE_NORMAL;
 			}
 		}
-
 		return false;
 	}
 }

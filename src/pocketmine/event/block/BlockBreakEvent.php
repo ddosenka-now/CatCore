@@ -83,13 +83,6 @@ class BlockBreakEvent extends BlockEvent implements Cancellable {
 	}
 
 	/**
-	 * @param boolean $instaBreak
-	 */
-	public function setInstaBreak($instaBreak){
-		$this->instaBreak = (bool) $instaBreak;
-	}
-
-	/**
 	 * @return Item[]
 	 */
 	public function getDrops(){
@@ -104,10 +97,9 @@ class BlockBreakEvent extends BlockEvent implements Cancellable {
 	}
 
 	/**
-	 * @return EventName|string
+	 * @param bool $instaBreak
 	 */
-	public function getName(){
-		return "BlockBreakEvent";
+	public function setInstaBreak($instaBreak){
+		$this->instaBreak = (bool) $instaBreak;
 	}
-
 }

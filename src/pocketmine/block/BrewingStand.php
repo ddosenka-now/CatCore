@@ -23,15 +23,15 @@ namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
+use pocketmine\math\Vector3;
+use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\StringTag;
-use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\ListTag;
+use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
-use pocketmine\tile\Tile;
 use pocketmine\tile\BrewingStand as TileBrewingStand;
-use pocketmine\math\Vector3;
+use pocketmine\tile\Tile;
 
 class BrewingStand extends Transparent {
 
@@ -83,7 +83,6 @@ class BrewingStand extends Transparent {
 
 			return true;
 		}
-
 		return false;
 	}
 
@@ -151,7 +150,6 @@ class BrewingStand extends Transparent {
 			}
 			$player->addWindow($brewingStand->getInventory());
 		}
-
 		return true;
 	}
 
@@ -165,7 +163,6 @@ class BrewingStand extends Transparent {
 		if($item->isPickaxe() >= Tool::TIER_WOODEN){
 			$drops[] = [Item::BREWING_STAND, 0, 1];
 		}
-
 		return $drops;
 	}
 }

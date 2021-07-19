@@ -30,10 +30,12 @@ use pocketmine\math\Vector3;
  */
 class VectorIterator implements \Iterator {
 
-private static $gridSize = 16777216;
 	/** @var ChunkManager */
 	private $level;
-	private $maxDistance; //1 << 24
+	private $maxDistance;
+
+	private static $gridSize = 16777216; //1 << 24
+
 	private $end = false;
 
 	/** @var \SplFixedArray<Vector3>[3] */
@@ -65,7 +67,6 @@ private static $gridSize = 16777216;
 		if($from->equals($to)){
 			$this->end = true;
 			$this->currentBlock = -1;
-
 			return;
 		}
 		$direction = $to->subtract($from)->normalize();
@@ -185,12 +186,13 @@ private static $gridSize = 16777216;
 	}
 
 	/**
-	 * @param Vector3 $direction
+	 * @param Vector3 $a
+	 * @param Vector3 $b
 	 *
-	 * @return number
+	 * @return bool
 	 */
-	private function getXLength(Vector3 $direction){
-		return abs($direction->x);
+	private function posEquals(Vector3 $a, Vector3 $b){
+		return $a->x === $b->x and $a->y === $b->y and $a->z === $b->z;
 	}
 
 	/**
@@ -204,53 +206,11 @@ private static $gridSize = 16777216;
 
 	/**
 	 * @param Vector3 $direction
-	 * @param Vector3 $position
-	 * @param Vector3 $block
-	 *
-	 * @return mixed
-	 */
-	private function getXPosition(Vector3 $direction, Vector3 $position, Vector3 $block){
-		return $this->getPosition($direction->x, $position->x, $block->x);
-	}
-
-	/**
-	 * @param $direction
-	 * @param $position
-	 * @param $blockPosition
-	 *
-	 * @return mixed
-	 */
-	private function getPosition($direction, $position, $blockPosition){
-		return $direction > 0 ? ($position - $blockPosition) : ($blockPosition + 1 - $position);
-	}
-
-	/**
-	 * @param Vector3 $direction
 	 *
 	 * @return int
 	 */
 	private function getYFace(Vector3 $direction){
 		return (($direction->y) > 0) ? Vector3::SIDE_UP : Vector3::SIDE_DOWN;
-	}
-
-	/**
-	 * @param Vector3 $direction
-	 *
-	 * @return number
-	 */
-	private function getYLength(Vector3 $direction){
-		return abs($direction->y);
-	}
-
-	/**
-	 * @param Vector3 $direction
-	 * @param Vector3 $position
-	 * @param Vector3 $block
-	 *
-	 * @return mixed
-	 */
-	private function getYPosition(Vector3 $direction, Vector3 $position, Vector3 $block){
-		return $this->getPosition($direction->y, $position->y, $block->y);
 	}
 
 	/**
@@ -267,8 +227,59 @@ private static $gridSize = 16777216;
 	 *
 	 * @return number
 	 */
+	private function getXLength(Vector3 $direction){
+		return abs($direction->x);
+	}
+
+	/**
+	 * @param Vector3 $direction
+	 *
+	 * @return number
+	 */
+	private function getYLength(Vector3 $direction){
+		return abs($direction->y);
+	}
+
+	/**
+	 * @param Vector3 $direction
+	 *
+	 * @return number
+	 */
 	private function getZLength(Vector3 $direction){
 		return abs($direction->z);
+	}
+
+	/**
+	 * @param $direction
+	 * @param $position
+	 * @param $blockPosition
+	 *
+	 * @return mixed
+	 */
+	private function getPosition($direction, $position, $blockPosition){
+		return $direction > 0 ? ($position - $blockPosition) : ($blockPosition + 1 - $position);
+	}
+
+	/**
+	 * @param Vector3 $direction
+	 * @param Vector3 $position
+	 * @param Vector3 $block
+	 *
+	 * @return mixed
+	 */
+	private function getXPosition(Vector3 $direction, Vector3 $position, Vector3 $block){
+		return $this->getPosition($direction->x, $position->x, $block->x);
+	}
+
+	/**
+	 * @param Vector3 $direction
+	 * @param Vector3 $position
+	 * @param Vector3 $block
+	 *
+	 * @return mixed
+	 */
+	private function getYPosition(Vector3 $direction, Vector3 $position, Vector3 $block){
+		return $this->getPosition($direction->y, $position->y, $block->y);
 	}
 
 	/**
@@ -282,6 +293,47 @@ private static $gridSize = 16777216;
 		return $this->getPosition($direction->z, $position->z, $block->z);
 	}
 
+	public function next(){
+		$this->scan();
+
+		if($this->currentBlock <= -1){
+			throw new \OutOfBoundsException;
+		}else{
+			$this->currentBlockObject = $this->positionQueue[$this->currentBlock--];
+		}
+	}
+
+	/**
+	 * @return Block
+	 *
+	 * @throws \OutOfBoundsException
+	 */
+	public function current(){
+		if($this->currentBlockObject === null){
+			throw new \OutOfBoundsException;
+		}
+		return $this->currentBlockObject;
+	}
+
+	public function rewind(){
+		throw new \InvalidStateException("BlockIterator doesn't support rewind()");
+	}
+
+	/**
+	 * @return int
+	 */
+	public function key(){
+		return $this->currentBlock - 1;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function valid(){
+		$this->scan();
+		return $this->currentBlock !== -1;
+	}
+
 	private function scan(){
 		if($this->currentBlock >= 0){
 			return;
@@ -289,7 +341,6 @@ private static $gridSize = 16777216;
 
 		if($this->maxDistance !== 0 and $this->currentDistance > $this->maxDistanceInt){
 			$this->end = true;
-
 			return;
 		}
 
@@ -330,58 +381,5 @@ private static $gridSize = 16777216;
 			$this->positionQueue[0] = $this->positionQueue[0]->getSide($this->mainFace);
 			$this->currentBlock = 0;
 		}
-	}
-
-	/**
-	 * @param Vector3 $a
-	 * @param Vector3 $b
-	 *
-	 * @return bool
-	 */
-	private function posEquals(Vector3 $a, Vector3 $b){
-		return $a->x === $b->x and $a->y === $b->y and $a->z === $b->z;
-	}
-
-	public function next(){
-		$this->scan();
-
-		if($this->currentBlock <= -1){
-			throw new \OutOfBoundsException;
-		}else{
-			$this->currentBlockObject = $this->positionQueue[$this->currentBlock--];
-		}
-	}
-
-	/**
-	 * @return Block|Vector3
-	 *
-	 * @throws \OutOfBoundsException
-	 */
-	public function current(){
-		if($this->currentBlockObject === null){
-			throw new \OutOfBoundsException;
-		}
-
-		return $this->currentBlockObject;
-	}
-
-	public function rewind(){
-		throw new \InvalidStateException("BlockIterator doesn't support rewind()");
-	}
-
-	/**
-	 * @return int
-	 */
-	public function key(){
-		return $this->currentBlock - 1;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function valid(){
-		$this->scan();
-
-		return $this->currentBlock !== -1;
 	}
 }

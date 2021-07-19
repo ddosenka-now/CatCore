@@ -29,8 +29,6 @@ class Bedrock extends Solid {
 
 	/**
 	 * Bedrock constructor.
-	 *
-	 * @param int $meta
 	 */
 	public function __construct($meta = 0){
 		$this->meta = $meta;

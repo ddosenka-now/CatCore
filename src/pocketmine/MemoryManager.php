@@ -1,25 +1,20 @@
 <?php
 
-/*██████████████████████████████████████████████████████████████████████████████████████████████████████████████
-/*█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒███▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▄▄▒▒███▒▒▄▄▄▄▄▄▄▄▄▄▒▒█
-/*█▒▒▄▄▒▒▒▒▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▄▄▒▒█▒▒▒▒▒▒▄▄▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▄▄▒▒█▒▒▄▄▒▒▒▒▒▒▒▒▄▄▒▒███▒▒▄▄▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▒▒████▒▒▄▄▒▒███▒▒▄▄▒▒█████████
-/*█▒▒▄▄▒▒█████████▒▒▄▄▒▒▒▒▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▒▒▒▒▒▒▒▒▄▄▒▒███▒▒▄▄▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▒▒█████████▒▒▄▄▄▄▄▄▄▄▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▄▄▒▒███▒▒▄▄▄▄▄▄▄▄▄▄▒▒█
-/*█▒▒▄▄▒▒█████████▒▒▄▄▒▒▒▒▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▒▒▒▒▒▒▄▄▒▒▒▒███▒▒▄▄▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████████
-/*█▒▒▄▄▒▒▒▒▒▒▒▒▒▒█▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒▒▒▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▄▄▒▒█▒▒▄▄▒▒██▒▒▄▄▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▒▒██▒▒▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█
-/*█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒██▒▒▒▒▒▒█████▒▒▒▒▒▒█████▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒██▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
-/*██████████████████████████████████████████████████████████████████████████████████████████████████████████████
 /*
-/* × ████████████████████████ ×
-/*    █       © Free Software, ® https://vk.com/dixsin        █
-/*    █ Этот софт не приватный, но Харнэс может       █
-/*    █ дать по ебалу за его распространение! Не        █
-/*    █  пытайтесь скрыть то, что вы слили мой софт █
-/* × ████████████████████████ ×
+*╭━━━╮╱╱╭╮╭━━━╮
+*┃╭━╮┃╱╭╯╰┫╭━╮┃
+*┃┃╱╰╋━┻╮╭┫┃╱╰╋━━┳━┳━━╮
+*┃┃╱╭┫╭╮┃┃┃┃╱╭┫╭╮┃╭┫┃━┫
+*┃╰━╯┃╭╮┃╰┫╰━╯┃╰╯┃┃┃┃━┫
+*╰━━━┻╯╰┻━┻━━━┻━━┻╯╰━━╯
+*
+*Автор: https://vk.com/dixsin
+*
+*Версия ядра: 6.0-release
+*
+*Ядро переделано очень сильно, в отличии от *LiteCore тут куча всяких приколов и плюшек, *автор не несёт ответственности за насилие, *избиение и т.п умышленные действия!
+*
+*Советую войти в группу в вк: vk.com/*uptex_mcpe!
 */
 
 namespace pocketmine;
@@ -51,12 +46,11 @@ class MemoryManager {
 	private $garbageCollectionTrigger;
 	private $garbageCollectionAsync;
 
-	private $chunkLimit;
-	private $chunkCollect;
-	private $chunkTrigger;
+	private $lowMemChunkRadiusOverride;
+	private $lowMemChunkGC;
 
-	private $chunkCache;
-	private $cacheTrigger;
+	private $lowMemDisableChunkCache;
+	private $lowMemClearWorldCache;
 
 	/** @var \WeakRef[] */
 	private $leakWatch = [];
@@ -79,7 +73,7 @@ class MemoryManager {
 	private function init(){
 		$this->memoryLimit = ((int) $this->server->getProperty("memory.main-limit", 0)) * 1024 * 1024;
 
-		$defaultMemory = 1024;
+     $defaultMemory = 1024;
 
 		if(preg_match("/([0-9]+)([KMGkmg])/", $this->server->getConfigString("memory-limit", ""), $matches) > 0){
 			$m = (int) $matches[1];
@@ -106,7 +100,7 @@ class MemoryManager {
 		$hardLimit = ((int) $this->server->getProperty("memory.main-hard-limit", $defaultMemory));
 
 		if($hardLimit <= 0){
-			ini_set("memory_limit", -1);
+			ini_set("memory_limit", '-1');
 		}else{
 			ini_set("memory_limit", $hardLimit . "M");
 		}
@@ -120,13 +114,11 @@ class MemoryManager {
 		$this->garbageCollectionTrigger = (bool) $this->server->getProperty("memory.garbage-collection.low-memory-trigger", true);
 		$this->garbageCollectionAsync = (bool) $this->server->getProperty("memory.garbage-collection.collect-async-worker", true);
 
-		$this->chunkLimit = (int) $this->server->getProperty("memory.max-chunks.trigger-limit", 96);
-		$this->chunkCollect = (bool) $this->server->getProperty("memory.max-chunks.trigger-chunk-collect", true);
-		$this->chunkTrigger = (bool) $this->server->getProperty("memory.max-chunks.low-memory-trigger", true);
+		$this->lowMemChunkRadiusOverride = (int) $this->server->getProperty("memory.max-chunks.chunk-radius", 4);
+		$this->lowMemChunkGC = (bool) $this->server->getProperty("memory.max-chunks.trigger-chunk-collect", true);
 
-		$this->chunkCache = (bool) $this->server->getProperty("memory.world-caches.disable-chunk-cache", true);
-		$this->cacheTrigger = (bool) $this->server->getProperty("memory.world-caches.low-memory-trigger", true);
-
+		$this->lowMemDisableChunkCache = (bool) $this->server->getProperty("memory.world-caches.disable-chunk-cache", true);
+		$this->lowMemClearWorldCache = (bool) $this->server->getProperty("memory.world-caches.low-memory-trigger", true);
 		gc_enable();
 	}
 
@@ -141,16 +133,50 @@ class MemoryManager {
 	 * @return bool
 	 */
 	public function canUseChunkCache(){
-		return !($this->lowMemory and $this->chunkTrigger);
+		return !$this->lowMemory or !$this->lowMemDisableChunkCache;
 	}
 
 	/**
-	 * @param $distance
+	 * Returns the allowed chunk radius based on the current memory usage.
 	 *
-	 * @return mixed
+	 * @param int $distance
+	 *
+	 * @return int
 	 */
-	public function getViewDistance($distance){
-		return $this->lowMemory ? min($this->chunkLimit, $distance) : $distance;
+	public function getViewDistance(int $distance) : int{
+		return ($this->lowMemory and $this->lowMemChunkRadiusOverride > 0) ? (int) min($this->lowMemChunkRadiusOverride, $distance) : $distance;
+	}
+
+	/**
+	 * @param      $memory
+	 * @param      $limit
+	 * @param bool $global
+	 * @param int  $triggerCount
+	 */
+	public function trigger($memory, $limit, $global = false, $triggerCount = 0){
+		$this->server->getLogger()->debug("[Memory Manager] " . ($global ? "Global " : "") . "Low memory triggered, limit " . round(($limit / 1024) / 1024, 2) . "MB, using " . round(($memory / 1024) / 1024, 2) . "MB");
+
+		if($this->lowMemClearWorldCache){
+			foreach($this->server->getLevels() as $level){
+				$level->clearCache(true);
+			}
+		}
+
+		if($this->lowMemChunkGC){
+			foreach($this->server->getLevels() as $level){
+				$level->doChunkGarbageCollection();
+			}
+		}
+
+		$ev = new LowMemoryEvent($memory, $limit, $global, $triggerCount);
+		$this->server->getPluginManager()->callEvent($ev);
+
+		$cycles = 0;
+		if($this->garbageCollectionTrigger){
+			$cycles = $this->triggerGarbageCollector();
+		}
+
+		$this->server->getLogger()->debug("[Memory Manager] Freed " . round(($ev->getMemoryFreed() / 1024) / 1024, 2) . "MB, $cycles cycles");
 	}
 
 	public function check(){
@@ -191,44 +217,16 @@ class MemoryManager {
 	}
 
 	/**
-	 * @param      $memory
-	 * @param      $limit
-	 * @param bool $global
-	 * @param int  $triggerCount
-	 */
-	public function trigger($memory, $limit, $global = false, $triggerCount = 0){
-		$this->server->getLogger()->debug("[Memory Manager] " . ($global ? "Global " : "") . "Low memory triggered, limit " . round(($limit / 1024) / 1024, 2) . "MB, using " . round(($memory / 1024) / 1024, 2) . "MB");
-
-		if($this->cacheTrigger){
-			foreach($this->server->getLevels() as $level){
-				$level->clearCache(true);
-			}
-		}
-
-		if($this->chunkTrigger and $this->chunkCollect){
-			foreach($this->server->getLevels() as $level){
-				$level->doChunkGarbageCollection();
-			}
-		}
-
-		$ev = new LowMemoryEvent($memory, $limit, $global, $triggerCount);
-		$this->server->getPluginManager()->callEvent($ev);
-
-		$cycles = 0;
-		if($this->garbageCollectionTrigger){
-			$cycles = $this->triggerGarbageCollector();
-		}
-
-		$this->server->getLogger()->debug("[Memory Manager] Freed " . round(($ev->getMemoryFreed() / 1024) / 1024, 2) . "MB, $cycles cycles");
-	}
-
-	/**
 	 * @return int
 	 */
 	public function triggerGarbageCollector(){
 		Timings::$garbageCollectorTimer->startTiming();
 
 		if($this->garbageCollectionAsync){
+			/*$pool = $this->server->getScheduler();
+			if(($w = $pool->shutdownUnusedWorkers()) > 0){
+				$this->server->getLogger()->debug("Shut down $w idle async pool workers");
+			}*/
 			$size = $this->server->getScheduler()->getAsyncTaskPoolSize();
 			for($i = 0; $i < $size; ++$i){
 				$this->server->getScheduler()->scheduleAsyncTaskToWorker(new GarbageCollectionTask(), $i);
@@ -236,10 +234,7 @@ class MemoryManager {
 		}
 
 		$cycles = gc_collect_cycles();
-
-		foreach($this->server->getLevels() as $level){
-			$level->doChunkGarbageCollection();
-		}
+		gc_mem_caches();
 
 		Timings::$garbageCollectorTimer->stopTiming();
 
@@ -288,14 +283,6 @@ class MemoryManager {
 		return false;
 	}
 
-	public function doObjectCleanup(){
-		foreach($this->leakWatch as $id => $w){
-			if(!$w->valid()){
-				$this->removeObjectWatch($id);
-			}
-		}
-	}
-
 	/**
 	 * @param $id
 	 */
@@ -306,6 +293,14 @@ class MemoryManager {
 		unset($this->leakInfo[$this->leakInfo[$id]["hash"]]);
 		unset($this->leakInfo[$id]);
 		unset($this->leakWatch[$id]);
+	}
+
+	public function doObjectCleanup(){
+		foreach($this->leakWatch as $id => $w){
+			if(!$w->valid()){
+				$this->removeObjectWatch($id);
+			}
+		}
 	}
 
 	/**
@@ -328,7 +323,7 @@ class MemoryManager {
 			$this->leakWatch[$id]->release();
 
 			$valid = true;
-			$references = getReferenceCount($object, false);
+			$references = Utils::getReferenceCount($object, false);
 		}
 
 		return [
@@ -347,12 +342,14 @@ class MemoryManager {
 	 * @param $maxStringSize
 	 */
 	public function dumpServerMemory($outputFolder, $maxNesting, $maxStringSize){
+		$hardLimit = ini_get('memory_limit');
+		if($hardLimit === false) throw new \Error("memory_limit INI directive should always exist");
+		ini_set('memory_limit', '-1');
 		gc_disable();
-		ini_set("memory_limit", -1);
+
 		if(!file_exists($outputFolder)){
 			mkdir($outputFolder, 0777, true);
 		}
-		$this->server->getLogger()->notice("[Dump] After the memory dump is done, the server will shut down");
 
 		$obData = fopen($outputFolder . "/objects.js", "wb+");
 
@@ -385,8 +382,8 @@ class MemoryManager {
 					"properties" => []
 				];
 
-				if($reflection->getParentClass()){
-					$info["parent"] = $reflection->getParentClass()->getName();
+				if(($parent = $reflection->getParentClass()) !== false){
+					$info["parent"] = $parent->getName();
 				}
 
 				if(count($reflection->getInterfaceNames()) > 0){
@@ -406,7 +403,7 @@ class MemoryManager {
 
 				fwrite($obData, "$hash@$className: " . json_encode($info, JSON_UNESCAPED_SLASHES) . "\n");
 
-				if(!isset($objects["staticProperties"][$className])){
+				if(!isset($staticProperties[$className])){
 					$staticProperties[$className] = [];
 					foreach($reflection->getProperties() as $property){
 						if(!$property->isStatic() or $property->getDeclaringClass()->getName() !== $className){
@@ -424,15 +421,16 @@ class MemoryManager {
 			echo "[Dump] Wrote " . count($objects) . " objects\n";
 		}while($continue);
 
+		fclose($obData);
+
 		file_put_contents($outputFolder . "/staticProperties.js", json_encode($staticProperties, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 		file_put_contents($outputFolder . "/serverEntry.js", json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 		file_put_contents($outputFolder . "/referenceCounts.js", json_encode($refCounts, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
 		echo "[Dump] Finished!\n";
 
+		ini_set('memory_limit', $hardLimit);
 		gc_enable();
-
-		$this->server->forceShutdown();
 	}
 
 	/**
@@ -447,7 +445,6 @@ class MemoryManager {
 	private function continueDump($from, &$data, &$objects, &$refCounts, $recursion, $maxNesting, $maxStringSize){
 		if($maxNesting <= 0){
 			$data = "(error) NESTING LIMIT REACHED";
-
 			return;
 		}
 
@@ -465,7 +462,6 @@ class MemoryManager {
 		}elseif(is_array($from)){
 			if($recursion >= 5){
 				$data = "(error) ARRAY RECURSION LIMIT REACHED";
-
 				return;
 			}
 			$data = [];

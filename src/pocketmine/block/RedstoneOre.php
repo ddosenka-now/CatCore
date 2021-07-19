@@ -21,9 +21,9 @@
 
 namespace pocketmine\block;
 
+use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
-use pocketmine\item\enchantment\Enchantment;
 use pocketmine\level\Level;
 
 class RedstoneOre extends Solid {
@@ -32,8 +32,6 @@ class RedstoneOre extends Solid {
 
 	/**
 	 * RedstoneOre constructor.
-	 *
-	 * @param int $meta
 	 */
 	public function __construct($meta = 0){
 		$this->meta = $meta;
@@ -89,7 +87,6 @@ class RedstoneOre extends Solid {
 			}else{
 				$fortuneL = $item->getEnchantmentLevel(Enchantment::TYPE_MINING_FORTUNE);
 				$fortuneL = $fortuneL > 3 ? 3 : $fortuneL;
-
 				return [
 					[Item::REDSTONE_DUST, 0, mt_rand(4, 5 + $fortuneL)],
 				];

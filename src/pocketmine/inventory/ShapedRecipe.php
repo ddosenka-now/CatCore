@@ -22,9 +22,9 @@
 namespace pocketmine\inventory;
 
 use pocketmine\item\Item;
+use pocketmine\math\Vector2;
 use pocketmine\Server;
 use pocketmine\utils\UUID;
-use pocketmine\math\Vector2;
 
 class ShapedRecipe implements Recipe {
 	/** @var Item */
@@ -106,7 +106,6 @@ class ShapedRecipe implements Recipe {
 	 */
 	public function addIngredient($x, $y, Item $item){
 		$this->ingredients[$y][$x] = clone $item;
-
 		return $this;
 	}
 
@@ -171,7 +170,6 @@ class ShapedRecipe implements Recipe {
 				}
 			}
 		}
-
 		return $ingredients;
 	}
 

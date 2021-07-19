@@ -1,4 +1,5 @@
 <?php
+
 /*
  *
  *  ____            _        _   __  __ _                  __  __ ____
@@ -32,7 +33,10 @@ use pocketmine\tile\Furnace as TileFurnace;
 use pocketmine\tile\Tile;
 
 class BurningFurnace extends Solid {
+
 	protected $id = self::BURNING_FURNACE;
+
+	protected $itemId = self::FURNACE;
 
 	/**
 	 * BurningFurnace constructor.
@@ -107,26 +111,18 @@ class BurningFurnace extends Solid {
 			new IntTag("z", $this->z)
 		]);
 		$nbt->Items->setTagType(NBT::TAG_Compound);
+
 		if($item->hasCustomName()){
 			$nbt->CustomName = new StringTag("CustomName", $item->getCustomName());
 		}
+
 		if($item->hasCustomBlockData()){
 			foreach($item->getCustomBlockData() as $key => $v){
 				$nbt->{$key} = $v;
 			}
 		}
+
 		Tile::createTile("Furnace", $this->getLevel(), $nbt);
-
-		return true;
-	}
-
-	/**
-	 * @param Item $item
-	 *
-	 * @return bool
-	 */
-	public function onBreak(Item $item){
-		$this->getLevel()->setBlock($this, new Air(), true, true);
 
 		return true;
 	}
@@ -151,10 +147,15 @@ class BurningFurnace extends Solid {
 				$nbt->Items->setTagType(NBT::TAG_Compound);
 				$furnace = Tile::createTile("Furnace", $this->getLevel(), $nbt);
 			}
+
 			if(isset($furnace->namedtag->Lock) and $furnace->namedtag->Lock instanceof StringTag){
 				if($furnace->namedtag->Lock->getValue() !== $item->getCustomName()){
 					return true;
 				}
+			}
+
+			if($player->isCreative() and $player->getServer()->limitedCreative){
+				return true;
 			}
 			$player->addWindow($furnace->getInventory());
 		}

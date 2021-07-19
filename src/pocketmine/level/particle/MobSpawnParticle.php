@@ -21,8 +21,8 @@
 
 namespace pocketmine\level\particle;
 
-use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\LevelEventPacket;
 
 class MobSpawnParticle extends Particle {
 

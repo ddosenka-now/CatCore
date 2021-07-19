@@ -25,14 +25,5 @@ namespace pocketmine\event\level;
  * Called when a Level is saved
  */
 class LevelSaveEvent extends LevelEvent {
-
 	public static $handlerList = null;
-
-	/**
-	 * @return EventName|string
-	 */
-	public function getName(){
-		return "LevelSaveEvent";
-	}
-
 }

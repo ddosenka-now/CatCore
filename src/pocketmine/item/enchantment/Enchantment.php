@@ -21,6 +21,7 @@
 
 namespace pocketmine\item\enchantment;
 
+use pocketmine\Server;
 use pocketmine\item\ChainBoots;
 use pocketmine\item\ChainChestplate;
 use pocketmine\item\ChainHelmet;
@@ -67,42 +68,41 @@ use pocketmine\item\WoodenHoe;
 use pocketmine\item\WoodenPickaxe;
 use pocketmine\item\WoodenShovel;
 use pocketmine\item\WoodenSword;
-use pocketmine\Server;
 
 class Enchantment {
 
 	const TYPE_INVALID = -1;
 
-    const TYPE_ARMOR_PROTECTION = 0, PROTECTION = 0;
-    const TYPE_ARMOR_FIRE_PROTECTION = 1, FIRE_PROTECTION = 1;
-    const TYPE_ARMOR_FALL_PROTECTION = 2, FEATHER_FALLING = 2;
-    const TYPE_ARMOR_EXPLOSION_PROTECTION = 3, BLAST_PROTECTION = 3;
-    const TYPE_ARMOR_PROJECTILE_PROTECTION = 4, PROJECTILE_PROTECTION = 4;
-    const TYPE_ARMOR_THORNS = 5, THORNS = 5;
-    const TYPE_WATER_BREATHING = 6, RESPIRATION = 6;
-    const TYPE_WATER_SPEED = 7, DEPTH_STRIDER = 7;
-    const TYPE_WATER_AFFINITY = 8, AQUA_AFFINITY = 8;
-    const TYPE_WEAPON_SHARPNESS = 9, SHARPNESS = 9;
-    const TYPE_WEAPON_SMITE = 10, SMITE = 10;
-    const TYPE_WEAPON_ARTHROPODS = 11, BANE_OF_ARTHROPODS = 11;
-    const TYPE_WEAPON_KNOCKBACK = 12, KNOCKBACK = 12;
-    const TYPE_WEAPON_FIRE_ASPECT = 13, FIRE_ASPECT = 13;
-    const TYPE_WEAPON_LOOTING = 14, LOOTING = 14;
-    const TYPE_MINING_EFFICIENCY = 15, EFFICIENCY = 15;
-    const TYPE_MINING_SILK_TOUCH = 16, SILK_TOUCH = 16;
-    const TYPE_MINING_DURABILITY = 17, UNBREAKING = 17;
-    const TYPE_MINING_FORTUNE = 18, FORTUNE = 18;
-    const TYPE_BOW_POWER = 19, POWER = 19;
-    const TYPE_BOW_KNOCKBACK = 20, PUNCH = 20;
-    const TYPE_BOW_FLAME = 21, FLAME = 21;
-    const TYPE_BOW_INFINITY = 22, INFINITY = 22;
-    const TYPE_FISHING_FORTUNE = 23, LUCK_OF_THE_SEA = 23;
-    const TYPE_FISHING_LURE = 24, LURE = 24;
+	const TYPE_ARMOR_PROTECTION = 0;
+	const TYPE_ARMOR_FIRE_PROTECTION = 1;
+	const TYPE_ARMOR_FALL_PROTECTION = 2;
+	const TYPE_ARMOR_EXPLOSION_PROTECTION = 3;
+	const TYPE_ARMOR_PROJECTILE_PROTECTION = 4;
+	const TYPE_ARMOR_THORNS = 5;
+	const TYPE_WATER_BREATHING = 6;
+	const TYPE_WATER_SPEED = 7;
+	const TYPE_WATER_AFFINITY = 8;
+	const TYPE_WEAPON_SHARPNESS = 9;
+	const TYPE_WEAPON_SMITE = 10;
+	const TYPE_WEAPON_ARTHROPODS = 11;
+	const TYPE_WEAPON_KNOCKBACK = 12;
+	const TYPE_WEAPON_FIRE_ASPECT = 13;
+	const TYPE_WEAPON_LOOTING = 14;
+	const TYPE_MINING_EFFICIENCY = 15;
+	const TYPE_MINING_SILK_TOUCH = 16;
+	const TYPE_MINING_DURABILITY = 17;
+	const TYPE_MINING_FORTUNE = 18;
+	const TYPE_BOW_POWER = 19;
+	const TYPE_BOW_KNOCKBACK = 20;
+	const TYPE_BOW_FLAME = 21;
+	const TYPE_BOW_INFINITY = 22;
+	const TYPE_FISHING_FORTUNE = 23;
+	const TYPE_FISHING_LURE = 24;
 
-	const RARITY_COMMON = 0;
-	const RARITY_UNCOMMON = 1;
+	const RARITY_COMMON = 10;
+	const RARITY_UNCOMMON = 5;
 	const RARITY_RARE = 2;
-	const RARITY_MYTHIC = 3;
+	const RARITY_MYTHIC = 1;
 
 	const ACTIVATION_EQUIP = 0;
 	const ACTIVATION_HELD = 1;
@@ -135,30 +135,7 @@ class Enchantment {
 
 
 	/** @var Enchantment[] */
-	protected static $enchantments;
-	private $id;
-	private $level = 1;
-	private $name;
-	private $rarity;
-	private $activationType;
-	private $slot;
-
-	/**
-	 * Enchantment constructor.
-	 *
-	 * @param $id
-	 * @param $name
-	 * @param $rarity
-	 * @param $activationType
-	 * @param $slot
-	 */
-	private function __construct($id, $name, $rarity, $activationType, $slot){
-		$this->id = (int) $id;
-		$this->name = (string) $name;
-		$this->rarity = (int) $rarity;
-		$this->activationType = (int) $activationType;
-		$this->slot = (int) $slot;
-	}
+	public static $enchantments;
 
 	public static function init(){
 		self::$enchantments = new \SplFixedArray(256);
@@ -194,6 +171,18 @@ class Enchantment {
 	}
 
 	/**
+	 * @param int $id
+	 *
+	 * @return $this
+	 */
+	public static function getEnchantment($id){
+		if(isset(self::$enchantments[$id])){
+			return clone self::$enchantments[(int) $id];
+		}
+		return new Enchantment(self::TYPE_INVALID, "unknown", 0, 0, 0);
+	}
+
+	/**
 	 * @param $id
 	 * @param $name
 	 * @param $rarity
@@ -205,11 +194,9 @@ class Enchantment {
 	public static function registerEnchantment($id, $name, $rarity, $activationType, $slot){
 		if(isset(self::$enchantments[$id])){
 			Server::getInstance()->getLogger()->debug("Unable to register enchantment with id $id.");
-
 			return new Enchantment(self::TYPE_INVALID, "unknown", 0, 0, 0);
 		}
 		self::$enchantments[$id] = new Enchantment($id, $name, $rarity, $activationType, $slot);
-
 		return new Enchantment($id, $name, $rarity, $activationType, $slot);
 	}
 
@@ -234,19 +221,6 @@ class Enchantment {
 		}else{
 			return new Enchantment(self::TYPE_INVALID, "unknown", 0, 0, 0);
 		}
-	}
-
-	/**
-	 * @param int $id
-	 *
-	 * @return $this
-	 */
-	public static function getEnchantment($id){
-		if(isset(self::$enchantments[$id])){
-			return clone self::$enchantments[(int) $id];
-		}
-
-		return new Enchantment(self::TYPE_INVALID, "unknown", 0, 0, 0);
 	}
 
 	/**
@@ -329,7 +303,6 @@ class Enchantment {
 			case self::TYPE_BOW_INFINITY:
 				return 1;
 		}
-
 		return 0;
 	}
 
@@ -380,21 +353,58 @@ class Enchantment {
 			case self::TYPE_FISHING_LURE:
 				return 3;
 		}
-
 		return 999;
+	}
+
+	private $id;
+	private $level = 1;
+	private $name;
+	private $rarity;
+	private $activationType;
+	private $slot;
+	private $nickname;
+	private $isCustomVar;
+
+	/**
+	 * Enchantment constructor.
+	 *
+	 * @param        $id
+	 * @param        $name
+	 * @param        $rarity
+	 * @param        $activationType
+	 * @param        $slot
+	 * @param string $nickname
+	 * @param bool   $custom
+	 */
+	public function __construct($id, $name, $rarity, $activationType, $slot, $nickname = "", $custom = false){
+		$this->id = (int) $id;
+		$this->name = (string) $name;
+		$this->rarity = (int) $rarity;
+		$this->activationType = (int) $activationType;
+		$this->slot = (int) $slot;
+		$this->nickname = $nickname;
+		$this->isCustomVar = $custom;
 	}
 
 	/**
 	 * @return string
 	 */
-	public static function getRandomName(){
-		$count = mt_rand(3, 6);
-		$set = [];
-		while(count($set) < $count){
-			$set[] = self::$words[mt_rand(0, count(self::$words) - 1)];
-		}
+	public function getNickName(){
+		return $this->nickname;
+	}
 
-		return implode(" ", $set);
+	/**
+	 * @return bool
+	 */
+	public function isCustom(){
+		return (bool) $this->isCustomVar;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getId(){
+		return $this->id;
 	}
 
 	/**
@@ -402,6 +412,20 @@ class Enchantment {
 	 */
 	public function getName() : string{
 		return $this->name;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getRarity(){
+		return $this->rarity;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getActivationType(){
+		return $this->activationType;
 	}
 
 	/**
@@ -418,26 +442,6 @@ class Enchantment {
 	 */
 	public function hasSlot($slot){
 		return ($this->slot & $slot) > 0;
-	}
-
-	/**
-	 * @param Enchantment $ent
-	 *
-	 * @return bool
-	 */
-	public function equals(Enchantment $ent){
-		if($ent->getId() == $this->getId() and $ent->getLevel() == $this->getLevel() and $ent->getActivationType() == $this->getActivationType() and $ent->getRarity() == $this->getRarity()){
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getId(){
-		return $this->id;
 	}
 
 	/**
@@ -459,16 +463,26 @@ class Enchantment {
 	}
 
 	/**
-	 * @return int
+	 * @param Enchantment $ent
+	 *
+	 * @return bool
 	 */
-	public function getActivationType(){
-		return $this->activationType;
+	public function equals(Enchantment $ent){
+		if($ent->getId() == $this->getId() and $ent->getLevel() == $this->getLevel() and $ent->getActivationType() == $this->getActivationType() and $ent->getRarity() == $this->getRarity()){
+			return true;
+		}
+		return false;
 	}
 
 	/**
-	 * @return int
+	 * @return string
 	 */
-	public function getRarity(){
-		return $this->rarity;
+	public static function getRandomName(){
+		$count = mt_rand(3, 6);
+		$set = [];
+		while(count($set) < $count){
+			$set[] = self::$words[mt_rand(0, count(self::$words) - 1)];
+		}
+		return implode(" ", $set);
 	}
 }

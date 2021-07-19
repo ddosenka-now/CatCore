@@ -130,10 +130,9 @@ class Fire extends Flowable {
 		if($type == Level::BLOCK_UPDATE_NORMAL or $type == Level::BLOCK_UPDATE_RANDOM or $type == Level::BLOCK_UPDATE_SCHEDULED){
 			if(!$this->getSide(Vector3::SIDE_DOWN)->isTopFacingSurfaceSolid() and !$this->canNeighborBurn()){
 				$this->getLevel()->setBlock($this, new Air(), true);
-
 				return Level::BLOCK_UPDATE_NORMAL;
 			}elseif($type == Level::BLOCK_UPDATE_NORMAL or $type == Level::BLOCK_UPDATE_RANDOM){
-				$this->getLevel()->scheduleDelayedBlockUpdate($this, $this->getTickRate() + mt_rand(0, 10));
+				$this->getLevel()->scheduleUpdate($this, $this->getTickRate() + mt_rand(0, 10));
 			}elseif($type == Level::BLOCK_UPDATE_SCHEDULED and $this->getLevel()->getServer()->fireSpread){
 				$forever = $this->getSide(Vector3::SIDE_DOWN)->getId() == Block::NETHERRACK;
 
@@ -155,12 +154,12 @@ class Fire extends Flowable {
 				}else{
 					$meta = $this->meta;
 
-					if($meta < 15){
-						$this->meta = $meta + mt_rand(0, 3);
+					if($meta < 15 and mt_rand(0, 2) === 0){
+						$this->meta++;
 						$this->getLevel()->setBlock($this, $this, true);
 					}
 
-					$this->getLevel()->scheduleDelayedBlockUpdate($this, $this->getTickRate() + mt_rand(0, 10));
+					$this->getLevel()->scheduleUpdate($this, $this->getTickRate() + mt_rand(0, 10));
 
 					if(!$forever and !$this->canNeighborBurn()){
 						if(!$this->getSide(Vector3::SIDE_DOWN)->isTopFacingSurfaceSolid() or $meta > 3){
@@ -200,7 +199,7 @@ class Fire extends Flowable {
 											$damage = min(15, $meta + mt_rand(0, 5) / 4);
 
 											$this->getLevel()->setBlock($this->temporalVector->setComponents($x, $y, $z), new Fire($damage), true);
-											$this->getLevel()->scheduleDelayedBlockUpdate($this->temporalVector, $this->getTickRate());
+											$this->getLevel()->scheduleUpdate($this->temporalVector, $this->getTickRate());
 										}
 									}
 								}
@@ -210,7 +209,6 @@ class Fire extends Flowable {
 				}
 			}
 		}
-
 		return 0;
 	}
 
@@ -258,7 +256,7 @@ class Fire extends Flowable {
 				$this->getLevel()->getServer()->getPluginManager()->callEvent($ev = new BlockBurnEvent($block));
 				if(!$ev->isCancelled()){
 					$this->getLevel()->setBlock($block, $fire = new Fire($meta), true);
-					$this->getLevel()->scheduleDelayedBlockUpdate($block, $fire->getTickRate());
+					$this->getLevel()->scheduleUpdate($block, $fire->getTickRate());
 				}
 			}else{
 				$this->getLevel()->setBlock($this, new Air(), true);
@@ -283,7 +281,6 @@ class Fire extends Flowable {
 			for($i = 0; $i < 5; $i++){
 				$chance = max($chance, $block->getSide($i)->getBurnChance());
 			}
-
 			return $chance;
 		}
 	}

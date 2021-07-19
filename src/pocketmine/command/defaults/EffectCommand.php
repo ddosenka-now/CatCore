@@ -33,13 +33,13 @@ class EffectCommand extends VanillaCommand {
 	/**
 	 * EffectCommand constructor.
 	 *
-	 * @param string $name
+	 * @param $name
 	 */
 	public function __construct($name){
 		parent::__construct(
 			$name,
 			"%pocketmine.command.effect.description",
-			"%pocketmine.command.effect.usage"
+			"%commands.effect.usage"
 		);
 		$this->setPermission("pocketmine.command.effect;pocketmine.command.effect.other");
 	}
@@ -58,7 +58,6 @@ class EffectCommand extends VanillaCommand {
 
 		if(count($args) < 2){
 			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-
 			return true;
 		}
 
@@ -66,13 +65,11 @@ class EffectCommand extends VanillaCommand {
 
 		if($player === null){
 			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.player.notFound"));
-
 			return true;
 		}
 
 		if($player->getName() != $sender->getName() && !$sender->hasPermission("pocketmine.command.effect.other")){
 			$sender->sendMessage("You don't have permission to give effect to other player .");
-
 			return true;
 		}
 
@@ -82,7 +79,6 @@ class EffectCommand extends VanillaCommand {
 			}
 
 			$sender->sendMessage(new TranslationContainer("commands.effect.success.removed.all", [$player->getDisplayName()]));
-
 			return true;
 		}
 
@@ -94,7 +90,6 @@ class EffectCommand extends VanillaCommand {
 
 		if($effect === null){
 			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.effect.notFound", [(string) $args[1]]));
-
 			return true;
 		}
 
@@ -112,6 +107,13 @@ class EffectCommand extends VanillaCommand {
 
 		if(count($args) >= 4){
 			$amplification = (int) $args[3];
+			if($amplification > 255){
+				$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.num.tooBig", [(string) $args[3], "255"]));
+				return true;
+			}elseif($amplification < 0){
+				$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.num.tooSmall", [(string) $args[3], "0"]));
+				return true;
+			}
 		}
 
 		if(count($args) >= 5){
@@ -128,7 +130,6 @@ class EffectCommand extends VanillaCommand {
 				}else{
 					$sender->sendMessage(new TranslationContainer("commands.effect.failure.notActive", [$effect->getName(), $player->getDisplayName()]));
 				}
-
 				return true;
 			}
 

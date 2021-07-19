@@ -37,7 +37,7 @@ class WhitelistCommand extends VanillaCommand {
 		parent::__construct(
 			$name,
 			"%pocketmine.command.whitelist.description",
-			"%pocketmine.command.whitelist.usage",
+			"%commands.whitelist.usage",
 			["wl"]
 		);
 		$this->setPermission("pocketmine.command.whitelist.reload;pocketmine.command.whitelist.enable;pocketmine.command.whitelist.disable;pocketmine.command.whitelist.list;pocketmine.command.whitelist.add;pocketmine.command.whitelist.remove");
@@ -57,7 +57,6 @@ class WhitelistCommand extends VanillaCommand {
 
 		if(count($args) === 0 or count($args) > 2){
 			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-
 			return true;
 		}
 
@@ -95,12 +94,10 @@ class WhitelistCommand extends VanillaCommand {
 
 				case "add":
 					$sender->sendMessage(new TranslationContainer("commands.generic.usage", ["%commands.whitelist.add.usage"]));
-
 					return true;
 
 				case "remove":
 					$sender->sendMessage(new TranslationContainer("commands.generic.usage", ["%commands.whitelist.remove.usage"]));
-
 					return true;
 			}
 		}elseif(count($args) === 2){

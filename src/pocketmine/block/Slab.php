@@ -24,6 +24,7 @@ namespace pocketmine\block;
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 class Slab extends Transparent {
@@ -36,7 +37,6 @@ class Slab extends Transparent {
 	const STONE_BRICK = 5;
 	const QUARTZ = 6;
 	const NETHER_BRICK = 7;
-	const PURPUR_BLOCK = 8;
 
 	protected $id = self::SLAB;
 
@@ -68,9 +68,8 @@ class Slab extends Transparent {
 			4 => "Brick",
 			5 => "Stone Brick",
 			6 => "Quartz",
-			7 => "Purpur",
+			7 => "",
 		];
-
 		return (($this->meta & 0x08) > 0 ? "Upper " : "") . $names[$this->meta & 0x07] . " Slab";
 	}
 
@@ -82,7 +81,6 @@ class Slab extends Transparent {
 		if($type == self::WOODEN){
 			return 5;
 		}
-
 		return 0;
 	}
 
@@ -94,8 +92,49 @@ class Slab extends Transparent {
 		if($type == self::WOODEN){
 			return 5;
 		}
-
 		return 0;
+	}
+
+	/**
+	 * @return AxisAlignedBB
+	 */
+	protected function recalculateBoundingBox(){
+
+		if(($this->meta & 0x08) > 0){
+			return new AxisAlignedBB(
+				$this->x,
+				$this->y + 0.5,
+				$this->z,
+				$this->x + 1,
+				$this->y + 1,
+				$this->z + 1
+			);
+		}else{
+			return new AxisAlignedBB(
+				$this->x,
+				$this->y,
+				$this->z,
+				$this->x + 1,
+				$this->y + 0.5,
+				$this->z + 1
+			);
+		}
+	}
+
+	public function canBePlacedAt(Block $blockReplace, Vector3 $clickVector, int $face, bool $isClickedBlock) : bool{
+		if(parent::canBePlacedAt($blockReplace, $clickVector, $face, $isClickedBlock)){
+			return true;
+		}
+
+		if($blockReplace->getId() === $this->getId() and $blockReplace->getVariant() === $this->getVariant()){
+			if(($blockReplace->getDamage() & 0x08) !== 0){ //Trying to combine with top slab
+				return $clickVector->y <= 0.5 or (!$isClickedBlock and $face === Vector3::SIDE_UP);
+			}else{
+				return $clickVector->y >= 0.5 or (!$isClickedBlock and $face === Vector3::SIDE_DOWN);
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -159,6 +198,10 @@ class Slab extends Transparent {
 		return true;
 	}
 
+	public function getVariantBitmask() : int{
+		return 0x07;
+	}
+
 	/**
 	 * @param Item $item
 	 *
@@ -174,36 +217,11 @@ class Slab extends Transparent {
 		}
 	}
 
+
 	/**
 	 * @return int
 	 */
 	public function getToolType(){
 		return Tool::TYPE_PICKAXE;
-	}
-
-	/**
-	 * @return AxisAlignedBB
-	 */
-	protected function recalculateBoundingBox(){
-
-		if(($this->meta & 0x08) > 0){
-			return new AxisAlignedBB(
-				$this->x,
-				$this->y + 0.5,
-				$this->z,
-				$this->x + 1,
-				$this->y + 1,
-				$this->z + 1
-			);
-		}else{
-			return new AxisAlignedBB(
-				$this->x,
-				$this->y,
-				$this->z,
-				$this->x + 1,
-				$this->y + 0.5,
-				$this->z + 1
-			);
-		}
 	}
 }

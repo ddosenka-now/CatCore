@@ -31,12 +31,28 @@ class ItemFrameDropItemPacket extends DataPacket {
 	public $y;
 	public $z;
 
+	//public $item;
+
+	/**
+	 *
+	 */
 	public function decode(){
 		$this->getBlockCoords($this->x, $this->y, $this->z);
+		//$this->item = $this->getSlot();
 	}
 
+	/**
+	 *
+	 */
 	public function encode(){
 
+	}
+
+	/**
+	 * @return string Current packet name
+	 */
+	public function getName(){
+		return "ItemFrameDropItemPacket";
 	}
 
 }

@@ -27,6 +27,12 @@ abstract class TemporaryInventory extends ContainerInventory {
 	//TODO
 
 	/**
+	 * @return mixed
+	 */
+	abstract public function getResultSlotIndex();
+
+
+	/**
 	 * @param Player $who
 	 */
 	public function onClose(Player $who){
@@ -39,9 +45,4 @@ abstract class TemporaryInventory extends ContainerInventory {
 		}
 		$this->clearAll();
 	}
-
-	/**
-	 * @return mixed
-	 */
-	abstract public function getResultSlotIndex();
 }

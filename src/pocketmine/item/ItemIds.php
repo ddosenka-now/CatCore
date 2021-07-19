@@ -2,20 +2,23 @@
 
 /*
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
+ *  _____            _               _____           
+ * / ____|          (_)             |  __ \          
+ *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
+ *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
+ *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
+ *                         __/ |                    
+ *                        |___/                     
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ * @author GenisysPro
+ * @link https://github.com/GenisysPro/GenisysPro
+ *
  *
 */
 
@@ -105,6 +108,7 @@ interface ItemIds extends BlockIds {
 	const WOODEN_DOOR = 324;
 	const OAK_DOOR = 324;
 	const BUCKET = 325;
+
 	const MINECART = 328;
 	const SADDLE = 329;
 	const IRON_DOOR = 330;
@@ -113,6 +117,7 @@ interface ItemIds extends BlockIds {
 	const SNOWBALL = 332;
 	const BOAT = 333;
 	const LEATHER = 334;
+
 	const BRICK = 336;
 	const CLAY = 337;
 	const SUGARCANE = 338;
@@ -229,6 +234,7 @@ interface ItemIds extends BlockIds {
 	const ELYTRA = 444;
 	const ELYTRA_WINGS = 444;
 	const SHULKER_SHELL = 445;
+	const TOTEM = 450;
 	const BEETROOT = 457;
 	const BEETROOT_SEEDS = 458;
 	const BEETROOT_SEED = 458;
@@ -237,6 +243,8 @@ interface ItemIds extends BlockIds {
 	const CLOWN_FISH = 461;
 	const PUFFER_FISH = 462;
 	const COOKED_SALMON = 463;
+
 	const ENCHANTED_GOLDEN_APPLE = 466;
+
 	const CAMERA = 498; #blamemojang
 }

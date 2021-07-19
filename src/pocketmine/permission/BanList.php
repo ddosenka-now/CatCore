@@ -43,20 +43,37 @@ class BanList {
 	}
 
 	/**
+	 * @return bool
+	 */
+	public function isEnabled(){
+		return $this->enabled === true;
+	}
+
+	/**
+	 * @param bool $flag
+	 */
+	public function setEnabled($flag){
+		$this->enabled = (bool) $flag;
+	}
+
+	/**
+	 * @param string $name
+	 *
+	 * @return BanEntry|null
+	 */
+	public function getEntry(string $name) : ?BanEntry{
+		$this->removeExpired();
+
+		return $this->list[strtolower($name)] ?? null;
+	}
+
+	/**
 	 * @return BanEntry[]
 	 */
 	public function getEntries(){
 		$this->removeExpired();
 
 		return $this->list;
-	}
-
-	public function removeExpired(){
-		foreach($this->list as $name => $entry){
-			if($entry->hasExpired()){
-				unset($this->list[$name]);
-			}
-		}
 	}
 
 	/**
@@ -76,25 +93,74 @@ class BanList {
 	}
 
 	/**
-	 * @return bool
-	 */
-	public function isEnabled(){
-		return $this->enabled === true;
-	}
-
-	/**
-	 * @param bool $flag
-	 */
-	public function setEnabled($flag){
-		$this->enabled = (bool) $flag;
-	}
-
-	/**
 	 * @param BanEntry $entry
 	 */
 	public function add(BanEntry $entry){
 		$this->list[$entry->getName()] = $entry;
 		$this->save();
+	}
+
+	/**
+	 * @param string    $target
+	 * @param string    $reason
+	 * @param \DateTime $expires
+	 * @param string    $source
+	 *
+	 * @return BanEntry
+	 */
+	public function addBan($target, $reason = null, $expires = null, $source = null){
+		$entry = new BanEntry($target);
+		$entry->setSource($source != null ? $source : $entry->getSource());
+		$entry->setExpires($expires);
+		$entry->setReason($reason != null ? $reason : $entry->getReason());
+
+		$this->list[$entry->getName()] = $entry;
+		$this->save();
+
+		return $entry;
+	}
+
+	/**
+	 * @param string $name
+	 */
+	public function remove($name){
+		$name = strtolower($name);
+		if(isset($this->list[$name])){
+			unset($this->list[$name]);
+			$this->save();
+		}
+	}
+
+	public function removeExpired(){
+		foreach($this->list as $name => $entry){
+			if($entry->hasExpired()){
+				unset($this->list[$name]);
+			}
+		}
+	}
+
+	public function load(){
+		$this->list = [];
+		$fp = @fopen($this->file, "r");
+		if(is_resource($fp)){
+			while(($line = fgets($fp)) !== false){
+				if($line[0] !== "#"){
+					try{
+						$entry = BanEntry::fromString($line);
+						if($entry instanceof BanEntry){
+							$this->list[$entry->getName()] = $entry;
+						}
+					}catch(\Throwable $e){
+						$logger = MainLogger::getLogger();
+						$logger->critical("Failed to parse ban entry from string \"$line\": " . $e->getMessage());
+						$logger->logException($e);
+					}
+				}
+			}
+			fclose($fp);
+		}else{
+			MainLogger::getLogger()->error("Could not load ban list");
+		}
 	}
 
 	/**
@@ -115,58 +181,6 @@ class BanList {
 			fclose($fp);
 		}else{
 			MainLogger::getLogger()->error("Could not save ban list");
-		}
-	}
-
-	/**
-	 * @param string    $target
-	 * @param string    $reason
-	 * @param \DateTime $expires
-	 * @param string    $source
-	 *
-	 * @return BanEntry
-	 */
-	public function addBan($target, $reason = null, $expires = null, $source = null){
-		$entry = new BanEntry($target);
-		$entry->setSource($source != null ? $source : $entry->getSource());
-		$entry->setExpires($expires);
-		$entry->setReason($reason != null ? $reason : $entry->getReason());
-
-		$this->list[$entry->getName()] = $entry;
-		$this->save();
-		if(($player = Server::getInstance()->getPlayerExact($target)) instanceof Player){
-			$player->kick($reason);
-		}
-
-		return $entry;
-	}
-
-	/**
-	 * @param string $name
-	 */
-	public function remove($name){
-		$name = strtolower($name);
-		if(isset($this->list[$name])){
-			unset($this->list[$name]);
-			$this->save();
-		}
-	}
-
-	public function load(){
-		$this->list = [];
-		$fp = @fopen($this->file, "r");
-		if(is_resource($fp)){
-			while(($line = fgets($fp)) !== false){
-				if($line{0} !== "#"){
-					$entry = BanEntry::fromString($line);
-					if($entry instanceof BanEntry){
-						$this->list[$entry->getName()] = $entry;
-					}
-				}
-			}
-			fclose($fp);
-		}else{
-			MainLogger::getLogger()->error("Could not load ban list");
 		}
 	}
 

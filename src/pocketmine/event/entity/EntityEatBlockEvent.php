@@ -56,12 +56,4 @@ class EntityEatBlockEvent extends EntityEatEvent implements Cancellable {
 		}
 		parent::setResidue($residue);
 	}
-
-	/**
-	 * @return EventName|string
-	 */
-	public function getName(){
-		return "EntityEatBlockEvent";
-	}
-
 }

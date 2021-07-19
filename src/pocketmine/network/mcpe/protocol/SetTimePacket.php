@@ -30,13 +30,26 @@ class SetTimePacket extends DataPacket {
 
 	public $time;
 
+	/**
+	 *
+	 */
 	public function decode(){
 
 	}
 
+	/**
+	 *
+	 */
 	public function encode(){
 		$this->reset();
 		$this->putVarInt($this->time);
+	}
+
+	/**
+	 * @return string Current packet name
+	 */
+	public function getName(){
+		return "SetTimePacket";
 	}
 
 }

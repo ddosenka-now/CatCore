@@ -21,14 +21,14 @@
 
 namespace pocketmine\item;
 
-use pocketmine\level\Level;
 use pocketmine\block\Block;
-use pocketmine\Player;
+use pocketmine\entity\Minecart as MinecartEntity;
+use pocketmine\level\Level;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\DoubleTag;
 use pocketmine\nbt\tag\FloatTag;
-use pocketmine\entity\Minecart as MinecartEntity;
+use pocketmine\nbt\tag\ListTag;
+use pocketmine\Player;
 
 class Minecart extends Item {
 	/**
@@ -48,7 +48,14 @@ class Minecart extends Item {
 		return true;
 	}
 
-	/**
+    /**
+     * @return int
+     */
+    public function getMaxStackSize(): int{
+	    return 1;
+    }
+
+    /**
 	 * @param Level  $level
 	 * @param Player $player
 	 * @param Block  $block
@@ -84,7 +91,6 @@ class Minecart extends Item {
 			$count = $item->getCount();
 			if(--$count <= 0){
 				$player->getInventory()->setItemInHand(Item::get(Item::AIR));
-
 				return true;
 			}
 

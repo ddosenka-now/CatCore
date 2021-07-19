@@ -21,7 +21,7 @@
 
 namespace pocketmine\utils;
 
-#include <rules/DataPacket.h>
+#include <rules/BinaryIO.h>
 #ifndef COMPILE
 #endif
 
@@ -29,16 +29,12 @@ use pocketmine\item\Item;
 
 class BinaryStream extends \stdClass {
 
+	/** @var int */
 	public $offset;
+	/** @var string */
 	public $buffer;
 
-	/**
-	 * BinaryStream constructor.
-	 *
-	 * @param string $buffer
-	 * @param int    $offset
-	 */
-	public function __construct($buffer = "", $offset = 0){
+	public function __construct(string $buffer = "", int $offset = 0){
 		$this->buffer = $buffer;
 		$this->offset = $offset;
 	}
@@ -49,53 +45,83 @@ class BinaryStream extends \stdClass {
 	}
 
 	/**
-	 * @return int
+	 * Rewinds the stream pointer to the start.
 	 */
-	public function getOffset(){
+	public function rewind() : void{
+		$this->offset = 0;
+	}
+
+	public function setOffset(int $offset) : void{
+		$this->offset = $offset;
+	}
+
+	public function setBuffer(string $buffer = "", int $offset = 0) : void{
+		$this->buffer = $buffer;
+		$this->offset = $offset;
+	}
+
+	public function getOffset() : int{
 		return $this->offset;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getBuffer(){
+	public function getBuffer() : string{
 		return $this->buffer;
 	}
 
 	/**
-	 * @param null $buffer
-	 * @param int  $offset
+	 * @param int $len
+	 *
+	 * @return string
+	 *
+	 * @throws BinaryDataException if there are not enough bytes left in the buffer
 	 */
-	public function setBuffer($buffer = null, $offset = 0){
-		$this->buffer = $buffer;
-		$this->offset = (int) $offset;
+	public function get(int $len) : string{
+		if($len === 0){
+			return "";
+		}
+		if($len < 0){
+			throw new \InvalidArgumentException("Length must be positive");
+		}
+
+		$remaining = strlen($this->buffer) - $this->offset;
+		if($remaining < $len){
+			throw new BinaryDataException("Not enough bytes left in buffer: need $len, have $remaining");
+		}
+
+		return $len === 1 ? $this->buffer[$this->offset++] : substr($this->buffer, ($this->offset += $len) - $len, $len);
 	}
 
 	/**
-	 * @return bool
+	 * @return string
+	 * @throws BinaryDataException
 	 */
+	public function getRemaining() : string{
+		$buflen = strlen($this->buffer);
+		if($this->offset >= $buflen){
+			throw new BinaryDataException("No bytes left to read");
+		}
+		$str = substr($this->buffer, $this->offset);
+		$this->offset = $buflen;
+		return $str;
+	}
+
+	public function put($str) : void{
+		$this->buffer .= $str;
+	}
+
 	public function getBool() : bool{
-		return (bool) $this->getByte();
+		return $this->get(1) !== "\x00";
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getByte(){
-		return ord($this->buffer{$this->offset++});
-	}
-
-	/**
-	 * @param $v
-	 */
-	public function putBool($v){
+	public function putBool($v) : void{
 		$this->putByte((bool) $v);
 	}
 
-	/**
-	 * @param $v
-	 */
-	public function putByte($v){
+	public function getByte() : int{
+		return ord($this->get(1));
+	}
+
+	public function putByte($v) : void{
 		$this->buffer .= chr($v);
 	}
 
@@ -104,26 +130,6 @@ class BinaryStream extends \stdClass {
 	 */
 	public function getLong(){
 		return Binary::readLong($this->get(8));
-	}
-
-	/**
-	 * @param $len
-	 *
-	 * @return bool|string
-	 */
-	public function get($len){
-		if($len < 0){
-			$this->offset = strlen($this->buffer) - 1;
-
-			return "";
-		}elseif($len === true){
-			$str = substr($this->buffer, $this->offset);
-			$this->offset = strlen($this->buffer);
-
-			return $str;
-		}
-
-		return $len === 1 ? $this->buffer{$this->offset++} : substr($this->buffer, ($this->offset += $len) - $len, $len);
 	}
 
 	/**
@@ -220,6 +226,38 @@ class BinaryStream extends \stdClass {
 	}
 
 	/**
+	 * @param bool $signed
+	 *
+	 * @return int
+	 */
+	public function getLShort($signed = true){
+		return $signed ? Binary::readSignedLShort($this->get(2)) : Binary::readLShort($this->get(2));
+	}
+
+	/**
+	 * @param $v
+	 */
+	public function putLShort($v){
+		$this->buffer .= Binary::writeLShort($v);
+	}
+
+	/**
+	 * @param int $accuracy
+	 *
+	 * @return float
+	 */
+	public function getLFloat(int $accuracy = -1){
+		return Binary::readLFloat($this->get(4), $accuracy);
+	}
+
+	/**
+	 * @param $v
+	 */
+	public function putLFloat($v){
+		$this->buffer .= Binary::writeLFloat($v);
+	}
+
+	/**
 	 * @return mixed
 	 */
 	public function getTriad(){
@@ -251,6 +289,7 @@ class BinaryStream extends \stdClass {
 	 * @return UUID
 	 */
 	public function getUUID(){
+		//This is actually two little-endian longs: UUID Most followed by UUID Least
 		$part1 = $this->getLInt();
 		$part0 = $this->getLInt();
 		$part3 = $this->getLInt();
@@ -269,21 +308,15 @@ class BinaryStream extends \stdClass {
 	}
 
 	/**
-	 * @param $str
-	 */
-	public function put($str){
-		$this->buffer .= $str;
-	}
-
-	/**
 	 * @return Item
 	 */
-	public function getSlot() : Item{
+	public function getSlot(){
 		$id = $this->getVarInt();
+
 		if($id <= 0){
 			return Item::get(0, 0, 0);
 		}
-
+		
 		$auxValue = $this->getVarInt();
 		$data = $auxValue >> 8;
 		if($data === 0x7fff){
@@ -298,7 +331,6 @@ class BinaryStream extends \stdClass {
 			$nbt = $this->get($nbtLen);
 		}
 
-		//TODO
 		$canPlaceOn = $this->getVarInt();
 		if($canPlaceOn > 0){
 			for($i = 0; $i < $canPlaceOn; ++$i){
@@ -306,7 +338,6 @@ class BinaryStream extends \stdClass {
 			}
 		}
 
-		//TODO
 		$canDestroy = $this->getVarInt();
 		if($canDestroy > 0){
 			for($i = 0; $i < $canDestroy; ++$i){
@@ -317,35 +348,6 @@ class BinaryStream extends \stdClass {
 		return Item::get($id, $data, $cnt, $nbt);
 	}
 
-	/**
-	 * Reads a signed varint32 from the stream.
-	 */
-	public function getVarInt(){
-		return Binary::readVarInt($this);
-	}
-
-	/**
-	 * @param bool $signed
-	 *
-	 * @return int
-	 */
-	public function getLShort($signed = true){
-		return $signed ? Binary::readSignedLShort($this->get(2)) : Binary::readLShort($this->get(2));
-	}
-
-	/**
-	 * @return bool|string
-	 */
-	public function getString(){
-		return $this->get($this->getUnsignedVarInt());
-	}
-
-	/**
-	 * Reads an unsigned varint32 from the stream.
-	 */
-	public function getUnsignedVarInt(){
-		return Binary::readUnsignedVarInt($this);
-	}
 
 	/**
 	 * @param Item $item
@@ -360,7 +362,6 @@ class BinaryStream extends \stdClass {
 		$this->putVarInt($item->getId());
 		$auxValue = (($item->getDamage() & 0x7fff) << 8) | $item->getCount();
 		$this->putVarInt($auxValue);
-
 		$nbt = $item->getCompoundTag();
 		$this->putLShort(strlen($nbt));
 		$this->put($nbt);
@@ -370,22 +371,11 @@ class BinaryStream extends \stdClass {
 	}
 
 	/**
-	 * Writes a signed varint32 to the stream.
-	 *
-	 * @param $v
+	 * @return bool|string
 	 */
-	public function putVarInt($v){
-		$this->put(Binary::writeVarInt($v));
+	public function getString(){
+		return $this->get($this->getUnsignedVarInt());
 	}
-
-	/**
-	 * @param $v
-	 */
-	public function putLShort($v){
-		$this->buffer .= Binary::writeLShort($v);
-	}
-
-	//TODO: varint64
 
 	/**
 	 * @param $v
@@ -395,6 +385,15 @@ class BinaryStream extends \stdClass {
 		$this->put($v);
 	}
 
+	//TODO: varint64
+
+	/**
+	 * Reads an unsigned varint32 from the stream.
+	 */
+	public function getUnsignedVarInt(){
+		return Binary::readUnsignedVarInt($this);
+	}
+
 	/**
 	 * Writes an unsigned varint32 to the stream.
 	 *
@@ -402,6 +401,22 @@ class BinaryStream extends \stdClass {
 	 */
 	public function putUnsignedVarInt($v){
 		$this->put(Binary::writeUnsignedVarInt($v));
+	}
+
+	/**
+	 * Reads a signed varint32 from the stream.
+	 */
+	public function getVarInt(){
+		return Binary::readVarInt($this);
+	}
+
+	/**
+	 * Writes a signed varint32 to the stream.
+	 *
+	 * @param $v
+	 */
+	public function putVarInt($v){
+		$this->put(Binary::writeVarInt($v));
 	}
 
 	/**
@@ -452,15 +467,6 @@ class BinaryStream extends \stdClass {
 	}
 
 	/**
-	 * @param int $accuracy
-	 *
-	 * @return float
-	 */
-	public function getLFloat(int $accuracy = -1){
-		return Binary::readLFloat($this->get(4), $accuracy);
-	}
-
-	/**
 	 * @param $x
 	 * @param $y
 	 * @param $z
@@ -472,16 +478,10 @@ class BinaryStream extends \stdClass {
 	}
 
 	/**
-	 * @param $v
-	 */
-	public function putLFloat($v){
-		$this->buffer .= Binary::writeLFloat($v);
-	}
-
-	/**
+	 * Returns whether the offset has reached the end of the buffer.
 	 * @return bool
 	 */
-	public function feof(){
-		return !isset($this->buffer{$this->offset});
+	public function feof() : bool{
+		return !isset($this->buffer[$this->offset]);
 	}
 }

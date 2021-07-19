@@ -39,7 +39,7 @@ class TeleportCommand extends VanillaCommand {
 		parent::__construct(
 			$name,
 			"%pocketmine.command.tp.description",
-			"%pocketmine.command.tp.usage"
+			"%commands.tp.usage"
 		);
 		$this->setPermission("pocketmine.command.teleport");
 	}
@@ -65,7 +65,7 @@ class TeleportCommand extends VanillaCommand {
 		$target = null;
 		$origin = $sender;
 
-		if(count($args) === 1 or count($args) === 3){
+		if(count($args) === 1 or count($args) === 3 or count($args) === 5){
 			if($sender instanceof Player){
 				$target = $sender;
 			}else{

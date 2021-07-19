@@ -33,14 +33,14 @@ use pocketmine\Player;
 class Arrow extends Projectile {
 	const NETWORK_ID = 80;
 
-	public $width = 0.5;
-	public $length = 0.5;
-	public $height = 0.5;
+	public $width = 0.25;
+	public $length = 0.25;
+	public $height = 0.25;
 
 	protected $gravity = 0.05;
 	protected $drag = 0.01;
 
-	protected $damage = 2;
+	protected $damage = 2.0;
 
 	protected $isCritical;
 	protected $potionId;
@@ -59,21 +59,21 @@ class Arrow extends Projectile {
 			$nbt->Potion = new ShortTag("Potion", 0);
 		}
 		parent::__construct($level, $nbt, $shootingEntity);
-		$this->setDataFlag(self::DATA_FLAGS, self::DATA_FLAG_CRITICAL, $critical);
 		$this->potionId = $this->namedtag["Potion"];
+		$this->setCritical($critical);
 	}
 
 	/**
 	 * @return bool
 	 */
 	public function isCritical() : bool{
-		return $this->getDataFlag(self::DATA_FLAGS, self::DATA_FLAG_CRITICAL);
+		return $this->isCritical;
 	}
 
 	/**
-	 * @param bool $value
+	 * @return void
 	 */
-	public function setCritical(bool $value = true){
+	public function setCritical(bool $value = true) : void{
 		$this->setDataFlag(self::DATA_FLAGS, self::DATA_FLAG_CRITICAL, $value);
 	}
 

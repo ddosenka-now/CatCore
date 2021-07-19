@@ -32,8 +32,8 @@ use pocketmine\block\RedstoneOre;
 use pocketmine\item\Item;
 use pocketmine\level\ChunkManager;
 use pocketmine\level\format\Chunk;
-use pocketmine\level\generator\normal\populator\Ore;
-use pocketmine\level\generator\normal\populator\Populator;
+use pocketmine\level\generator\populator\Ore;
+use pocketmine\level\generator\populator\Populator;
 use pocketmine\math\Vector3;
 use pocketmine\utils\Random;
 
@@ -46,7 +46,28 @@ class Flat extends Generator {
 	private $random;
 	/** @var Populator[] */
 	private $populators = [];
-	private $structure, $chunks, $options, $floorLevel, $preset;
+	/** @var int[][] */
+	private $structure;
+	/** @var int */
+	private $floorLevel;
+	/** @var mixed[] */
+	private $options;
+	/** @var string */
+	private $preset;
+
+	/**
+	 * @return array
+	 */
+	public function getSettings(){
+		return $this->options;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getName() : string{
+		return "flat";
+	}
 
 	/**
 	 * Flat constructor.
@@ -76,85 +97,34 @@ class Flat extends Generator {
 	}
 
 	/**
+	 * @param string $layers
+	 *
 	 * @return array
 	 */
-	public function getSettings(){
-		return $this->options;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getName() : string{
-		return "flat";
-	}
-
-	/**
-	 * @param ChunkManager $level
-	 * @param Random       $random
-	 */
-	public function init(ChunkManager $level, Random $random){
-		$this->level = $level;
-		$this->random = $random;
-
-		/*
-		  // Commented out : We want to delay this
-		if(isset($this->options["preset"]) and $this->options["preset"] != ""){
-			$this->parsePreset($this->options["preset"]);
-		}else{
-			$this->parsePreset($this->preset);
-		}
-		*/
-	}
-
-	/**
-	 * @param $chunkX
-	 * @param $chunkZ
-	 */
-	public function generateChunk($chunkX, $chunkZ){
-		if($this->chunk === null){
-			if(isset($this->options["preset"]) and $this->options["preset"] != ""){
-				$this->parsePreset($this->options["preset"], $chunkX, $chunkZ);
-			}else{
-				$this->parsePreset($this->preset, $chunkX, $chunkZ);
-			}
-		}
-		$chunk = clone $this->chunk;
-		$chunk->setX($chunkX);
-		$chunk->setZ($chunkZ);
-		$this->level->setChunk($chunkX, $chunkZ, $chunk);
-	}
-
-	/**
-	 * @param $preset
-	 * @param $chunkX
-	 * @param $chunkZ
-	 */
-	protected function parsePreset($preset, $chunkX, $chunkZ){
-		$this->preset = $preset;
-		$preset = explode(";", $preset);
-		$version = (int) $preset[0];
-		$blocks = $preset[1] ?? "";
-		$biome = $preset[2] ?? 1;
-		$options = $preset[3] ?? "";
-		preg_match_all('#^(([0-9]*x|)([0-9]{1,3})(|:[0-9]{0,2}))$#m', str_replace(",", "\n", $blocks), $matches);
+	public static function parseLayers(string $layers) : array{
+		$result = [];
+		preg_match_all('#^(([0-9]*x|)([0-9]{1,3})(|:[0-9]{0,2}))$#m', str_replace(",", "\n", $layers), $matches);
 		$y = 0;
-		$this->structure = [];
-		$this->chunks = [];
 		foreach($matches[3] as $i => $b){
 			$b = Item::fromString($b . $matches[4][$i]);
 			$cnt = $matches[2][$i] === "" ? 1 : intval($matches[2][$i]);
 			for($cY = $y, $y += $cnt; $cY < $y; ++$cY){
-				$this->structure[$cY] = [$b->getId(), $b->getDamage()];
+				$result[$cY] = [$b->getId(), $b->getDamage()];
 			}
 		}
 
-		$this->floorLevel = $y;
+		return $result;
+	}
 
-		for(; $y < 0xFF; ++$y){
-			$this->structure[$y] = [0, 0];
-		}
+	protected function parsePreset($preset, $chunkX, $chunkZ){
+		$this->preset = $preset;
+		$preset = explode(";", $preset);
+		$blocks = (string) ($preset[1] ?? "");
+		$biome = (int) ($preset[2] ?? 1);
+		$options = (string) ($preset[3] ?? "");
+		$this->structure = self::parseLayers($blocks);
 
+		$this->floorLevel = $y = count($this->structure);
 
 		$this->chunk = clone $this->level->getChunk($chunkX, $chunkZ);
 		$this->chunk->setGenerated();
@@ -162,13 +132,24 @@ class Flat extends Generator {
 		for($Z = 0; $Z < 16; ++$Z){
 			for($X = 0; $X < 16; ++$X){
 				$this->chunk->setBiomeId($X, $Z, $biome);
-				for($y = 0; $y < 128; ++$y){
-					$this->chunk->setBlock($X, $y, $Z, ...$this->structure[$y]);
+				}
+		}
+
+		$count = count($this->structure);
+		for($sy = 0; $sy < $count; $sy += 16){
+			$subchunk = $this->chunk->getSubChunk($sy >> 4, true);
+			for($y = 0; $y < 16 and isset($this->structure[$y | $sy]); ++$y){
+				list($id, $meta) = $this->structure[$y | $sy];
+
+				for($Z = 0; $Z < 16; ++$Z){
+					for($X = 0; $X < 16; ++$X){
+						$subchunk->setBlock($X, $y, $Z, $id, $meta);
+					}
 				}
 			}
 		}
 
-
+        //TODO: more error checking
 		preg_match_all('#(([0-9a-z_]{1,})\(?([0-9a-z_ =:]{0,})\)?),?#', $options, $matches);
 		foreach($matches[2] as $i => $option){
 			$params = true;
@@ -186,10 +167,34 @@ class Flat extends Generator {
 		}
 	}
 
-	/**
-	 * @param $chunkX
-	 * @param $chunkZ
-	 */
+	public function init(ChunkManager $level, Random $random){
+		$this->level = $level;
+		$this->random = $random;
+
+		/*
+		  // Commented out : We want to delay this
+		if(isset($this->options["preset"]) and $this->options["preset"] != ""){
+			$this->parsePreset($this->options["preset"]);
+		}else{
+			$this->parsePreset($this->preset);
+		}
+		*/
+	}
+
+	public function generateChunk($chunkX, $chunkZ){
+		if($this->chunk === null){
+			if(isset($this->options["preset"]) and $this->options["preset"] != ""){
+				$this->parsePreset($this->options["preset"], $chunkX, $chunkZ);
+			}else{
+				$this->parsePreset($this->preset, $chunkX, $chunkZ);
+			}
+		}
+		$chunk = clone $this->chunk;
+		$chunk->setX($chunkX);
+		$chunk->setZ($chunkZ);
+		$this->level->setChunk($chunkX, $chunkZ, $chunk);
+	}
+
 	public function populateChunk($chunkX, $chunkZ){
 		$this->random->setSeed(0xdeadbeef ^ ($chunkX << 8) ^ $chunkZ ^ $this->level->getSeed());
 		foreach($this->populators as $populator){
@@ -198,9 +203,6 @@ class Flat extends Generator {
 
 	}
 
-	/**
-	 * @return Vector3
-	 */
 	public function getSpawn(){
 		return new Vector3(128, $this->floorLevel, 128);
 	}

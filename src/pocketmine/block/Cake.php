@@ -64,6 +64,23 @@ class Cake extends Transparent implements FoodSource {
 	}
 
 	/**
+	 * @return AxisAlignedBB
+	 */
+	protected function recalculateBoundingBox(){
+
+		$f = $this->getDamage() * 0.125; //1 slice width
+
+		return new AxisAlignedBB(
+			$this->x + 0.0625 + $f,
+			$this->y,
+			$this->z + 0.0625,
+			$this->x + 1 - 0.0625,
+			$this->y + 0.5,
+			$this->z + 1 - 0.0625
+		);
+	}
+
+	/**
 	 * @param Item        $item
 	 * @param Block       $block
 	 * @param Block       $target
@@ -119,12 +136,18 @@ class Cake extends Transparent implements FoodSource {
 	 * @return bool
 	 */
 	public function onActivate(Item $item, Player $player = null){
-		if($player instanceof Player and $player->getHealth() < $player->getMaxHealth()){
-			$ev = new EntityEatBlockEvent($player, $this);
+		//TODO: refactor this into generic food handling
+		if($player instanceof Player and $player->getFood() < $player->getMaxFood()){
+			$player->getServer()->getPluginManager()->callEvent($ev = new EntityEatBlockEvent($player, $this));
 
 			if(!$ev->isCancelled()){
+				$player->addFood($ev->getFoodRestore());
+				$player->addSaturation($ev->getSaturationRestore());
+				foreach($ev->getAdditionalEffects() as $effect){
+					$player->addEffect($effect);
+				}
+				
 				$this->getLevel()->setBlock($this, $ev->getResidue());
-
 				return true;
 			}
 		}
@@ -152,10 +175,9 @@ class Cake extends Transparent implements FoodSource {
 	public function getResidue(){
 		$clone = clone $this;
 		$clone->meta++;
-		if($clone->meta >= 0x06){
+		if($clone->meta > 0x06){
 			$clone = new Air();
 		}
-
 		return $clone;
 	}
 
@@ -164,22 +186,5 @@ class Cake extends Transparent implements FoodSource {
 	 */
 	public function getAdditionalEffects() : array{
 		return [];
-	}
-
-	/**
-	 * @return AxisAlignedBB
-	 */
-	protected function recalculateBoundingBox(){
-
-		$f = (1 + $this->getDamage() * 2) / 16;
-
-		return new AxisAlignedBB(
-			$this->x + $f,
-			$this->y,
-			$this->z + 0.0625,
-			$this->x + 1 - 0.0625,
-			$this->y + 0.5,
-			$this->z + 1 - 0.0625
-		);
 	}
 }

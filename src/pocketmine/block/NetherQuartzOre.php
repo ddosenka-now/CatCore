@@ -21,17 +21,16 @@
 
 namespace pocketmine\block;
 
+use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
-use pocketmine\item\enchantment\Enchantment;
+
 
 class NetherQuartzOre extends Solid {
 	protected $id = self::NETHER_QUARTZ_ORE;
 
 	/**
 	 * NetherQuartzOre constructor.
-	 *
-	 * @param int $meta
 	 */
 	public function __construct($meta = 0){
 		$this->meta = $meta;
@@ -81,7 +80,6 @@ class NetherQuartzOre extends Solid {
 				$fortunel = $fortunel > 3 ? 3 : $fortunel;
 				$times = [1, 1, 2, 3, 4];
 				$time = $times[mt_rand(0, $fortunel + 1)];
-
 				return [
 					[Item::NETHER_QUARTZ, 0, $time],
 				];

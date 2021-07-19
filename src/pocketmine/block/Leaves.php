@@ -22,9 +22,9 @@
 namespace pocketmine\block;
 
 use pocketmine\event\block\LeavesDecayEvent;
+use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
-use pocketmine\item\enchantment\Enchantment;
 use pocketmine\level\Level;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -88,52 +88,10 @@ class Leaves extends Transparent {
 			self::BIRCH => "Birch Leaves",
 			self::JUNGLE => "Jungle Leaves",
 		];
-
 		return $names[$this->meta & 0x03];
 	}
 
-	/**
-	 * @param int $type
-	 *
-	 * @return bool|int
-	 */
-	public function onUpdate($type){
-		if($type === Level::BLOCK_UPDATE_NORMAL){
-			if(($this->meta & 0b00001100) === 0){
-				$this->meta |= 0x08;
-				$this->getLevel()->setBlock($this, $this, true, false);
-			}
-		}elseif($type === Level::BLOCK_UPDATE_RANDOM){
-			if(($this->meta & 0b00001100) === 0x08){
-				$this->meta &= 0x03;
-				$visited = [];
-				$check = 0;
-
-				Server::getInstance()->getPluginManager()->callEvent($ev = new LeavesDecayEvent($this));
-
-				if($ev->isCancelled() or $this->findLog($this, $visited, 0, $check) === true){
-					$this->getLevel()->setBlock($this, $this, false, false);
-				}else{
-					$this->getLevel()->useBreakOn($this);
-
-					return Level::BLOCK_UPDATE_NORMAL;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * @param Block $pos
-	 * @param array $visited
-	 * @param       $distance
-	 * @param       $check
-	 * @param null  $fromSide
-	 *
-	 * @return bool
-	 */
-	private function findLog(Block $pos, array $visited, $distance, &$check, $fromSide = null){
+	private function findLog(Block $pos, array &$visited, int $distance, &$check, ?int $fromSide = null){
 		++$check;
 		$index = $pos->x . "." . $pos->y . "." . $pos->z;
 		if(isset($visited[$index])){
@@ -199,6 +157,38 @@ class Leaves extends Transparent {
 	}
 
 	/**
+	 * @param int $type
+	 *
+	 * @return bool|int
+	 */
+	public function onUpdate($type){
+		if($type === Level::BLOCK_UPDATE_NORMAL){
+			if(($this->meta & 0b00001100) === 0){
+				$this->meta |= 0x08;
+				$this->getLevel()->setBlock($this, $this, false, false, true);
+			}
+		}elseif($type === Level::BLOCK_UPDATE_RANDOM){
+			if(($this->meta & 0b00001100) === 0x08){
+				$this->meta &= 0x03;
+				$visited = [];
+				$check = 0;
+
+				Server::getInstance()->getPluginManager()->callEvent($ev = new LeavesDecayEvent($this));
+
+				if($ev->isCancelled() or $this->findLog($this, $visited, 0, $check) === true){
+					$this->getLevel()->setBlock($this, $this, false, false);
+				}else{
+					$this->getLevel()->useBreakOn($this);
+
+					return Level::BLOCK_UPDATE_NORMAL;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * @param Item        $item
 	 * @param Block       $block
 	 * @param Block       $target
@@ -207,6 +197,8 @@ class Leaves extends Transparent {
 	 * @param float       $fy
 	 * @param float       $fz
 	 * @param Player|null $player
+	 *
+	 * @return bool|void
 	 */
 	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
 		$this->meta |= 0x04;
@@ -234,7 +226,6 @@ class Leaves extends Transparent {
 				$drops[] = [Item::APPLE, 0, 1];
 			}
 		}
-
 		return $drops;
 	}
 }

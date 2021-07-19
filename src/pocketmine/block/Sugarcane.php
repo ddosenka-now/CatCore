@@ -24,7 +24,7 @@ namespace pocketmine\block;
 use pocketmine\event\block\BlockGrowEvent;
 use pocketmine\item\Item;
 use pocketmine\level\Level;
-use pocketmine\math\Vector3 as Vector3;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\Server;
 
@@ -70,12 +70,14 @@ class Sugarcane extends Flowable {
 		if($item->getId() === Item::DYE and $item->getDamage() === 0x0F){ //Bonemeal
 			if($this->getSide(0)->getId() !== self::SUGARCANE_BLOCK){
 				for($y = 1; $y < 3; ++$y){
-					$b = $this->getLevel()->getBlock(new Vector3($this->x, $this->y + $y, $this->z));
+					$b = $this->getLevel()->getBlockAt($this->x, $this->y + $y, $this->z);
 					if($b->getId() === self::AIR){
 						Server::getInstance()->getPluginManager()->callEvent($ev = new BlockGrowEvent($b, new Sugarcane()));
-						if(!$ev->isCancelled()){
-							$this->getLevel()->setBlock($b, $ev->getNewState(), true);
+						if($ev->isCancelled()){
+							break;
 						}
+						$this->getLevel()->setBlock($b, $ev->getNewState(), true);
+					}else{
 						break;
 					}
 				}
@@ -83,7 +85,7 @@ class Sugarcane extends Flowable {
 				$this->getLevel()->setBlock($this, $this, true);
 			}
 			if(($player->gamemode & 0x01) === 0){
-				$item->count--;
+                $item->pop();
 			}
 
 			return true;
@@ -109,7 +111,7 @@ class Sugarcane extends Flowable {
 			if($this->getSide(0)->getId() !== self::SUGARCANE_BLOCK){
 				if($this->meta === 0x0F){
 					for($y = 1; $y < 3; ++$y){
-						$b = $this->getLevel()->getBlock(new Vector3($this->x, $this->y + $y, $this->z));
+						$b = $this->getLevel()->getBlockAt($this->x, $this->y + $y, $this->z);
 						if($b->getId() === self::AIR){
 							$this->getLevel()->setBlock($b, new Sugarcane(), true);
 							break;

@@ -1,4 +1,5 @@
 <?php
+
 /*
  *
  *  _____   _____   __   _   _   _____  __    __  _____
@@ -22,6 +23,8 @@ namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\level\Level;
+use pocketmine\level\sound\ItemFrameAddItemSound;
+use pocketmine\level\sound\ItemFrameRotateItemSound;
 use pocketmine\nbt\tag\{
 	ByteTag, CompoundTag, FloatTag, IntTag, StringTag
 };
@@ -73,18 +76,13 @@ class ItemFrame extends Flowable {
 			]);
 			$tile = Tile::createTile(Tile::ITEM_FRAME, $this->getLevel(), $nbt);
 		}
+
 		if($tile->hasItem()){
 			$tile->setItemRotation(($tile->getItemRotation() + 1) % 8);
-		}else{
-			if($item->getCount() > 0){
-				$frameItem = clone $item;
-				$frameItem->setCount(1);
-				$item->setCount($item->getCount() - 1);
-				$tile->setItem($frameItem);
-				if($player instanceof Player and $player->isSurvival()){
-					$player->getInventory()->setItemInHand($item->getCount() <= 0 ? Item::get(Item::AIR) : $item);
-				}
-			}
+			$this->getLevel()->addSound(new ItemFrameRotateItemSound($this));
+		}elseif(!$item->isNull()){
+			$tile->setItem($item->pop());
+			$this->getLevel()->addSound(new ItemFrameAddItemSound($this));
 		}
 
 		return true;
@@ -102,7 +100,6 @@ class ItemFrame extends Flowable {
 				$this->level->dropItem($tile->getBlock(), $tile->getItem());
 			}
 		}
-
 		return parent::onBreak($item);
 	}
 
@@ -119,13 +116,11 @@ class ItemFrame extends Flowable {
 				2 => 2,
 				3 => 3
 			];
-			if(!$this->getSide($sides[$this->meta])->isSolid()){
+		    if(isset($sides[$this->meta]) and !$this->getSide($sides[$this->meta])->isSolid()){
 				$this->level->useBreakOn($this);
-
 				return Level::BLOCK_UPDATE_NORMAL;
 			}
 		}
-
 		return false;
 	}
 
@@ -145,14 +140,17 @@ class ItemFrame extends Flowable {
 		if($face === 0 or $face === 1){
 			return false;
 		}
+
 		$faces = [
 			2 => 3,
 			3 => 2,
 			4 => 1,
 			5 => 0
 		];
+
 		$this->meta = $faces[$face];
 		$this->level->setBlock($block, $this, true, true);
+
 		$nbt = new CompoundTag("", [
 			new StringTag("id", Tile::ITEM_FRAME),
 			new IntTag("x", $block->x),
@@ -161,14 +159,17 @@ class ItemFrame extends Flowable {
 			new FloatTag("ItemDropChance", 1.0),
 			new ByteTag("ItemRotation", 0)
 		]);
+
 		if($item->hasCustomBlockData()){
 			foreach($item->getCustomBlockData() as $key => $v){
 				$nbt->{$key} = $v;
 			}
 		}
+
 		Tile::createTile(Tile::ITEM_FRAME, $this->getLevel(), $nbt);
 
 		return true;
+
 	}
 
 	/**
@@ -181,4 +182,5 @@ class ItemFrame extends Flowable {
 			[Item::ITEM_FRAME, 0, 1]
 		];
 	}
+
 }

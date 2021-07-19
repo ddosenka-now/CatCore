@@ -22,7 +22,6 @@
 namespace pocketmine\event\entity;
 
 use pocketmine\entity\Entity;
-
 use pocketmine\event\Cancellable;
 use pocketmine\level\Position;
 
@@ -75,11 +74,5 @@ class EntityTeleportEvent extends EntityEvent implements Cancellable {
 		$this->to = $to;
 	}
 
-	/**
-	 * @return EventName|string
-	 */
-	public function getName(){
-		return "EntityTeleportEvent";
-	}
 
 }

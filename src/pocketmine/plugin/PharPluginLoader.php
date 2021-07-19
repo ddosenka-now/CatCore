@@ -66,7 +66,7 @@ class PharPluginLoader implements PluginLoader {
 
 				return $plugin;
 			}else{
-				throw new PluginException("Couldn't load plugin " . $description->getName() . ": main class not found");
+				throw new PluginException("§8[§l§6Cat§eCore§r§8] §fПлагин §e" . $description->getName() . "§fне удалось загрузить потому, что там не найден основной класс! ");
 			}
 		}
 
@@ -93,6 +93,15 @@ class PharPluginLoader implements PluginLoader {
 	}
 
 	/**
+	 * Returns the filename patterns that this loader accepts
+	 *
+	 * @return string
+	 */
+	public function getPluginFilters(){
+		return "/\\.phar$/i";
+	}
+
+	/**
 	 * @param PluginBase        $plugin
 	 * @param PluginDescription $description
 	 * @param string            $dataFolder
@@ -101,15 +110,6 @@ class PharPluginLoader implements PluginLoader {
 	private function initPlugin(PluginBase $plugin, PluginDescription $description, $dataFolder, $file){
 		$plugin->init($this, $this->server, $description, $dataFolder, $file);
 		$plugin->onLoad();
-	}
-
-	/**
-	 * Returns the filename patterns that this loader accepts
-	 *
-	 * @return array|string
-	 */
-	public function getPluginFilters(){
-		return "/\\.phar$/i";
 	}
 
 	/**

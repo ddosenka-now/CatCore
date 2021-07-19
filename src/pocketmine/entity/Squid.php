@@ -21,9 +21,9 @@
 
 namespace pocketmine\entity;
 
-use pocketmine\item\enchantment\Enchantment;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item as ItemItem;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\AddEntityPacket;
@@ -60,6 +60,8 @@ class Squid extends WaterAnimal implements Ageable {
 	/**
 	 * @param float             $damage
 	 * @param EntityDamageEvent $source
+	 *
+	 * @return bool|void
 	 */
 	public function attack($damage, EntityDamageEvent $source){
 		parent::attack($damage, $source);
@@ -70,7 +72,9 @@ class Squid extends WaterAnimal implements Ageable {
 		if($source instanceof EntityDamageByEntityEvent){
 			$this->swimSpeed = mt_rand(150, 350) / 2000;
 			$e = $source->getDamager();
-			$this->swimDirection = (new Vector3($this->x - $e->x, $this->y - $e->y, $this->z - $e->z))->normalize();
+			if($e !== null){
+		        $this->swimDirection = (new Vector3($this->x - $e->x, $this->y - $e->y, $this->z - $e->z))->normalize();
+			}
 
 			$pk = new EntityEventPacket();
 			$pk->eid = $this->getId();
@@ -78,6 +82,14 @@ class Squid extends WaterAnimal implements Ageable {
 			$this->server->broadcastPacket($this->hasSpawned, $pk);
 		}
 	}
+
+	/**
+	 * @return Vector3
+	 */
+	private function generateRandomDirection(){
+		return new Vector3(mt_rand(-1000, 1000) / 1000, mt_rand(-500, 500) / 1000, mt_rand(-1000, 1000) / 1000);
+	}
+
 
 	/**
 	 * @param $currentTick
@@ -153,12 +165,6 @@ class Squid extends WaterAnimal implements Ageable {
 		return $hasUpdate or !$this->onGround or abs($this->motionX) > 0.00001 or abs($this->motionY) > 0.00001 or abs($this->motionZ) > 0.00001;
 	}
 
-	/**
-	 * @return Vector3
-	 */
-	private function generateRandomDirection(){
-		return new Vector3(mt_rand(-1000, 1000) / 1000, mt_rand(-500, 500) / 1000, mt_rand(-1000, 1000) / 1000);
-	}
 
 	/**
 	 * @param Player $player
@@ -188,11 +194,16 @@ class Squid extends WaterAnimal implements Ageable {
 		$lootingL = 0;
 		$cause = $this->lastDamageCause;
 		if($cause instanceof EntityDamageByEntityEvent and $cause->getDamager() instanceof Player){
-			$lootingL = $cause->getDamager()->getItemInHand()->getEnchantmentLevel(Enchantment::TYPE_WEAPON_LOOTING);
+			$damager = $cause->getDamager();
+			if($damager instanceof Player){
+				$lootingL = $damager->getItemInHand()->getEnchantmentLevel(Enchantment::TYPE_WEAPON_LOOTING);
+
+				$drops = [ItemItem::get(ItemItem::DYE, 0, mt_rand(1, 3 + $lootingL))];
+
+				return $drops;
+			}
 		}
 
-		return [
-			ItemItem::get(ItemItem::DYE, 0, mt_rand(1, 3 + $lootingL))
-		];
+		return [];
 	}
 }

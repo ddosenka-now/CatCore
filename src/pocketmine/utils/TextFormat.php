@@ -52,31 +52,32 @@ abstract class TextFormat {
 	const RESET = TextFormat::ESCAPE . "r";
 
 	/**
-	 * Cleans the string from Minecraft codes and ANSI Escape Codes
+	 * Splits the string by Format tokens
+	 *
+	 * @param string $string
+	 *
+	 * @return array
+	 */
+	public static function tokenize($string){
+		return preg_split("/(" . TextFormat::ESCAPE . "[0123456789abcdefklmnor])/", $string, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+	}
+
+	/**
+	 * Cleans the string from Minecraft codes, ANSI Escape Codes and invalid UTF-8 characters
 	 *
 	 * @param string $string
 	 * @param bool   $removeFormat
 	 *
-	 * @return mixed
+	 * @return string valid clean UTF-8
 	 */
 	public static function clean($string, $removeFormat = true){
+		$string = mb_scrub($string, 'UTF-8');
 		if($removeFormat){
 			return str_replace(TextFormat::ESCAPE, "", preg_replace(["/" . TextFormat::ESCAPE . "[0123456789abcdefklmnor]/", "/\x1b[\\(\\][[0-9;\\[\\(]+[Bm]/"], "", $string));
 		}
-
 		return str_replace("\x1b", "", preg_replace("/\x1b[\\(\\][[0-9;\\[\\(]+[Bm]/", "", $string));
 	}
-    /**
-     * Replaces placeholders of § with the correct character. Only valid codes (as in the constants of the TextFormat class) will be converted.
-     *
-     * @param string $string
-     * @param string $placeholder default "&"
-     *
-     * @return string
-     */
-    public static function colorize(string $string, string $placeholder = "&") : string{
-        return preg_replace('/' . preg_quote($placeholder, "/") . '([0-9a-fk-or])/u', TextFormat::ESCAPE . '$1', $string);
-    }
+
 	/**
 	 * Returns an JSON-formatted string with colors/markup
 	 *
@@ -263,17 +264,6 @@ abstract class TextFormat {
 		}
 
 		return json_encode($newString, JSON_UNESCAPED_SLASHES);
-	}
-
-	/**
-	 * Splits the string by Format tokens
-	 *
-	 * @param string $string
-	 *
-	 * @return array
-	 */
-	public static function tokenize($string){
-		return preg_split("/(" . TextFormat::ESCAPE . "[0123456789abcdefklmnor])/", $string, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 	}
 
 	/**

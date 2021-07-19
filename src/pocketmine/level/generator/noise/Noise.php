@@ -161,11 +161,28 @@ abstract class Noise {
 	}
 
 	/**
+	 * @param $x
+	 * @param $z
+	 *
+	 * @return mixed
+	 */
+	abstract public function getNoise2D($x, $z);
+
+	/**
+	 * @param $x
+	 * @param $y
+	 * @param $z
+	 *
+	 * @return mixed
+	 */
+	abstract public function getNoise3D($x, $y, $z);
+
+	/**
 	 * @param      $x
 	 * @param      $z
 	 * @param bool $normalized
 	 *
-	 * @return int|mixed
+	 * @return int
 	 */
 	public function noise2D($x, $z, $normalized = false){
 		$result = 0;
@@ -191,20 +208,12 @@ abstract class Noise {
 	}
 
 	/**
-	 * @param $x
-	 * @param $z
-	 *
-	 * @return mixed
-	 */
-	abstract public function getNoise2D($x, $z);
-
-	/**
 	 * @param      $x
 	 * @param      $y
 	 * @param      $z
 	 * @param bool $normalized
 	 *
-	 * @return int|mixed
+	 * @return int
 	 */
 	public function noise3D($x, $y, $z, $normalized = false){
 		$result = 0;
@@ -229,15 +238,6 @@ abstract class Noise {
 
 		return $result;
 	}
-
-	/**
-	 * @param $x
-	 * @param $y
-	 * @param $z
-	 *
-	 * @return mixed
-	 */
-	abstract public function getNoise3D($x, $y, $z);
 
 	/**
 	 * @param $x

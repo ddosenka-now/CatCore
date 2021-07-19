@@ -24,11 +24,11 @@ namespace pocketmine\entity;
 use pocketmine\block\Anvil;
 use pocketmine\block\Block;
 use pocketmine\block\Liquid;
+use pocketmine\block\Flowable;
 use pocketmine\block\SnowLayer;
 use pocketmine\event\entity\EntityBlockChangeEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-
 use pocketmine\item\Item as ItemItem;
 use pocketmine\level\sound\AnvilFallSound;
 use pocketmine\math\Vector3;
@@ -40,19 +40,39 @@ use pocketmine\Player;
 class FallingSand extends Entity {
 	const NETWORK_ID = 66;
 
-	const DATA_BLOCK_INFO = 20;
-
 	public $width = 0.98;
 	public $length = 0.98;
 	public $height = 0.98;
 
 	protected $baseOffset = 0.49;
 
-	public $canCollide = false;
 	protected $gravity = 0.04;
 	protected $drag = 0.02;
 	protected $blockId = 0;
 	protected $damage;
+
+	public $canCollide = false;
+
+	protected function initEntity(){
+		parent::initEntity();
+		if(isset($this->namedtag->TileID)){
+			$this->blockId = $this->namedtag["TileID"];
+		}elseif(isset($this->namedtag->Tile)){
+			$this->blockId = $this->namedtag["Tile"];
+			$this->namedtag["TileID"] = new IntTag("TileID", $this->blockId);
+		}
+
+		if(isset($this->namedtag->Data)){
+			$this->damage = $this->namedtag["Data"];
+		}
+
+		if($this->blockId === 0){
+			$this->close();
+			return;
+		}
+
+		$this->setDataProperty(self::DATA_VARIANT, self::DATA_TYPE_INT, $this->getBlock() | ($this->getDamage() << 8));
+	}
 
 	/**
 	 * @param Entity $entity
@@ -63,9 +83,15 @@ class FallingSand extends Entity {
 		return false;
 	}
 
+	public function canBeMovedByCurrents() : bool{
+		return false;
+	}
+
 	/**
 	 * @param float             $damage
 	 * @param EntityDamageEvent $source
+	 *
+	 * @return bool|void
 	 */
 	public function attack($damage, EntityDamageEvent $source){
 		if($source->getCause() === EntityDamageEvent::CAUSE_VOID){
@@ -108,12 +134,13 @@ class FallingSand extends Entity {
 			$this->motionY *= 1 - $this->drag;
 			$this->motionZ *= $friction;
 
-			$pos = (new Vector3($this->x - 0.5, $this->y, $this->z - 0.5))->round();
+			$pos = (new Vector3($this->x - $this->width / 2, $this->y, $this->z - $this->width / 2))->floor();
 
 			if($this->onGround){
 				$this->kill();
 				$block = $this->level->getBlock($pos);
-				if($block->getId() > 0 and !$block->isSolid() and !($block instanceof Liquid)){
+				if(!$block->canBeReplaced() or ($this->onGround and abs($this->y - $this->getFloorY()) > 0.001)){
+					//FIXME: anvils are supposed to destroy torches
 					$this->getLevel()->dropItem($this, ItemItem::get($this->getBlock(), $this->getDamage(), 1));
 				}else{
 					if($block instanceof SnowLayer){
@@ -153,7 +180,22 @@ class FallingSand extends Entity {
 		return $hasUpdate or !$this->onGround or abs($this->motionX) > 0.00001 or abs($this->motionY) > 0.00001 or abs($this->motionZ) > 0.00001;
 	}
 
+	/**
+	 * @return int
+	 */
+	public function getBlock(){
+		return $this->blockId;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getDamage(){
+		return $this->damage;
+	}
+
 	public function saveNBT(){
+		parent::saveNBT();
 		$this->namedtag->TileID = new IntTag("TileID", $this->blockId);
 		$this->namedtag->Data = new ByteTag("Data", $this->damage);
 	}
@@ -177,41 +219,5 @@ class FallingSand extends Entity {
 		$player->dataPacket($pk);
 
 		parent::spawnTo($player);
-	}
-
-	protected function initEntity(){
-		parent::initEntity();
-		if(isset($this->namedtag->TileID)){
-			$this->blockId = $this->namedtag["TileID"];
-		}elseif(isset($this->namedtag->Tile)){
-			$this->blockId = $this->namedtag["Tile"];
-			$this->namedtag["TileID"] = new IntTag("TileID", $this->blockId);
-		}
-
-		if(isset($this->namedtag->Data)){
-			$this->damage = $this->namedtag["Data"];
-		}
-
-		if($this->blockId === 0){
-			$this->close();
-
-			return;
-		}
-
-		$this->setDataProperty(self::DATA_VARIANT, self::DATA_TYPE_INT, $this->getBlock() | ($this->getDamage() << 8));
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getBlock(){
-		return $this->blockId;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getDamage(){
-		return $this->damage;
 	}
 }

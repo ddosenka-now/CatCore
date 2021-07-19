@@ -2,20 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
+ *  _____            _               _____           
+ * / ____|          (_)             |  __ \          
+ *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
+ *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
+ *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
+ *                         __/ |                    
+ *                        |___/                     
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ * @author GenisysPro
+ * @link https://github.com/GenisysPro/GenisysPro
+ *
  *
 */
 
@@ -25,7 +28,6 @@ namespace pocketmine\network\mcpe\protocol;
 
 
 class LoginPacket extends DataPacket {
-
 	const NETWORK_ID = ProtocolInfo::LOGIN_PACKET;
 
 	const MOJANG_PUBKEY = "MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE8ELkixyLcwlZryUQcu1TvPOmI2B7vX83ndnWRUaXm74wFfa5f/lwQNTfrLVHa2PmenpGI6JhIMUJaWZrjmMj90NoKNFSNBuKdm8rYiXsfaz3K36x/1U26HpG0ZxK/V1V";
@@ -38,27 +40,26 @@ class LoginPacket extends DataPacket {
 	public $gameEdition;
 	public $clientUUID;
 	public $clientId;
-	public $adRole;
-	public $currentInputMode;
-	public $defaultInputMode;
-	public $deviceModel;
-	public $deviceOS;
-	public $gameVersion;
-	public $guiScale;
-	public $tenantId;
-	public $uiProfile;
 	public $identityPublicKey;
 	public $serverAddress;
 
 	public $skinId = null;
 	public $skin = null;
 
+	public $clientData = [];
+
+	public $deviceModel;
+	public $deviceOS;
+
+	public function mayHaveUnreadBytes() : bool{
+		return $this->protocol !== ProtocolInfo::CURRENT_PROTOCOL;
+	}
+
 	public function decode(){
 		$this->protocol = $this->getInt();
 		if(!in_array($this->protocol, ProtocolInfo::ACCEPTED_PROTOCOLS)){
 			$this->buffer = null;
-
-			return; //Do not attempt to decode for non-accepted protocols
+			return;
 		}
 
 		$this->gameEdition = $this->getByte();
@@ -99,49 +100,35 @@ class LoginPacket extends DataPacket {
 				unset($chainData[$index]);
 			}
 		}
-		list($verified, $skinToken) = $this->decodeToken($this->get($this->getLInt()), $chainKey);
-		if(isset($skinToken["AdRole"])){
-			$this->AdRole = $skinToken["AdRole"];
+
+		list($verified, $this->clientData) = $this->decodeToken($this->get($this->getLInt()), $chainKey);
+
+		$this->clientId = $this->clientData["ClientRandomId"] ?? null;
+		$this->serverAddress = $this->clientData["ServerAddress"] ?? null;
+		$this->skinId = $this->clientData["SkinId"] ?? null;
+
+		if(isset($this->clientData["SkinData"])){
+			$this->skin = base64_decode($this->clientData["SkinData"]);
 		}
-		if(isset($skinToken["ClientRandomId"])){
-			$this->clientId = $skinToken["ClientRandomId"];
+
+		if(isset($this->clientData["DeviceModel"])){
+			$this->deviceModel = $this->clientData["DeviceModel"];
 		}
-		if(isset($skinToken["CurrentInputMode"])){
-			$this->currentInputMode = $skinToken["CurrentInputMode"];
+
+		if(isset($this->clientData["DeviceOS"])){
+			$this->deviceOS = $this->clientData["DeviceOS"];
 		}
-		if(isset($skinToken["DefaultInputMode"])){
-			$this->defaultInputMode = $skinToken["DefaultInputMode"];
-		}
-		if(isset($skinToken["DeviceModel"])){
-			$this->deviceModel = $skinToken["DeviceModel"];
-		}
-		if(isset($skinToken["DeviceOS"])){
-			$this->deviceOS = $skinToken["DeviceOS"];
-		}
-		if(isset($skinToken["GameVersion"])){
-			$this->gameVersion = $skinToken["GameVersion"];
-		}
-		if(isset($skinToken["GuiScale"])){
-			$this->guiScale = $skinToken["GuiScale"];
-		}
-		if(isset($skinToken["ServerAddress"])){
-			$this->serverAddress = $skinToken["ServerAddress"];
-		}
-		if(isset($skinToken["SkinData"])){
-			$this->skin = base64_decode($skinToken["SkinData"]);
-		}
-		if(isset($skinToken["SkinId"])){
-			$this->skinId = $skinToken["SkinId"];
-		}
-		if(isset($skinToken["TenantId"])){
-			$this->TenantId = $skinToken["TenantId"];
-		}
-		if(isset($skinToken["UIProfile"])){
-			$this->UIProfile = $skinToken["UIProfile"];
-		}
+
 		if($verified){
 			$this->identityPublicKey = $chainKey;
 		}
+	}
+
+	/**
+	 *
+	 */
+	public function encode(){
+
 	}
 
 	/**
@@ -180,11 +167,7 @@ class LoginPacket extends DataPacket {
 			$verified = false;
 		}
 
-		return array($verified, json_decode(base64_decode($payloadB64), true));
-	}
-
-	public function encode(){
-
+		return [$verified, json_decode(base64_decode($payloadB64), true)];
 	}
 
 }

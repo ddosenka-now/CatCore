@@ -27,7 +27,31 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\BlockEntityDataPacket;
 use pocketmine\Player;
 
-abstract class Spawnable extends Tile {
+abstract class Spawnable extends Tile{
+	/** @var string|null */
+	private $spawnCompoundCache = null;
+	/** @var NBT|null */
+	private static $nbtWriter = null;
+
+	public function createSpawnPacket() : BlockEntityDataPacket{
+		$pk = new BlockEntityDataPacket();
+		$pk->x = $this->x;
+		$pk->y = $this->y;
+		$pk->z = $this->z;
+		$pk->namedtag = $this->getSerializedSpawnCompound();
+
+		return $pk;
+	}
+
+	public function spawnTo(Player $player){
+		if($this->closed){
+			return false;
+		}
+
+		$player->dataPacket($this->createSpawnPacket());
+
+		return true;
+	}
 
 	/**
 	 * Spawnable constructor.
@@ -45,33 +69,38 @@ abstract class Spawnable extends Tile {
 			return;
 		}
 
-		foreach($this->getLevel()->getChunkPlayers($this->chunk->getX(), $this->chunk->getZ()) as $player){
-			if($player->spawned === true){
-				$this->spawnTo($player);
-			}
-		}
+		$pk = $this->createSpawnPacket();
+		$this->level->addChunkPacket($this->getFloorX() >> 4, $this->getFloorZ() >> 4, $pk);
 	}
 
 	/**
-	 * @param Player $player
-	 *
-	 * @return bool
+	 * Performs actions needed when the tile is modified, such as clearing caches and respawning the tile to players.
+	 * WARNING: This MUST be called to clear spawn-compound and chunk caches when the tile's spawn compound has changed!
 	 */
-	public function spawnTo(Player $player){
-		if($this->closed){
-			return false;
+	protected function onChanged(){
+		$this->spawnCompoundCache = null;
+		$this->spawnToAll();
+
+		$this->level->clearChunkCache($this->getFloorX() >> 4, $this->getFloorZ() >> 4);
+	}
+
+	/**
+	 * Returns encoded NBT (varint, little-endian) used to spawn this tile to clients. Uses cache where possible,
+	 * populates cache if it is null.
+	 *
+	 * @return string encoded NBT
+	 */
+	final public function getSerializedSpawnCompound() : string{
+		if($this->spawnCompoundCache === null){
+			if(self::$nbtWriter === null){
+				self::$nbtWriter = new NBT(NBT::LITTLE_ENDIAN);
+			}
+
+			self::$nbtWriter->setData($this->getSpawnCompound());
+			$this->spawnCompoundCache = self::$nbtWriter->write(true);
 		}
 
-		$nbt = new NBT(NBT::LITTLE_ENDIAN);
-		$nbt->setData($this->getSpawnCompound());
-		$pk = new BlockEntityDataPacket();
-		$pk->x = $this->x;
-		$pk->y = $this->y;
-		$pk->z = $this->z;
-		$pk->namedtag = $nbt->write(true);
-		$player->dataPacket($pk);
-
-		return true;
+		return $this->spawnCompoundCache;
 	}
 
 	/**
@@ -90,14 +119,5 @@ abstract class Spawnable extends Tile {
 	 */
 	public function updateCompoundTag(CompoundTag $nbt, Player $player) : bool{
 		return false;
-	}
-
-	protected function onChanged(){
-		$this->spawnToAll();
-
-		if($this->chunk !== null){
-			$this->chunk->setChanged();
-			$this->level->clearChunkCache($this->chunk->getX(), $this->chunk->getZ());
-		}
 	}
 }

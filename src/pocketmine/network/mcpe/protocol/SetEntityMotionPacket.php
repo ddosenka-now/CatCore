@@ -42,14 +42,28 @@ class SetEntityMotionPacket extends DataPacket {
 		return parent::clean();
 	}
 
+	/**
+	 *
+	 */
 	public function decode(){
-
+        $this->eid = $this->getEntityId();
+        $this->getVector3f($this->x, $this->y, $this->z);
 	}
 
+	/**
+	 *
+	 */
 	public function encode(){
 		$this->reset();
 		$this->putEntityId($this->eid);
 		$this->putVector3f($this->motionX, $this->motionY, $this->motionZ);
+	}
+
+	/**
+	 * @return string Current packet name
+	 */
+	public function getName(){
+		return "SetEntityMotionPacket";
 	}
 
 }

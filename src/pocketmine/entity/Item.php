@@ -33,27 +33,66 @@ use pocketmine\Player;
 
 class Item extends Entity {
 	const NETWORK_ID = 64;
-	public $width = 0.25;
-	public $length = 0.25;
-	public $height = 0.25;
-	public $canCollide = false;
+
 	protected $owner = null;
 	protected $thrower = null;
 	protected $pickupDelay = 0;
 	/** @var ItemItem */
 	protected $item;
+
+	public $width = 0.25;
+	public $length = 0.25;
+	public $height = 0.25;
+	protected $baseOffset = 0.125;
+	
 	protected $gravity = 0.04;
 	protected $drag = 0.02;
-	protected $baseOffset = 0.125;
+
+	public $canCollide = false;
+
+	protected function initEntity(){
+		parent::initEntity();
+
+		$this->setMaxHealth(5);
+		$this->setHealth((int) $this->namedtag["Health"]);
+		if(isset($this->namedtag->Age)){
+			$this->age = $this->namedtag["Age"];
+		}
+		if(isset($this->namedtag->PickupDelay)){
+			$this->pickupDelay = $this->namedtag["PickupDelay"];
+		}
+		if(isset($this->namedtag->Owner)){
+			$this->owner = $this->namedtag["Owner"];
+		}
+		if(isset($this->namedtag->Thrower)){
+			$this->thrower = $this->namedtag["Thrower"];
+		}
+		if(!isset($this->namedtag->Item)){
+			$this->close();
+			return;
+		}
+
+		assert($this->namedtag->Item instanceof CompoundTag);
+
+		$this->item = ItemItem::nbtDeserialize($this->namedtag->Item);
+		if($this->item->isNull()){
+			throw new \UnexpectedValueException("Item for " . get_class($this) . " is invalid");
+		}
+
+		$this->server->getPluginManager()->callEvent(new ItemSpawnEvent($this));
+	}
 
 	/**
 	 * @param float             $damage
 	 * @param EntityDamageEvent $source
+	 *
+	 * @return bool|void
 	 */
 	public function attack($damage, EntityDamageEvent $source){
 		if(
 			$source->getCause() === EntityDamageEvent::CAUSE_VOID or
 			$source->getCause() === EntityDamageEvent::CAUSE_FIRE_TICK or
+			$source->getCause() === EntityDamageEvent::CAUSE_LAVA or
 			$source->getCause() === EntityDamageEvent::CAUSE_ENTITY_EXPLOSION or
 			$source->getCause() === EntityDamageEvent::CAUSE_BLOCK_EXPLOSION
 		){
@@ -138,7 +177,7 @@ class Item extends Entity {
 	public function saveNBT(){
 		parent::saveNBT();
 		$this->namedtag->Item = $this->item->nbtSerialize(-1, "Item");
-		$this->namedtag->Health = new ShortTag("Health", $this->getHealth());
+		$this->namedtag->Health = new ShortTag("Health", (int) $this->getHealth());
 		$this->namedtag->Age = new ShortTag("Age", $this->age);
 		$this->namedtag->PickupDelay = new ShortTag("PickupDelay", $this->pickupDelay);
 		if($this->owner !== null){
@@ -150,11 +189,22 @@ class Item extends Entity {
 	}
 
 	/**
+	 * @return ItemItem
+	 */
+	public function getItem(){
+		return $this->item;
+	}
+
+	/**
 	 * @param Entity $entity
 	 *
 	 * @return bool
 	 */
 	public function canCollideWith(Entity $entity){
+		return false;
+	}
+
+	public function canBeCollidedWith() : bool{
 		return false;
 	}
 
@@ -218,42 +268,5 @@ class Item extends Entity {
 		$this->sendData($player);
 
 		parent::spawnTo($player);
-	}
-
-	/**
-	 * @return ItemItem
-	 */
-	public function getItem(){
-		return $this->item;
-	}
-
-	protected function initEntity(){
-		parent::initEntity();
-
-		$this->setMaxHealth(5);
-		$this->setHealth($this->namedtag["Health"]);
-		if(isset($this->namedtag->Age)){
-			$this->age = $this->namedtag["Age"];
-		}
-		if(isset($this->namedtag->PickupDelay)){
-			$this->pickupDelay = $this->namedtag["PickupDelay"];
-		}
-		if(isset($this->namedtag->Owner)){
-			$this->owner = $this->namedtag["Owner"];
-		}
-		if(isset($this->namedtag->Thrower)){
-			$this->thrower = $this->namedtag["Thrower"];
-		}
-		if(!isset($this->namedtag->Item)){
-			$this->close();
-
-			return;
-		}
-
-		assert($this->namedtag->Item instanceof CompoundTag);
-
-		$this->item = ItemItem::nbtDeserialize($this->namedtag->Item);
-
-		$this->server->getPluginManager()->callEvent(new ItemSpawnEvent($this));
 	}
 }

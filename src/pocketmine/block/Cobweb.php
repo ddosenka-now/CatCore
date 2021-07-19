@@ -22,9 +22,9 @@
 namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
+use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
-use pocketmine\item\enchantment\Enchantment;
 
 class Cobweb extends Flowable {
 
@@ -32,8 +32,6 @@ class Cobweb extends Flowable {
 
 	/**
 	 * Cobweb constructor.
-	 *
-	 * @param int $meta
 	 */
 	public function __construct($meta = 0){
 		$this->meta = $meta;
@@ -95,7 +93,6 @@ class Cobweb extends Flowable {
 				];
 			}
 		}
-
 		return [];
 	}
 }

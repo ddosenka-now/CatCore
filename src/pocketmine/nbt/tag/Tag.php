@@ -39,16 +39,16 @@ abstract class Tag extends \stdClass {
 	}
 
 	/**
+	 * @return mixed
+	 */
+	public abstract function getType();
+
+	/**
 	 * @param $value
 	 */
 	public function setValue($value){
 		$this->value = $value;
 	}
-
-	/**
-	 * @return mixed
-	 */
-	public abstract function getType();
 
 	/**
 	 * @param NBT  $nbt

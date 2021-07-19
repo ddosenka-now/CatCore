@@ -26,14 +26,16 @@ use pocketmine\math\Vector3;
 
 abstract class FlyingAnimal extends Creature implements Ageable {
 
+	protected $gravity = 0;
+	protected $drag = 0.02;
+
 	/** @var Vector3 */
 	public $flyDirection = null;
 	public $flySpeed = 0.5;
 	public $highestY = 128;
-	public $switchDirectionTicks = 300;
-	protected $gravity = 0;
-	protected $drag = 0.02;
+
 	private $switchDirectionTicker = 0;
+	public $switchDirectionTicks = 300;
 
 	/**
 	 * @param $currentTick
@@ -136,6 +138,8 @@ abstract class FlyingAnimal extends Creature implements Ageable {
 	/**
 	 * @param float             $damage
 	 * @param EntityDamageEvent $source
+	 *
+	 * @return bool|void
 	 */
 	public function attack($damage, EntityDamageEvent $source){
 		if($source->isCancelled()){
@@ -143,7 +147,6 @@ abstract class FlyingAnimal extends Creature implements Ageable {
 		}
 		if($source->getCause() == EntityDamageEvent::CAUSE_FALL){
 			$source->setCancelled();
-
 			return;
 		}
 		parent::attack($damage, $source);

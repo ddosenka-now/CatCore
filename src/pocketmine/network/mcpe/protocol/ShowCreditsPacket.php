@@ -27,20 +27,30 @@ class ShowCreditsPacket extends DataPacket {
 
 	const NETWORK_ID = ProtocolInfo::SHOW_CREDITS_PACKET;
 
-	const STATUS_START_CREDITS = 0;
-	const STATUS_END_CREDITS = 1;
+	public $eid;
+	public $type;
 
-	public $playerEid;
-	public $status;
-
+	/**
+	 *
+	 */
 	public function decode(){
 
 	}
 
+	/**
+	 *
+	 */
 	public function encode(){
 		$this->reset();
-		$this->putEntityId($this->playerEid);
-		$this->putVarInt($this->status);
+		$this->putEntityId($this->eid);
+		$this->putVarInt($this->type);
+	}
+
+	/**
+	 * @return string Current packet name
+	 */
+	public function getName(){
+		return "ShowCreditsPacket";
 	}
 
 }

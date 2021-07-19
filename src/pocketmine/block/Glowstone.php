@@ -21,18 +21,16 @@
 
 namespace pocketmine\block;
 
+use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
-use pocketmine\item\enchantment\Enchantment;
 
-class Glowstone extends Transparent {
+class Glowstone extends Transparent implements SolidLight {
 
 	protected $id = self::GLOWSTONE_BLOCK;
 
 	/**
 	 * Glowstone constructor.
-	 *
-	 * @param int $meta
 	 */
 	public function __construct($meta = 0){
 		$this->meta = $meta;
@@ -83,7 +81,6 @@ class Glowstone extends Transparent {
 			$time = $times[mt_rand(0, $fortuneL + 1)];
 			$num = mt_rand(2, 4) * $time;
 			$num = $num > 4 ? 4 : $num;
-
 			return [
 				[Item::GLOWSTONE_DUST, 0, $num],
 			];

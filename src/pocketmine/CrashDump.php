@@ -1,25 +1,20 @@
 <?php
 
-/*██████████████████████████████████████████████████████████████████████████████████████████████████████████████
-/*█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒███▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▄▄▒▒███▒▒▄▄▄▄▄▄▄▄▄▄▒▒█
-/*█▒▒▄▄▒▒▒▒▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▄▄▒▒█▒▒▒▒▒▒▄▄▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▄▄▒▒█▒▒▄▄▒▒▒▒▒▒▒▒▄▄▒▒███▒▒▄▄▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▒▒████▒▒▄▄▒▒███▒▒▄▄▒▒█████████
-/*█▒▒▄▄▒▒█████████▒▒▄▄▒▒▒▒▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▒▒▒▒▒▒▒▒▄▄▒▒███▒▒▄▄▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▒▒█████████▒▒▄▄▄▄▄▄▄▄▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▄▄▒▒███▒▒▄▄▄▄▄▄▄▄▄▄▒▒█
-/*█▒▒▄▄▒▒█████████▒▒▄▄▒▒▒▒▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▒▒▒▒▒▒▄▄▒▒▒▒███▒▒▄▄▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒█████████▒▒▄▄▒▒██▒▒▄▄▒▒█▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████████
-/*█▒▒▄▄▒▒▒▒▒▒▒▒▒▒█▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▒▒▒▒▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▄▄▒▒█▒▒▄▄▒▒██▒▒▄▄▒▒▒▒▒▒█▒▒▄▄▒▒▒▒▒▒▒▒▒▒█
-/*█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▒▒██▒▒▄▄▒▒█████▒▒▄▄▒▒█████▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█▒▒▄▄▒▒██▒▒▄▄▄▄▄▄▒▒█▒▒▄▄▄▄▄▄▄▄▄▄▒▒█
-/*█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒██▒▒▒▒▒▒█████▒▒▒▒▒▒█████▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒██▒▒▒▒▒▒▒▒▒▒█▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
-/*██████████████████████████████████████████████████████████████████████████████████████████████████████████████
 /*
-/* × ████████████████████████ ×
-/*    █       © Free Software, ® https://vk.com/dixsin        █
-/*    █ Этот софт не приватный, но Харнэс может       █
-/*    █ дать по ебалу за его распространение! Не        █
-/*    █  пытайтесь скрыть то, что вы слили мой софт █
-/* × ████████████████████████ ×
+*╭━━━╮╱╱╭╮╭━━━╮
+*┃╭━╮┃╱╭╯╰┫╭━╮┃
+*┃┃╱╰╋━┻╮╭┫┃╱╰╋━━┳━┳━━╮
+*┃┃╱╭┫╭╮┃┃┃┃╱╭┫╭╮┃╭┫┃━┫
+*┃╰━╯┃╭╮┃╰┫╰━╯┃╰╯┃┃┃┃━┫
+*╰━━━┻╯╰┻━┻━━━┻━━┻╯╰━━╯
+*
+*Автор: https://vk.com/dixsin
+*
+*Версия ядра: 6.0-release
+*
+*Ядро переделано очень сильно, в отличии от *LiteCore тут куча всяких приколов и плюшек, *автор не несёт ответственности за насилие, *избиение и т.п умышленные действия!
+*
+*Советую войти в группу в вк: vk.com/*uptex_mcpe!
 */
 
 namespace pocketmine;
@@ -28,8 +23,8 @@ use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginLoadOrder;
 use pocketmine\utils\Utils;
-use pocketmine\utils\VersionString;
 use raklib\RakLib;
+use pocketmine\plugin\PluginManager;
 
 class CrashDump {
 
@@ -74,122 +69,28 @@ class CrashDump {
 	}
 
 	/**
-	 * @param string $line
+	 * @return string
 	 */
-	public function addLine($line = ""){
-		fwrite($this->fp, $line . PHP_EOL);
+	public function getPath(){
+		return $this->path;
 	}
 
-	private function baseCrash(){
-		global $lastExceptionError, $lastError;
-
-		if(isset($lastExceptionError)){
-			$error = $lastExceptionError;
-		}else{
-			$error = (array) error_get_last();
-			$error["trace"] = @getTrace(3);
-			$errorConversion = [
-				E_ERROR => "E_ERROR",
-				E_WARNING => "E_WARNING",
-				E_PARSE => "E_PARSE",
-				E_NOTICE => "E_NOTICE",
-				E_CORE_ERROR => "E_CORE_ERROR",
-				E_CORE_WARNING => "E_CORE_WARNING",
-				E_COMPILE_ERROR => "E_COMPILE_ERROR",
-				E_COMPILE_WARNING => "E_COMPILE_WARNING",
-				E_USER_ERROR => "E_USER_ERROR",
-				E_USER_WARNING => "E_USER_WARNING",
-				E_USER_NOTICE => "E_USER_NOTICE",
-				E_STRICT => "E_STRICT",
-				E_RECOVERABLE_ERROR => "E_RECOVERABLE_ERROR",
-				E_DEPRECATED => "E_DEPRECATED",
-				E_USER_DEPRECATED => "E_USER_DEPRECATED",
-			];
-			$error["fullFile"] = $error["file"];
-			$error["file"] = cleanPath($error["file"]);
-			$error["type"] = isset($errorConversion[$error["type"]]) ? $errorConversion[$error["type"]] : $error["type"];
-			if(($pos = strpos($error["message"], "\n")) !== false){
-				$error["message"] = substr($error["message"], 0, $pos);
-			}
-		}
-
-		if(isset($lastError)){
-			$this->data["lastError"] = $lastError;
-		}
-
-		$this->data["error"] = $error;
-		unset($this->data["error"]["fullFile"]);
-		unset($this->data["error"]["trace"]);
-		$this->addLine("Error: " . $error["message"]);
-		$this->addLine("File: " . $error["file"]);
-		$this->addLine("Line: " . $error["line"]);
-		$this->addLine("Type: " . $error["type"]);
-
-		if(strpos($error["file"], "src/pocketmine/") === false and strpos($error["file"], "src/raklib/") === false and file_exists($error["fullFile"])){
-			$this->addLine();
-			$this->addLine("THIS CRASH WAS CAUSED BY A PLUGIN");
-			$this->data["plugin"] = true;
-
-			$reflection = new \ReflectionClass(PluginBase::class);
-			$file = $reflection->getProperty("file");
-			$file->setAccessible(true);
-			foreach($this->server->getPluginManager()->getPlugins() as $plugin){
-				$filePath = \pocketmine\cleanPath($file->getValue($plugin));
-				if(strpos($error["file"], $filePath) === 0){
-					$this->data["plugin"] = $plugin->getName();
-					$this->addLine("BAD PLUGIN : " . $plugin->getDescription()->getFullName());
-					break;
-				}
-			}
-		}else{
-			$this->data["plugin"] = false;
-		}
-
-		$this->addLine();
-		$this->addLine("Code:");
-		$this->data["code"] = [];
-
-		if($this->server->getProperty("auto-report.send-code", true) !== false){
-			$file = @file($error["fullFile"], FILE_IGNORE_NEW_LINES);
-			for($l = max(0, $error["line"] - 10); $l < $error["line"] + 10; ++$l){
-				$this->addLine("[" . ($l + 1) . "] " . @$file[$l]);
-				$this->data["code"][$l + 1] = @$file[$l];
-			}
-		}
-
-		$this->addLine();
-		$this->addLine("Backtrace:");
-		foreach(($this->data["trace"] = $error["trace"]) as $line){
-			$this->addLine($line);
-		}
-		$this->addLine();
+	/**
+	 * @return null
+	 */
+	public function getEncodedData(){
+		return $this->encodedData;
 	}
 
-	private function generalData(){
-		$version = new VersionString();
-		$this->data["general"] = [];
-		$this->data["general"]["protocol"] = ProtocolInfo::CURRENT_PROTOCOL;
-		$this->data["general"]["api"] = \pocketmine\API_VERSION;
-		$this->data["general"]["git"] = \pocketmine\GIT_COMMIT;
-		$this->data["general"]["raklib"] = RakLib::VERSION;
-		$this->data["general"]["uname"] = php_uname("a");
-		$this->data["general"]["php"] = phpversion();
-		$this->data["general"]["zend"] = zend_version();
-		$this->data["general"]["php_os"] = PHP_OS;
-		$this->data["general"]["os"] = Utils::getOS();
-		$this->addLine("Tesseract version: " . \pocketmine\GIT_COMMIT . " [Protocol " . ProtocolInfo::CURRENT_PROTOCOL . "; API " . API_VERSION . "]");
-		$this->addLine("uname -a: " . php_uname("a"));
-		$this->addLine("PHP version: " . phpversion());
-		$this->addLine("Zend version: " . zend_version());
-		$this->addLine("OS : " . PHP_OS . ", " . Utils::getOS());
-		$this->addLine();
-		$this->addLine("Server uptime: " . $this->server->getUptime());
-		$this->addLine("Number of loaded worlds: " . count($this->server->getLevels()));
-		$this->addLine("Players online: " . count($this->server->getOnlinePlayers()) . "/" . $this->server->getMaxPlayers());
+	/**
+	 * @return array
+	 */
+	public function getData(){
+		return $this->data;
 	}
 
 	private function pluginsData(){
-		if(class_exists("pocketmine\\plugin\\PluginManager", false)){
+		if($this->server->getPluginManager() instanceof PluginManager){
 			$this->addLine();
 			$this->addLine("Loaded plugins:");
 			$this->data["plugins"] = [];
@@ -239,25 +140,117 @@ class CrashDump {
 		}
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getPath(){
-		return $this->path;
+	private function baseCrash(){
+		global $lastExceptionError, $lastError;
+
+		if(isset($lastExceptionError)){
+			$error = $lastExceptionError;
+		}else{
+			$error = (array) error_get_last();
+			$error["trace"] = Utils::getTrace(3); //Skipping CrashDump->baseCrash, CrashDump->construct, Server->crashDump
+			$errorConversion = [
+				E_ERROR => "E_ERROR",
+				E_WARNING => "E_WARNING",
+				E_PARSE => "E_PARSE",
+				E_NOTICE => "E_NOTICE",
+				E_CORE_ERROR => "E_CORE_ERROR",
+				E_CORE_WARNING => "E_CORE_WARNING",
+				E_COMPILE_ERROR => "E_COMPILE_ERROR",
+				E_COMPILE_WARNING => "E_COMPILE_WARNING",
+				E_USER_ERROR => "E_USER_ERROR",
+				E_USER_WARNING => "E_USER_WARNING",
+				E_USER_NOTICE => "E_USER_NOTICE",
+				E_STRICT => "E_STRICT",
+				E_RECOVERABLE_ERROR => "E_RECOVERABLE_ERROR",
+				E_DEPRECATED => "E_DEPRECATED",
+				E_USER_DEPRECATED => "E_USER_DEPRECATED",
+			];
+			$error["fullFile"] = $error["file"];
+			$error["file"] = Utils::cleanPath($error["file"]);
+			$error["type"] = isset($errorConversion[$error["type"]]) ? $errorConversion[$error["type"]] : $error["type"];
+			if(($pos = strpos($error["message"], "\n")) !== false){
+				$error["message"] = substr($error["message"], 0, $pos);
+			}
+		}
+
+		if(isset($lastError)){
+			$this->data["lastError"] = $lastError;
+		}
+
+		$this->data["error"] = $error;
+		unset($this->data["error"]["fullFile"]);
+		unset($this->data["error"]["trace"]);
+		$this->addLine("Error: " . $error["message"]);
+		$this->addLine("File: " . $error["file"]);
+		$this->addLine("Line: " . $error["line"]);
+		$this->addLine("Type: " . $error["type"]);
+
+		if(strpos($error["file"], "src/pocketmine/") === false and strpos($error["file"], "src/raklib/") === false and file_exists($error["fullFile"])){
+			$this->addLine();
+			$this->addLine("THIS CRASH WAS CAUSED BY A PLUGIN");
+			$this->data["plugin"] = true;
+
+			$reflection = new \ReflectionClass(PluginBase::class);
+			$file = $reflection->getProperty("file");
+			$file->setAccessible(true);
+			foreach($this->server->getPluginManager()->getPlugins() as $plugin){
+				$filePath = Utils::cleanPath($file->getValue($plugin));
+				if(strpos($error["file"], $filePath) === 0){
+					$this->data["plugin"] = $plugin->getName();
+					$this->addLine("BAD PLUGIN : " . $plugin->getDescription()->getFullName());
+					break;
+				}
+			}
+		}else{
+			$this->data["plugin"] = false;
+		}
+
+		$this->addLine();
+		$this->addLine("Code:");
+		$this->data["code"] = [];
+
+		if($this->server->getProperty("auto-report.send-code", true) !== false){
+			$file = @file($error["fullFile"], FILE_IGNORE_NEW_LINES);
+			for($l = max(0, $error["line"] - 10); $l < $error["line"] + 10; ++$l){
+				$this->addLine("[" . ($l + 1) . "] " . @$file[$l]);
+				$this->data["code"][$l + 1] = @$file[$l];
+			}
+		}
+
+		$this->addLine();
+		$this->addLine("Backtrace:");
+		foreach(($this->data["trace"] = $error["trace"]) as $line){
+			$this->addLine($line);
+		}
+		$this->addLine();
+	}
+
+	private function generalData(){
+		$this->data["general"] = [];
+		$this->data["general"]["protocol"] = ProtocolInfo::CURRENT_PROTOCOL;
+		$this->data["general"]["api"] = 3.0.2;
+ RakLib::VERSION;
+		$this->data["general"]["uname"] = php_uname("a");
+		$this->data["general"]["php"] = phpversion();
+		$this->data["general"]["zend"] = zend_version();
+		$this->data["general"]["php_os"] = PHP_OS;
+		$this->data["general"]["os"] = Utils::getOS();
+		$this->addLine($this->server->getName(). " version: 1.1.5 [Protocol " . ProtocolInfo::CURRENT_PROTOCOL . "; API "3.0.2]");
+		$this->addLine("uname -a: " . php_uname("a"));
+		$this->addLine("PHP version: " . phpversion());
+		$this->addLine("Zend version: " . zend_version());
+		$this->addLine("OS : " . PHP_OS . ", " . Utils::getOS());
+		$this->addLine();
+		$this->addLine("Server uptime: " . $this->server->getUptime());
+		$this->addLine("Number of loaded worlds: " . count($this->server->getLevels()));
+		$this->addLine("Players online: " . count($this->server->getOnlinePlayers()) . "/" . $this->server->getMaxPlayers());
 	}
 
 	/**
-	 * @return null
+	 * @param string $line
 	 */
-	public function getEncodedData(){
-		return $this->encodedData;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function getData(){
-		return $this->data;
+	public function addLine($line = ""){
+		fwrite($this->fp, $line . PHP_EOL);
 	}
 
 	/**
@@ -265,18 +258,6 @@ class CrashDump {
 	 */
 	public function add($str){
 		fwrite($this->fp, $str);
-	}
-
-	private function encodeData(){
-		$this->addLine();
-		$this->addLine("----------------------REPORT THE DATA BELOW THIS LINE-----------------------");
-		$this->addLine();
-		$this->addLine("===BEGIN CRASH DUMP===");
-		$this->encodedData = zlib_encode(json_encode($this->data, JSON_UNESCAPED_SLASHES), ZLIB_ENCODING_DEFLATE, 9);
-		foreach(str_split(base64_encode($this->encodedData), 76) as $line){
-			$this->addLine($line);
-		}
-		$this->addLine("===END CRASH DUMP===");
 	}
 
 }

@@ -23,29 +23,32 @@ namespace pocketmine\level;
 
 use pocketmine\block\Block;
 use pocketmine\entity\Entity;
+use pocketmine\event\block\BlockUpdateEvent;
 use pocketmine\event\entity\EntityDamageByBlockEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityExplodeEvent;
-use pocketmine\event\block\BlockUpdateEvent;
 use pocketmine\item\Item;
 use pocketmine\level\particle\HugeExplodeSeedParticle;
-use pocketmine\level\sound\ExplodeSound;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Math;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\DoubleTag;
-use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\FloatTag;
+use pocketmine\nbt\tag\ListTag;
 use pocketmine\network\mcpe\protocol\ExplodePacket;
-
+use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\utils\Random;
+use pocketmine\tile\Chest;
+use pocketmine\tile\Container;
+use pocketmine\tile\Tile;
 
 class Explosion {
 
-		public $level; //Rays
+	private $rays = 16; //Rays
+	public $level;
 	public $source;
 	public $size;
 	/**
@@ -53,7 +56,6 @@ class Explosion {
 	 */
 	public $affectedBlocks = [];
 	public $stepLen = 0.3;
-private $rays = 16;
 	/** @var Entity|Block */
 	private $what;
 	private $dropItem;
@@ -103,9 +105,15 @@ private $rays = 16;
 							$vBlock->x = $pointerX >= $x ? $x : $x - 1;
 							$vBlock->y = $pointerY >= $y ? $y : $y - 1;
 							$vBlock->z = $pointerZ >= $z ? $z : $z - 1;
-							if($vBlock->y < 0 or $vBlock->y >= Level::Y_MAX){
+							
+							$pointerX += $vector->x;
+							$pointerY += $vector->y;
+							$pointerZ += $vector->z;
+
+							if(!$this->level->isInWorld($vBlock->x, $vBlock->y, $vBlock->z)){
 								break;
 							}
+
 							$block = $this->level->getBlock($vBlock);
 
 							if($block->getId() !== 0){
@@ -116,9 +124,54 @@ private $rays = 16;
 									}
 								}
 							}
+						}
+					}
+				}
+			}
+		}
+
+		return true;
+	}
+
+	public function explodeC() : bool{
+		if($this->size < 0.1){
+			return false;
+		}
+
+		$vector = new Vector3(0, 0, 0);
+		$vBlock = new Vector3(0, 0, 0);
+
+		$mRays = intval($this->rays - 1);
+		for($i = 0; $i < $this->rays; ++$i){
+			for($j = 0; $j < $this->rays; ++$j){
+				for($k = 0; $k < $this->rays; ++$k){
+					if($i === 0 or $i === $mRays or $j === 0 or $j === $mRays or $k === 0 or $k === $mRays){
+						$vector->setComponents($i / $mRays * 2 - 1, $j / $mRays * 2 - 1, $k / $mRays * 2 - 1);
+						$vector->setComponents(($vector->x / ($len = $vector->length())) * $this->stepLen, ($vector->y / $len) * $this->stepLen, ($vector->z / $len) * $this->stepLen);
+						$pointerX = $this->source->x;
+						$pointerY = $this->source->y;
+						$pointerZ = $this->source->z;
+
+						for($blastForce = $this->size * (mt_rand(700, 1300) / 1000); $blastForce > 0; $blastForce -= $this->stepLen * 0.75){
+							$x = (int) $pointerX;
+							$y = (int) $pointerY;
+							$z = (int) $pointerZ;
+							$vBlock->x = $pointerX >= $x ? $x : $x - 1;
+							$vBlock->y = $pointerY >= $y ? $y : $y - 1;
+							$vBlock->z = $pointerZ >= $z ? $z : $z - 1;
 							$pointerX += $vector->x;
 							$pointerY += $vector->y;
 							$pointerZ += $vector->z;
+							if($vBlock->y < 0 or $vBlock->y >= Level::Y_MAX){
+								break;
+							}
+							$block = $this->level->getBlock($vBlock);
+
+							if(($block->getId() !== 0)and($block->getId() != 7)){
+								if(!isset($this->affectedBlocks[$index = Level::blockHash($block->x, $block->y, $block->z)])){
+									$this->affectedBlocks[$index] = $block;
+								}
+							}
 						}
 					}
 				}
@@ -188,6 +241,8 @@ private $rays = 16;
 		$air = Item::get(Item::AIR);
 
 		foreach($this->affectedBlocks as $block){
+			$yieldDrops = false;
+
 			if($block->getId() === Block::TNT){
 				$mot = (new Random())->nextSignedFloat() * M_PI * 2;
 				$tnt = Entity::createEntity("PrimedTNT", $this->level, new CompoundTag("", [
@@ -208,21 +263,39 @@ private $rays = 16;
 					"Fuse" => new ByteTag("Fuse", mt_rand(10, 30))
 				]));
 				$tnt->spawnToAll();
-			}elseif($this->dropItem and mt_rand(0, 100) < $yield){
+			}elseif($yieldDrops = (mt_rand(0, 100) < $yield)){
 				foreach($block->getDrops($air) as $drop){
 					$this->level->dropItem($block->add(0.5, 0.5, 0.5), Item::get(...$drop));
 				}
 			}
 
 			$this->level->setBlockIdAt($block->x, $block->y, $block->z, 0);
+			$this->level->setBlockDataAt($block->x, $block->y, $block->z, 0);
 
+			$t = $this->level->getTileAt($block->x, $block->y, $block->z);
+			if($t instanceof Tile){
+				if($t instanceof Chest){
+					$t->unpair();
+				}
+				if($yieldDrops and $t instanceof Container){
+					$t->getInventory()->dropContents($this->level, $t->add(0.5, 0.5, 0.5));
+				}
+
+				$t->close();
+			}
+		}
+
+		foreach($this->affectedBlocks as $block){
 			$pos = new Vector3($block->x, $block->y, $block->z);
 
-			for($side = 0; $side < 5; $side++){
+			for($side = 0; $side <= 5; $side++){
 				$sideBlock = $pos->getSide($side);
 				if(!isset($this->affectedBlocks[$index = Level::blockHash($sideBlock->x, $sideBlock->y, $sideBlock->z)]) and !isset($updateBlocks[$index])){
-					$this->level->getServer()->getPluginManager()->callEvent($ev = new BlockUpdateEvent($this->level->getBlock($sideBlock)));
+					$this->level->getServer()->getPluginManager()->callEvent($ev = new BlockUpdateEvent($this->level->getBlockAt($sideBlock->x, $sideBlock->y, $sideBlock->z)));
 					if(!$ev->isCancelled()){
+						foreach($this->level->getNearbyEntities(new AxisAlignedBB($sideBlock->x - 1, $sideBlock->y - 1, $sideBlock->z - 1, $sideBlock->x + 2, $sideBlock->y + 2, $sideBlock->z + 2)) as $entity){
+							$entity->onNearbyBlockChange();
+						}
 						$ev->getBlock()->onUpdate(Level::BLOCK_UPDATE_NORMAL);
 					}
 					$updateBlocks[$index] = true;
@@ -240,7 +313,7 @@ private $rays = 16;
 		$this->level->addChunkPacket($source->x >> 4, $source->z >> 4, $pk);
 
 		$this->level->addParticle(new HugeExplodeSeedParticle($source));
-		$this->level->addSound(new ExplodeSound(new Vector3($source->x, $source->y, $source->z)));
+		$this->level->broadcastLevelSoundEvent($source, LevelSoundEventPacket::SOUND_EXPLODE);
 
 		return true;
 	}

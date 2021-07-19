@@ -37,6 +37,8 @@ class IntArrayTag extends NamedTag {
 	/**
 	 * @param NBT  $nbt
 	 * @param bool $network
+	 *
+	 * @return mixed|void
 	 */
 	public function read(NBT $nbt, bool $network = false){
 		$size = $nbt->getInt($network);
@@ -46,6 +48,8 @@ class IntArrayTag extends NamedTag {
 	/**
 	 * @param NBT  $nbt
 	 * @param bool $network
+	 *
+	 * @return mixed|void
 	 */
 	public function write(NBT $nbt, bool $network = false){
 		$nbt->putInt(count($this->value), $network);
@@ -58,7 +62,6 @@ class IntArrayTag extends NamedTag {
 	public function __toString(){
 		$str = get_class($this) . "{\n";
 		$str .= implode(", ", $this->value);
-
 		return $str . "}";
 	}
 }

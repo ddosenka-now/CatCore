@@ -26,7 +26,6 @@ use pocketmine\plugin\Plugin;
 
 
 class PluginDisableEvent extends PluginEvent {
-
 	public static $handlerList = null;
 
 	/**
@@ -35,12 +34,4 @@ class PluginDisableEvent extends PluginEvent {
 	public function __construct(Plugin $plugin){
 		parent::__construct($plugin);
 	}
-
-	/**
-	 * @return EventName|string
-	 */
-	public function getName(){
-		return "PluginDisableEvent";
-	}
-
 }

@@ -1,22 +1,23 @@
 <?php
+
 /*
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
+ *  ____            _        _   __  __ _                  __  __ ____
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
+ * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
+ * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ * @author PocketMine Team
+ * @link http://www.pocketmine.net/
  *
- */
+ *
+*/
 
 namespace pocketmine\tile;
 
@@ -29,6 +30,8 @@ use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 
 class ItemFrame extends Spawnable {
+
+	public $map_uuid = -1;
 
 	/**
 	 * ItemFrame constructor.
@@ -46,6 +49,24 @@ class ItemFrame extends Spawnable {
 		}
 
 		parent::__construct($level, $nbt);
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function hasItem() : bool{
+		return $this->getItem()->getId() !== Item::AIR;
+	}
+
+	/**
+	 * @return Item
+	 */
+	public function getItem() : Item{
+		if(isset($this->namedtag->Item)){
+			return Item::nbtDeserialize($this->namedtag->Item);
+		}else{
+			return Item::get(Item::AIR);
+		}
 	}
 
 	/**
@@ -91,6 +112,22 @@ class ItemFrame extends Spawnable {
 	}
 
 	/**
+	 * @param string $mapid
+	 */
+	public function SetMapID(string $mapid){
+		$this->map_uuid = $mapid;
+		$this->namedtag->Map_UUID = new StringTag("map_uuid", $mapid);
+		$this->onChanged();
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getMapID() : string{
+		return $this->map_uuid;
+	}
+
+	/**
 	 * @return CompoundTag
 	 */
 	public function getSpawnCompound(){
@@ -104,27 +141,14 @@ class ItemFrame extends Spawnable {
 		]);
 		if($this->hasItem()){
 			$tag->Item = $this->namedtag->Item;
+			if($this->getItem()->getId() === Item::FILLED_MAP){
+				if(isset($this->namedtag->Map_UUID)){
+					$tag->Map_UUID = $this->namedtag->Map_UUID;
+				}
+			}
 		}
 
 		return $tag;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function hasItem() : bool{
-		return $this->getItem()->getId() !== Item::AIR;
-	}
-
-	/**
-	 * @return Item
-	 */
-	public function getItem() : Item{
-		if(isset($this->namedtag->Item)){
-			return Item::nbtDeserialize($this->namedtag->Item);
-		}else{
-			return Item::get(Item::AIR);
-		}
 	}
 
 }

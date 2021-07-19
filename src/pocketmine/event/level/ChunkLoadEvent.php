@@ -14,21 +14,21 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link   http://www.pocketmine.net/
+ * @link http://www.pocketmine.net/
  *
  *
- */
+*/
+
 
 namespace pocketmine\event\level;
 
-use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
+use pocketmine\level\format\Chunk;
 
 /**
  * Called when a Chunk is loaded
  */
 class ChunkLoadEvent extends ChunkEvent {
-
 	public static $handlerList = null;
 
 	private $newChunk;
@@ -51,12 +51,4 @@ class ChunkLoadEvent extends ChunkEvent {
 	public function isNewChunk(){
 		return $this->newChunk;
 	}
-
-	/**
-	 * @return EventName|string
-	 */
-	public function getName(){
-		return "ChunkLoadEvent";
-	}
-
 }
